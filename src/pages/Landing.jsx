@@ -8,9 +8,11 @@ import { COUNCILS, POLLS_CLOSE } from '../councils';
 import { OVERVIEW_SOURCE, useLiveResults } from '../hooks/useLiveResults';
 import { createOverviewDemoFeed } from '../volby/overview';
 import { listLabels } from '../volby/council';
-import { countdown, fmtInt, fmtPct, fmtPp, fmtShortTime, fmtTime, parseCsuTime, plural } from '../volby/format';
+import { countdown, fmtInt, fmtPct, fmtPp, fmtTime, parseCsuTime, plural } from '../volby/format';
+import { ageSeconds, formatAge, liveState, nextCheckLabel } from '../lib/freshness';
 import { AutoRefreshNote, NoDataLinks, RefreshButton, StatusPill } from '../components/ElectionHeader';
 import { useNow } from '../hooks/useNow';
+import { useOnline } from '../hooks/useOnline';
 import { APP_VERSION } from '../changelog';
 import { openChangelog } from '../utils/openChangelog';
 
@@ -285,6 +287,18 @@ function Hero({ snapshot, live, lists }) {
     const p = snapshot?.precincts;
     const dataTime = DEMO ? snapshot?.fetchedAt : parseCsuTime(snapshot?.generated);
 
+    // čerstvost dat: čas serveru = hodiny klienta + skew (stejně jako v ElectionHeader)
+    const online = useOnline();
+    const nowC = now + (live.skew || 0);
+    // Worker nevrací nic použitelného: chyba a žádný snapshot
+    const unavailable = !snapshot && live.status === 'error';
+    const pillState = unavailable
+        ? 'offline'
+        : liveState({ snapshot: snapshot && { ...snapshot, stale: live.stale }, now: nowC, pollsClose: POLLS_CLOSE, online });
+    const hasCsuTime = !DEMO && phase !== 'pre' && !!dataTime;
+    const age = hasCsuTime ? ageSeconds(nowC, snapshot.generated) : 0;
+    const nextLabel = live.fetching ? null : nextCheckLabel(live.nextAt, nowC);
+
     let line;
     if (phase === 'pre') line = <>Místnosti se zavírají v sobotu 10. 10. ve 14:00 — za <b className="text-[#FEC900] whitespace-nowrap">{countdown(POLLS_CLOSE - now)}</b></>;
     else if (phase === 'waiting' || !p?.counted) line = 'Volby skončily — čekáme na první okrskové komise';
@@ -296,7 +310,7 @@ function Hero({ snapshot, live, lists }) {
                 <div className="flex items-center gap-3">
                     <img src="/brand/logo-full-white.svg" alt="Česká pirátská strana" className="h-8 md:h-10" />
                     <div className="ml-auto flex items-center gap-2">
-                        <StatusPill phase={phase} demo={DEMO} stale={live.stale} />
+                        <StatusPill phase={phase} demo={DEMO} stale={live.stale} state={pillState} />
                         <RefreshButton live={live} now={now} demo={DEMO} showLabel="" />
                     </div>
                 </div>
@@ -306,8 +320,33 @@ function Hero({ snapshot, live, lists }) {
                 </h1>
                 <div className="mt-3 text-sm text-white/70">{line}</div>
                 {phase !== 'pre' && p?.total > 0 && <div className="mt-2 max-w-md"><Progress summary={{ counted: p.counted, total: p.total }} dark /></div>}
-                {(live.fetching || live.nextAt) && (
-                    <div className="mt-2 flex items-start gap-1.5 text-xs text-white/60">
+                {!DEMO && (
+                    // čerstvost dat — čas dat ČSÚ, jejich stáří a odpočet do další kontroly
+                    <div className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-xs leading-snug text-white/80 tabular-nums">
+                        {hasCsuTime && (
+                            <span>
+                                ČSÚ data z <b className="font-semibold text-white">{fmtTime(dataTime)}</b>
+                                <span className="text-white/60"> · </span>
+                                <span className="font-semibold text-white">{formatAge(age)}</span>
+                            </span>
+                        )}
+                        <span>
+                            {live.fetching
+                                ? 'načítám nová data…'
+                                : nextLabel
+                                    ? <>další kontrola za <b className="font-semibold text-white">{nextLabel}</b></>
+                                    // bez termínu: skrytá záložka = pauza; při prvním vykreslení zatím nic
+                                    : document.hidden ? 'kontrola pozastavena' : null}
+                        </span>
+                    </div>
+                )}
+                {!DEMO && pillState === 'live' && (
+                    <div className="mt-0.5 text-xs leading-snug text-white/70">
+                        ČSÚ zveřejňuje data zhruba jednou za minutu; stránka se obnovuje sama.
+                    </div>
+                )}
+                {DEMO && (live.fetching || live.nextAt) && (
+                    <div className="mt-2 flex items-start gap-1.5 text-xs text-white/70">
                         <svg className="w-3.5 h-3.5 mt-px shrink-0 text-[#FEC900]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                         </svg>
@@ -351,16 +390,11 @@ function Hero({ snapshot, live, lists }) {
                         </div>
                     </a>
                 </div>
-
-                <div className="mt-3 flex items-center gap-3 text-[11px] text-white/70 tabular-nums">
-                    {phase !== 'pre' && dataTime && <span>ČSÚ {fmtTime(dataTime)}</span>}
-                    {live.lastSuccess && <span>kontrola {fmtShortTime(live.lastSuccess)}</span>}
-                </div>
             </div>
             {live.error && (live.stale || live.status === 'error') && (
                 <div className="bg-orange-700 text-white text-[11px] px-4 py-1 text-center">
                     {live.stale
-                        ? 'Zdroj teď neodpovídá — ukazuji poslední načtená data, zkouším to znovu.'
+                        ? `Zdroj teď neodpovídá — ukazuji poslední načtená data${hasCsuTime ? ` (ČSÚ data z ${fmtTime(dataTime)}, ${formatAge(age)})` : ''}, zkouším to znovu.`
                         : 'Výsledky se nepodařilo načíst — zkouším to znovu.'}
                     {!snapshot && live.status === 'error' && <> <NoDataLinks linkClass="text-white" /></>}
                 </div>
