@@ -3,7 +3,7 @@
 // Stav se mění jen při skutečné změně čísel a při jejím vypršení (žádný
 // timer po sekundách, žádné překreslení stromu při nezměněném dotazu).
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { candidateCueText, changeSignature, diffSnapshots, partyCueText, summarize } from '../lib/changes.js'
+import { candidateCueText, changeSignature, clearIfTick, initialChangeState, nextChangeState, partyCueText } from '../lib/changes.js'
 
 export const CHANGE_WINDOW_MS = 4000
 
@@ -13,22 +13,18 @@ export const ChangesContext = createContext({ changes: null, tick: 0 })
 // snapshot (i obnovený ze sessionStorage) jen zapíše výchozí stav.
 export function useChanges(snapshot, summaryOpts) {
     const sig = useMemo(() => changeSignature(snapshot), [snapshot])
-    const [state, setState] = useState(() => ({ sig, prev: snapshot, changes: null, tick: 0, summary: '' }))
+    const [state, setState] = useState(() => initialChangeState(snapshot, sig))
 
     // Stav odvozený při renderu (vzor z dokumentace Reactu): bez efektu a bez
     // dalšího vykreslení navíc, když se podpis nezměnil
-    if (snapshot && sig !== state.sig) {
-        const diff = diffSnapshots(state.prev, snapshot)
-        setState(diff.changed
-            ? { sig, prev: snapshot, changes: diff, tick: state.tick + 1, summary: summarize(diff, summaryOpts) }
-            : { ...state, sig, prev: snapshot })
-    }
+    const next = nextChangeState(state, snapshot, summaryOpts, sig)
+    if (next !== state) setState(next)
 
     const active = !!state.changes
     const { tick } = state
     useEffect(() => {
         if (!active) return undefined
-        const t = setTimeout(() => setState((s) => (s.tick === tick ? { ...s, changes: null } : s)), CHANGE_WINDOW_MS)
+        const t = setTimeout(() => setState((s) => clearIfTick(s, tick)), CHANGE_WINDOW_MS)
         return () => clearTimeout(t)
     }, [active, tick])
 

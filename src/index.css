@@ -166,6 +166,7 @@ body {
 }
 .row-flash {
   position: relative;
+  isolation: isolate;
 }
 .row-flash::after {
   content: "";
@@ -175,6 +176,7 @@ body {
   background: #fec900;
   opacity: 0;
   pointer-events: none;
+  z-index: -1;
   animation: row-flash-a 2.5s ease-out 1 both;
 }
 .row-flash.flash-alt::after {

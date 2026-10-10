@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { changeSignature, diffSnapshots, partyCueText, candidateCueText, summarize } from './changes.js'
+import { changeSignature, clearIfTick, diffSnapshots, initialChangeState, nextChangeState, partyCueText, candidateCueText, summarize } from './changes.js'
 
 // Ručně psaný snapshot ve tvaru feed.js (zkráceně): 15 mandátů, 3 kandidátky
 const party = (id, votes, extra = {}) => ({ id, name: `S${id}`, votes, candidates: 15, seats: null, ...extra })
@@ -142,5 +142,43 @@ describe('texty', () => {
         const d = diffSnapshots(snap({ votes: [600, 300, 100] }), snap({ votes: [601, 300, 100] }))
         expect(summarize(d, {})).toMatch(/^Aktualizace: /)
         expect(summarize({ changed: false }, {})).toBe('')
+    })
+})
+
+describe('stav useChanges (nextChangeState / clearIfTick)', () => {
+    const opts = { oursId: 1, nameOf: () => 'Piráti' }
+    it('posloupnost: null → obnovený baseline → shodné → změna → jen čas → změna → zpožděný clear → clear', () => {
+        let s = initialChangeState(null)
+        expect(s.tick).toBe(0)
+        // první snapshot (i obnovený ze sessionStorage) jen zapíše baseline
+        const base = snap()
+        s = nextChangeState(s, base, opts)
+        expect(s).toMatchObject({ tick: 0, changes: null, summary: '', prev: base })
+        // shodný (jiný objekt, jiný fetchedAt) = stejný stav, žádné překreslení
+        const same = snap({ fetchedAt: 'b' })
+        expect(nextChangeState(s, same, opts)).toBe(s)
+        // změna čísel
+        s = nextChangeState(s, snap({ counted: 4, votes: [650, 300, 100] }), opts)
+        expect(s.tick).toBe(1)
+        expect(s.changes.changed).toBe(true)
+        expect(s.summary).toMatch(/^Aktualizace: sečteno 4 z 43/)
+        // jen nové generated: tick i změny zůstávají, baseline se posune
+        const timeOnly = snap({ counted: 4, votes: [650, 300, 100], generated: '2026-10-10T16:05:00' })
+        const kept = s.changes
+        s = nextChangeState(s, timeOnly, opts)
+        expect(s.tick).toBe(1)
+        expect(s.changes).toBe(kept)
+        expect(s.prev).toBe(timeOnly)
+        // další změna
+        s = nextChangeState(s, snap({ counted: 6, votes: [700, 300, 100], generated: '2026-10-10T16:06:00' }), opts)
+        expect(s.tick).toBe(2)
+        // zpožděný clear starší změny nic neudělá
+        expect(clearIfTick(s, 1)).toBe(s)
+        const cleared = clearIfTick(s, 2)
+        expect(cleared.changes).toBe(null)
+        expect(cleared.summary).toBe('')
+        expect(cleared.tick).toBe(2)
+        // clear už vyčištěného stavu je no-op
+        expect(clearIfTick(cleared, 2)).toBe(cleared)
     })
 })

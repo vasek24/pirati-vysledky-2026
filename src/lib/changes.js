@@ -5,7 +5,7 @@
 // zastupitelstva, při poklesu sečtených okrsků (reset dat ČSÚ) ani když se
 // změnil jen čas (generated / fetchedAt) — bez pohybu čísel není co ukazovat.
 import { computeOutcome } from '../volby/compute.js'
-import { fmtInt, fmtPct, plural } from '../volby/format.js'
+import { fmtInt, fmtPct, fmtPp, plural } from '../volby/format.js'
 
 const num = (v) => (Number.isFinite(v) ? v : 0)
 const isSnapshot = (s) => !!s && typeof s === 'object' && Array.isArray(s.parties)
@@ -142,12 +142,31 @@ export function summarize(d, { oursId, nameOf } = {}) {
         const name = (typeof nameOf === 'function' && nameOf(oursId)) || 'Naše kandidátka'
         // první hlasy po prázdném stavu: změna oproti nule nic neříká
         let text = `${name} ${fmtPct(ours.share)}`
-        if (ours.shareDelta !== null) {
-            const pp = Math.round(ours.shareDelta * 10) / 10
-            text += ` (${pp === 0 ? '±0,0' : `${pp > 0 ? '+' : '−'}${fmtPct(Math.abs(pp)).replace(' %', '')}`} p. b.)`
-        }
+        if (ours.shareDelta !== null) text += ` (${fmtPp(ours.shareDelta)})`
         if (ours.seatsDelta) text += `, mandáty ${ours.seats} (${signed(ours.seatsDelta)})`
         parts.push(text)
     }
     return `Aktualizace: ${parts.length ? parts.join('; ') : 'výsledky se změnily'}`
+}
+
+// Stav useChanges jako čisté funkce (hook jen drží useState). state =
+// { sig, prev, changes, tick, summary }. Bez změny podpisu vrací stejný
+// objekt (žádné překreslení), při nezměněných číslech jen posune baseline a
+// ponechá běžící okno změny.
+export function initialChangeState(snapshot, sig = changeSignature(snapshot)) {
+    return { sig, prev: snapshot, changes: null, tick: 0, summary: '' }
+}
+
+export function nextChangeState(state, snapshot, summaryOpts, sig = changeSignature(snapshot)) {
+    if (!snapshot || sig === state.sig) return state
+    const diff = diffSnapshots(state.prev, snapshot)
+    return diff.changed
+        ? { sig, prev: snapshot, changes: diff, tick: state.tick + 1, summary: summarize(diff, summaryOpts) }
+        : { ...state, sig, prev: snapshot }
+}
+
+// Konec okna změny: smaže zvýraznění i větu (prázdná live region = další
+// stejná věta se zase ohlásí); zpožděný timer starší změny nic neudělá
+export function clearIfTick(state, tick) {
+    return state.tick === tick && state.changes ? { ...state, changes: null, summary: '' } : state
 }

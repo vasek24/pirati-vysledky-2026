@@ -11,7 +11,7 @@ import { APP_VERSION } from '../changelog';
 import { openChangelog } from '../utils/openChangelog';
 import { COUNCILS, POLLS_CLOSE } from '../councils';
 import { activeCouncil } from '../volby/council';
-import { countdown, fmtPct, fmtTime, parseCsuTime } from '../volby/format';
+import { countdown, fmtPct, fmtTime, parseCsuTime, plural } from '../volby/format';
 import { ageSeconds, formatAge, liveState, nextCheckLabel } from '../lib/freshness';
 import { PrecinctStrip } from './Precincts';
 import { useChangesContext } from '../hooks/useChanges';
@@ -262,7 +262,8 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
     const now = useNow(1000);
     // nová data: štítek jednou cinkne, počet okrsků se podbarví a ukáže „▲ +2"
     const { changes, tick: changeTick } = useChangesContext();
-    const newPrecincts = changes?.precincts.delta > 0 ? ` ▲ +${changes.precincts.delta}` : '';
+    const d = changes?.precincts.delta;
+    const newPrecincts = d > 0 ? <> · <span aria-hidden="true">▲</span> +{d} {plural(d, 'okrsek', 'okrsky', 'okrsků')}</> : null;
     const online = useOnline();
     // čas serveru: hodiny klienta + rozdíl z x-server-now (rychlé/pomalé hodiny)
     const nowC = now + (live.skew || 0);
