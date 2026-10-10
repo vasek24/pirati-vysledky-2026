@@ -14,17 +14,29 @@
 // Použití:  npm run data                  (všechna zastupitelstva)
 //           npm run data -- praha-6        (jen jedno)
 //           npm run data -- --fresh        (ignorovat .cache/)
+//
+// Produkt „mesta“ (opt-in, Praha se nemění):
+//           node scripts/build-data.js --product=mesta [slug…] [--fresh]
+//   zapisuje do public-mesta/data/<slug>/ (lists, kandidati, results2022,
+//   prázdný okrsky.geojson) a public-mesta/media/<slug>/logos; bez fotek
+//   kandidátů a bez prehled.json; selhání jednoho města nezastaví ostatní
 import { createHash } from 'node:crypto';
+import { realpathSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import proj4 from 'proj4';
 import simplify from '@turf/simplify';
 import sharp from 'sharp';
+import { pathToFileURL } from 'node:url';
 import { COUNCILS, KV_BASE_URL, PIRATES_CODE } from '../src/councils.js';
+import { buildCouncils } from '../src/mesta/buildCouncils.js';
+import { isNearWhite } from '../src/mesta/color.js';
 import { ROOT, codes, csvFromZip, download, downloadJson, slugify, writeJson } from './lib/util.js';
 
 const URLS = {
     reg2026: 'https://volby.gov.cz/opendata/kv2026/KV2026reg20261002_csv.zip',
+    // Produkt „mesta“: nejnovější registr (stejný jako generátor scripts/mesta-registry.js)
+    reg2026mesta: 'https://volby.gov.cz/opendata/kv2026/KV2026reg20261007_csv.zip',
     data2022: 'https://volby.gov.cz/opendata/kv2022/KV2022_data_20260328_csv.zip',
     reg2022: 'https://volby.gov.cz/opendata/kv2022/KV2022reg20260328_csv.zip',
     okrsky: 'https://static.programydovoleb.cz/2025/vol_okrsky_2025_g100_20250701.geojson',
@@ -35,25 +47,74 @@ const URLS = {
 const DATE_2022 = '20220923';
 const NK = 80; // nezávislý kandidát
 const PDV_DELAY = 150; // ms mezi dotazy na programydovoleb.cz — jsme slušní
+const JMSEZ_DELAY = 1000; // ms mezi jmennými seznamy na volby.gov.cz (jen produkt „mesta“, 1 soubor na město)
 const FALLBACK_COLORS = ['#0EA5E9', '#F97316', '#14B8A6', '#E11D48', '#84CC16', '#A855F7', '#F59E0B', '#64748B', '#06B6D4', '#DB2777', '#65A30D', '#7C3AED'];
 
 // S-JTSK / Křovák (EPSG:5514) → WGS84
 proj4.defs('EPSG:5514', '+proj=krovak +lat_0=49.5 +lon_0=24.83333333333333 +alpha=30.28813972222222 +k=0.9999 +x_0=0 +y_0=0 +ellps=bessel +towgs84=589,76,480,0,0,0,0 +units=m +no_defs');
 const toWgs = proj4('EPSG:5514', 'WGS84');
 
-const args = process.argv.slice(2);
-const fresh = args.includes('--fresh');
-const only = args.filter((a) => !a.startsWith('--'));
+export function parseArgs(argv) {
+    const product = argv.find((a) => a.startsWith('--product='))?.slice('--product='.length);
+    if (product !== undefined && product !== 'mesta') throw new Error(`Neznámý --product=${product} (jen mesta)`);
+    return {
+        mesta: product === 'mesta',
+        fresh: argv.includes('--fresh'),
+        only: argv.filter((a) => !a.startsWith('--')),
+    };
+}
+
+const { mesta: MESTA, fresh, only } = parseArgs(process.argv.slice(2));
 const log = (...a) => console.log('·', ...a);
+// Kam se zapisuje: Praha public/…, produkt „mesta“ public-mesta/…
+export function outputDirs(council, mesta) {
+    const root = mesta ? 'public-mesta' : 'public';
+    return {
+        dataDir: path.join(ROOT, `${root}/data`, council.slug),
+        mediaDir: path.join(ROOT, `${root}/media`, council.slug),
+    };
+}
+export const emptyGeo = () => ({ type: 'FeatureCollection', features: [] });
 
 const pick = (data, key) => (data && Array.isArray(data[key]) && data[key][0]?.value) || null;
 
+// Produkt „mesta“: všechna publikovaná města (i skrytá — majitel je může
+// uvolnit) z vygenerovaných JSON přes fs (Node neimportuje JSON) + overrides
+export async function loadMestaCouncils(slugs = []) {
+    const read = async (f) => JSON.parse(await fs.readFile(path.join(ROOT, 'src/mesta', f), 'utf8'));
+    const [towns, specifics] = await Promise.all([read('towns.generated.json'), read('specifics.generated.json')]);
+    const overrides = (await import('../src/mesta/overrides.js')).default;
+    const all = buildCouncils(towns, specifics, overrides);
+    const unknown = slugs.filter((s) => !all.some((c) => c.slug === s));
+    if (unknown.length) throw new Error(`Neznámé město: ${unknown.join(', ')}`);
+    return slugs.length ? all.filter((c) => slugs.includes(c.slug)) : all;
+}
+
+// Město po městě; výjimka jednoho nezastaví ostatní. Exit 1 jen když nevyšlo žádné
+export async function runMesta(councils, buildOne, { log: out = console.log, error = console.error } = {}) {
+    const failed = [];
+    let ok = 0;
+    for (const council of councils) {
+        try {
+            await buildOne(council);
+            ok++;
+        } catch (err) {
+            failed.push({ slug: council.slug, reason: err.message });
+            error(`  ✗ ${council.slug}: ${err.message}`);
+        }
+    }
+    out(`mesta data: OK ${ok}/${councils.length}, failed: [${failed.map((f) => f.slug).join(', ')}]`);
+    return { ok, total: councils.length, failed, exitCode: ok === 0 ? 1 : 0 };
+}
+
 async function main() {
-    const councils = only.length ? COUNCILS.filter((c) => only.includes(c.slug)) : COUNCILS;
+    const councils = MESTA
+        ? await loadMestaCouncils(only)
+        : (only.length ? COUNCILS.filter((c) => only.includes(c.slug)) : COUNCILS);
     if (!councils.length) throw new Error(`Neznámé zastupitelstvo: ${only.join(', ')}`);
 
     log('Registry KV 2026…');
-    const reg2026 = await download(URLS.reg2026, { fresh });
+    const reg2026 = await download(MESTA ? URLS.reg2026mesta : URLS.reg2026, { fresh });
     const ros2026 = csvFromZip(reg2026, 'kvros.csv');
     const rk2026 = csvFromZip(reg2026, 'kvrk.csv');
 
@@ -64,8 +125,12 @@ async function main() {
     const t3 = csvFromZip(data2022, 'kvt3.csv');
     const hl = csvFromZip(data2022, 'kvhl.csv', { raw: true });
 
-    log('Hranice okrsků…');
-    const geo = JSON.parse((await download(URLS.okrsky, { fresh })).toString('utf8'));
+    // Produkt „mesta“ mapu nemá (map: false) → hranice se nestahují
+    let geo = null;
+    if (!MESTA) {
+        log('Hranice okrsků…');
+        geo = JSON.parse((await download(URLS.okrsky, { fresh })).toString('utf8'));
+    }
 
     const partyCache = new Map();
     const partyInfo = async (code) => {
@@ -82,9 +147,23 @@ async function main() {
         return partyCache.get(code);
     };
 
+    const shared = { ros2026, rk2026, ros2022, t3, hl, geo, partyInfo };
+    if (MESTA) {
+        const warnings = {};
+        const res = await runMesta(councils, async (council) => {
+            console.log(`\n=== ${council.name} (${council.zastup}) ===`);
+            warnings[council.slug] = await buildCouncil(council, shared);
+        });
+        const withWarnings = Object.entries(warnings).filter(([, w]) => w.length);
+        if (withWarnings.length) console.log('\nvarování:');
+        for (const [slug, w] of withWarnings) console.log(`  ${slug}: ${w.join('; ')}`);
+        for (const f of res.failed) console.log(`  SELHALO ${f.slug}: ${f.reason}`);
+        process.exitCode = res.exitCode;
+        return;
+    }
     for (const council of councils) {
         console.log(`\n=== ${council.name} (${council.zastup}) ===`);
-        await buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, partyInfo });
+        await buildCouncil(council, shared);
     }
     await buildOverview();
 }
@@ -133,18 +212,33 @@ async function buildOverview() {
 
 async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, partyInfo }) {
     const z = String(council.zastup);
-    const dataDir = path.join(ROOT, 'public/data', council.slug);
-    const mediaDir = path.join(ROOT, 'public/media', council.slug);
+    const { dataDir, mediaDir } = outputDirs(council, MESTA);
+    const warnings = []; // jen produkt „mesta“: co chybí / co se nahradilo
     // Vygenerovaná média smazat (vlastní fotky z councils.js zůstávají)
     await fs.rm(path.join(mediaDir, 'logos'), { recursive: true, force: true });
     await fs.mkdir(path.join(mediaDir, 'logos'), { recursive: true });
-    await fs.mkdir(path.join(mediaDir, 'photos'), { recursive: true });
-    for (const f of await fs.readdir(path.join(mediaDir, 'photos'))) {
-        if (f.startsWith('pdv-')) await fs.rm(path.join(mediaDir, 'photos', f));
+    if (!MESTA) {
+        await fs.mkdir(path.join(mediaDir, 'photos'), { recursive: true });
+        for (const f of await fs.readdir(path.join(mediaDir, 'photos'))) {
+            if (f.startsWith('pdv-')) await fs.rm(path.join(mediaDir, 'photos', f));
+        }
     }
 
     // --- programydovoleb.cz: loga/barvy kandidátek, fotky kandidátů
-    const pdv = (await downloadJson(URLS.pdvElection(z), { fresh, delayMs: PDV_DELAY })).list[0];
+    // (mesta: výpadek programydovoleb.cz se toleruje — loga a barvy pak z palety)
+    let pdv;
+    if (MESTA) {
+        try {
+            pdv = (await downloadJson(URLS.pdvElection(z), { fresh, delayMs: PDV_DELAY })).list[0];
+            if (!pdv) throw new Error('prázdná odpověď');
+        } catch (err) {
+            warnings.push(`programydovoleb.cz nedostupné (${err.message})`);
+            console.warn(`  ! programydovoleb.cz: ${err.message}`);
+            pdv = { $strany: [], $kandidati: [] };
+        }
+    } else {
+        pdv = (await downloadJson(URLS.pdvElection(z), { fresh, delayMs: PDV_DELAY })).list[0];
+    }
     const pdvLists = new Map(pdv.$strany.filter((s) => String(s.KODZASTUP) === z).map((s) => [Number(s.POR_STR_HL), s]));
     const pdvCands = pdv.$kandidati.filter((k) => String(k.KODZASTUP) === z);
 
@@ -200,7 +294,16 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
     log(`KV 2022: ${lists2022.length} kandidátek, ${seatsTotal2022} mandátů, ${Object.keys(okrsky2022).length} okrsků`);
     for (const l of lists2022) if (l.seats) log(`  2022 ${l.id.padStart(2)} ${l.short.padEnd(32)} ${l.seats} mand.`);
 
+    if (MESTA) {
+        if (!lists2022.length) warnings.push('chybí kandidátky KV 2022');
+        if (!Object.keys(okrsky2022).length) warnings.push('chybí okrskové výsledky KV 2022');
+    }
     mapPredecessors(lists, lists2022);
+    if (MESTA) {
+        for (const l of lists) {
+            if (!l.baseline && !l.split && l.slozeni.includes(PIRATES_CODE)) warnings.push(`kandidátka ${l.id} (Piráti): bez srovnání s 2022`);
+        }
+    }
     for (const l of lists) {
         const how = l.baseline ? `${l.baseline.exact ? '=' : '≈'} ${l.baseline.label}${l.baseline.byName ? ' (podle názvu)' : ''}` : l.split ? `rozdělené: ${l.split.map((s) => s.label).join(' / ')}` : 'nová';
         log(`  2026 ${String(l.id).padStart(2)} ← ${how}`);
@@ -225,11 +328,19 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
         }
 
         // Barva: ruční výjimka → Piráti černí → kandidátka → členská strana → paleta
+        // (mesta: téměř bílá barva z programydovoleb.cz se zahodí → další zdroj, nakonec paleta)
+        const dropWhite = (c) => {
+            if (MESTA && c && isNearWhite(normalizeColor(c))) {
+                warnings.push(`kandidátka ${l.id}: světlá barva ${c} nahrazena`);
+                return null;
+            }
+            return c;
+        };
         let color = council.lists?.[l.id]?.color
-            || (l.slozeni.includes(PIRATES_CODE) ? '#000000' : pick(p?.$data, 'color'));
+            || (l.slozeni.includes(PIRATES_CODE) ? '#000000' : dropWhite(pick(p?.$data, 'color')));
         if (!color) {
             for (const code of memberCodes) {
-                color = pick((await partyInfo(code))?.$data, 'color');
+                color = dropWhite(pick((await partyInfo(code))?.$data, 'color'));
                 if (color) break;
             }
         }
@@ -267,13 +378,18 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
         l.web = pick(p?.$data, 'web');
     }
     for (const l of lists) log(`  ${String(l.id).padStart(2)} ${l.short30.slice(0, 32).padEnd(32)} ${l.color} loga: ${l.logos.length}`);
+    if (MESTA) {
+        const noLogo = lists.filter((l) => !l.logos.length).map((l) => l.id);
+        if (noLogo.length) warnings.push(`bez loga: kandidátky ${noLogo.join(',')} z ${lists.length}`);
+    }
 
     // --- kandidáti (jména z registru, štítky stran z jmenného seznamu)
     let jmsez = null;
     try {
-        jmsez = await downloadJson(URLS.jmsez(council.okres, z), { fresh });
+        jmsez = await downloadJson(URLS.jmsez(council.okres, z), { fresh, delayMs: MESTA ? JMSEZ_DELAY : 0 });
     } catch (err) {
         console.warn(`  ! jmenný seznam: ${err.message}`);
+        if (MESTA) warnings.push(`jmenný seznam nedostupný (${err.message})`);
     }
     const parties = {};
     let photos = 0;
@@ -284,7 +400,7 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
             const n = Number(c.PORCISLO);
             const own = council.photos?.[l.id]?.[n];
             let photo = own ? `/media/${council.slug}/photos/${own}` : null;
-            if (!photo) {
+            if (!photo && !(MESTA && council.candidatePhotos === false)) {
                 const k = pdvCands.find((x) => Number(x.POR_STR_HL) === l.id && Number(x.PORCISLO) === n);
                 const url = pick(k?.$data, 'photo');
                 const file = url ? await saveMedia(url, path.join(mediaDir, 'photos'), `pdv-${l.id}-${n}`, 'photo') : null;
@@ -309,8 +425,8 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
     }
     log(`kandidáti: ${Object.values(parties).reduce((s, p) => s + p.candidates.length, 0)}, s fotkou ${photos}`);
 
-    // --- hranice okrsků
-    const features = geo.features
+    // --- hranice okrsků (mesta: map false → prázdná kolekce, nic se nestahuje)
+    const features = MESTA ? [] : geo.features
         .filter((f) => (council.magistrat
             ? String(f.properties.kod_obec) === z
             : String(f.properties.kod_mco) === z))
@@ -319,9 +435,14 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
             properties: { cislo: Number(f.properties.cislo), mco: f.properties.naz_mco || null },
             geometry: reproject(f.geometry),
         }, { tolerance: 0.00003, highQuality: true }));
-    const missing = Object.keys(okrsky2022).length && council.precincts !== features.length
-        ? ` (ČSÚ 2026 uvádí ${council.precincts})` : '';
-    log(`okrsky: ${features.length} polygonů${missing}`);
+    if (MESTA) {
+        const n2022 = Object.keys(okrsky2022).length;
+        if (n2022 && n2022 !== council.precincts) warnings.push(`okrsků 2022: ${n2022}, 2026: ${council.precincts}`);
+    } else {
+        const missing = Object.keys(okrsky2022).length && council.precincts !== features.length
+            ? ` (ČSÚ 2026 uvádí ${council.precincts})` : '';
+        log(`okrsky: ${features.length} polygonů${missing}`);
+    }
 
     await writeJson(path.join(dataDir, 'lists.json'), {
         generated: new Date().toISOString(),
@@ -334,7 +455,8 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
     });
     await writeJson(path.join(dataDir, 'kandidati.json'), { parties });
     await writeJson(path.join(dataDir, 'results2022.json'), { okrsky: okrsky2022 });
-    await writeJson(path.join(dataDir, 'okrsky.geojson'), { type: 'FeatureCollection', features });
+    await writeJson(path.join(dataDir, 'okrsky.geojson'), MESTA ? emptyGeo() : { type: 'FeatureCollection', features });
+    return warnings;
 }
 
 // Předchůdci kandidátek: kandidátka 2026 ← kandidátky 2022 se společnou
@@ -434,7 +556,10 @@ function colorDistance(a, b) {
     return Math.sqrt(x.reduce((s, v, i) => s + (v - y[i]) ** 2, 0));
 }
 
-main().catch((err) => {
-    console.error(err);
-    process.exit(1);
-});
+// Spustit jen při přímém volání (testy importují runMesta, parseArgs… bez side-effectů)
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
+    main().catch((err) => {
+        console.error(err);
+        process.exit(1);
+    });
+}
