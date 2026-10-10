@@ -24,9 +24,12 @@ function mergeCouncil(candidate, good) {
     for (const [id, g] of Object.entries(good.okrsky || {})) {
         const c = okrsky[id];
         if (c && !hasVotes(c) && hasVotes(g) && sameRow(c, g)) okrsky[id] = { ...c, votes: g.votes };
-        // okrsek, který měl v good data a teď je nemá (chybí / změněný řádek
-        // bez okrskového souboru) → nekompletní
-        if (hasVotes(g) && !hasVotes(okrsky[id])) complete = false;
+        // okrsek je v kandidátovi přítomen bez hlasů, v good je měl a doplnit
+        // nešly (změněný řádek bez okrskového souboru) → nekompletní.
+        // Okrsek, který z kandidáta ZMIZEL, se nedoplňuje ani není nekompletní:
+        // padne na precincts-fewer (rejected), aby ho quarantine mohla přijmout
+        // jako skutečné stažení okrsku.
+        if (okrsky[id] && hasVotes(g) && !hasVotes(okrsky[id])) complete = false;
     }
     return { merged: { ...candidate, okrsky }, complete };
 }
@@ -36,21 +39,26 @@ function mergeOverview(candidate, good) {
     let copied = 0;
     let complete = true;
     for (const [z, g] of Object.entries(good.councils || {})) {
-        if (!(z in councils)) {
+        const c = councils[z];
+        const cg = c && genMs(c.generated);
+        const gg = genMs(g.generated);
+        // chybějící souhrn, nebo souhrn ze zpožděné repliky (starší než v good):
+        // drží se good, ostatní zastupitelstva se přesto publikují
+        if (!c || (cg !== null && gg !== null && cg < gg)) {
             councils[z] = g;
             copied++;
-        } else if (g.parties?.length && !councils[z].parties?.length) {
+        } else if (g.parties?.length && !c.parties?.length) {
             complete = false;
         }
     }
     if (!copied) return { merged: { ...candidate, councils }, complete };
     // Souhrny za přehled (okrsky, generated, phase) se odvozují ze všech
     // zastupitelstev; bez přepočtu by chybějící zastupitelstvo snížilo součet
-    // a vypadalo by to jako regrese. `expected` lze odvodit jen z počtu
-    // sloučených souhrnů.
+    // a vypadalo by to jako regrese. `official` smí být true jen když byl
+    // i kandidát (expected = Infinity pak official i phase 'final' vylučuje).
     const composed = composeOverview(councils, {
         now: Date.parse(candidate.fetchedAt) || Date.now(),
-        expected: Object.keys(councils).length,
+        expected: candidate.official ? Object.keys(councils).length : Infinity,
     });
     return {
         merged: {
@@ -68,19 +76,31 @@ function mergeOverview(candidate, good) {
 // Monotónní (relativní) kontroly a doplňování z good platí jen když good
 // vznikl po uzavření místností a se stejným CSU_BASE; jinak (testovací data
 // před 14:00, jiná základna) nahradí good první platný kandidát po 14:00.
-export const baselineApplies = (good, ctx) => !!good && ctx.goodRefreshedAt >= ctx.pollsClose && ctx.base === ctx.goodBase;
+function assertCtx(ctx) {
+    if (!ctx || typeof ctx !== 'object'
+        || !Number.isFinite(ctx.goodRefreshedAt) || !Number.isFinite(ctx.pollsClose)
+        || typeof ctx.base !== 'string' || typeof ctx.goodBase !== 'string') {
+        throw new TypeError('validate: ctx { goodRefreshedAt, pollsClose, base, goodBase } is required');
+    }
+}
+
+export function baselineApplies(good, ctx) {
+    assertCtx(ctx);
+    return !!good && ctx.goodRefreshedAt >= ctx.pollsClose && ctx.base === ctx.goodBase;
+}
 
 /**
  * @param {object} candidate  snapshot z feedu
  * @param {object|null} good  poslední publikovaný snapshot
  * @param {'council'|'overview'} kind
- * @param {object} [ctx]  stejný ctx jako ve validateCandidate; když je zadán
- *   a baseline neplatí, good se ignoruje (jinak by reset testovacích dat po
- *   14:00 byl "nekompletní" — okrsky z testu už v nových datech nejsou)
+ * @param {object} ctx  stejný ctx jako ve validateCandidate; povinný, když
+ *   je good zadán (jinak TypeError). Když baseline neplatí, good se ignoruje
+ *   (jinak by reset testovacích dat po 14:00 byl "nekompletní").
  * @returns {{ merged: object, complete: boolean }}
  */
 export function mergeCandidate(candidate, good, kind, ctx) {
-    if (!good || (ctx && !baselineApplies(good, ctx))) return { merged: candidate, complete: true };
+    if (!good) return { merged: candidate, complete: true };
+    if (!baselineApplies(good, ctx)) return { merged: candidate, complete: true };
     return kind === 'overview' ? mergeOverview(candidate, good) : mergeCouncil(candidate, good);
 }
 
@@ -126,14 +146,7 @@ function validateCouncil(s, good) {
 }
 
 function validateOverview(s, good) {
-    // zpožděná replika jednoho souboru: top-level generated se posunul kvůli
-    // jiným zastupitelstvům, ale tento souhrn je starší než ten v good
-    for (const [z, g] of Object.entries(good.councils || {})) {
-        const c = s.councils[z];
-        if (c && genMs(c.generated) !== null && genMs(g.generated) !== null && genMs(c.generated) < genMs(g.generated)) {
-            return { outcome: 'older', reason: `council-older:${z}` };
-        }
-    }
+    // zpožděné repliky jednotlivých souhrnů řeší už mergeOverview (drží good)
     for (const [z, g] of Object.entries(good.councils || {})) {
         const c = s.councils[z];
         if (c && c.parties.length < g.parties.length) return reject('council-parties-fewer');
@@ -153,6 +166,8 @@ function validateOverview(s, good) {
  * relativní strukturální kontroly a regrese obsahu. `older` jde před kontroly
  * "méně stran/okrsků než good", protože zpožděná replika má přirozeně méně
  * okrsků a nesmí skončit jako rejected (stale + backoff).
+ * U přehledu se zpožděné souhrny řeší už v mergeOverview (drží se good), takže
+ * `older` tam z top-level generated nikdy nevznikne (sloučené max >= good).
  *
  * @param {object} merged  výsledek mergeCandidate
  * @param {object|null} good
@@ -160,6 +175,7 @@ function validateOverview(s, good) {
  * @returns {{ outcome: 'ok'|'older'|'rejected', reason?: string }}
  */
 export function validateCandidate(merged, good, ctx) {
+    assertCtx(ctx);
     const overview = !!merged.councils;
     const structural = structuralReason(merged, overview);
     if (structural) return reject(structural);

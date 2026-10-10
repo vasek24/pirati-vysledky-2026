@@ -126,7 +126,7 @@ describe('mergeCandidate — council', () => {
         const good = await build(routes());
         const cand = await build(nextRoutes({ 1: fxJson('precinct-1.json'), 2: fxJson('precinct-2.json') }));
         expect(cand.okrsky[3].votes).toBeNull();
-        const { merged, complete } = mergeCandidate(cand, good, 'council');
+        const { merged, complete } = mergeCandidate(cand, good, 'council', ctx());
         expect(complete).toBe(true);
         expect(merged.okrsky[3].votes).toBeNull();
         expect(merged.okrsky[1].votes).toEqual({ 1: 600, 2: 400 });
@@ -138,7 +138,7 @@ describe('mergeCandidate — council', () => {
         // precinct 1 file lost (404) in the candidate build
         const cand = await build(nextRoutes({ 2: fxJson('precinct-2.json'), 3: fxJson('precinct-3.json') }));
         expect(cand.okrsky[1].votes).toBeNull();
-        const { merged, complete } = mergeCandidate(cand, good, 'council');
+        const { merged, complete } = mergeCandidate(cand, good, 'council', ctx());
         expect(complete).toBe(true);
         expect(merged.okrsky[1].votes).toEqual(good.okrsky[1].votes);
         expect(cand.okrsky[1].votes).toBeNull(); // vstup se nemění
@@ -149,17 +149,29 @@ describe('mergeCandidate — council', () => {
         const good = await build(routes());
         const turnout = fxJson('turnout.json', (j) => { j.okrsky[0][1] = 501; }); // změněný řádek okrsku 1
         const cand = await build(routes({ turnout, precincts: { 2: fxJson('precinct-2.json') } }));
-        const { merged, complete } = mergeCandidate(cand, good, 'council');
+        const { merged, complete } = mergeCandidate(cand, good, 'council', ctx());
         expect(complete).toBe(false);
         expect(merged.okrsky[1].votes).toBeNull();
     });
 
-    it('is incomplete when a precinct that had data disappeared', async () => {
+    it('is incomplete for a present precinct with votes:null whose good votes cannot be copied', async () => {
+        const good = await build(routes());
+        // okrsek 1 přítomen s votes:null, ale řádek se liší (voličů 501) → nekopíruje se
+        const turnout = fxJson('turnout.json', (j) => { j.okrsky[0][1] = 501; });
+        const cand = await build(routes({ turnout, precincts: { 2: fxJson('precinct-2.json') } }));
+        expect(cand.okrsky[1].votes).toBeNull();
+        expect(validate(cand, good)).toEqual({ outcome: 'ok', complete: false });
+    });
+
+    it('a vanished precinct is neither merged back nor incomplete: it falls to precincts-fewer', async () => {
         const good = await build(routes());
         const turnout = fxJson('turnout.json', (j) => { j.okrsky.splice(1, 1); });
         const cand = await build(routes({ turnout }));
         expect(Object.keys(cand.okrsky)).toEqual(['1']);
-        expect(mergeCandidate(cand, good, 'council').complete).toBe(false);
+        const { merged, complete } = mergeCandidate(cand, good, 'council', ctx());
+        expect(complete).toBe(true);
+        expect(Object.keys(merged.okrsky)).toEqual(['1']);
+        expect(validate(cand, good)).toEqual({ outcome: 'rejected', reason: 'precincts-fewer', complete: true });
     });
 
     it('installs a cold partial candidate (no good snapshot): complete and ok', async () => {
@@ -177,10 +189,38 @@ describe('mergeCandidate — baseline context', () => {
         const { merged, complete } = mergeCandidate(cand, good, 'council', off);
         expect(complete).toBe(true);
         expect(merged).toBe(cand);
-        // bez ctx (nebo s platnou baseline) se hlasy z good doplní
-        expect(mergeCandidate(cand, good, 'council').merged.okrsky[1].votes).toEqual(good.okrsky[1].votes);
+        // s platnou baseline se hlasy z good doplní
         expect(mergeCandidate(cand, good, 'council', ctx()).merged.okrsky[1].votes).toEqual(good.okrsky[1].votes);
         expect(mergeCandidate(cand, good, 'council', ctx({ goodBase: 'https://drill.test' })).merged).toBe(cand);
+    });
+});
+
+describe('ctx is required and validated (fail closed)', () => {
+    const bad = [
+        ['missing', undefined],
+        ['goodRefreshedAt NaN', ctx({ goodRefreshedAt: NaN })],
+        ['goodRefreshedAt undefined', ctx({ goodRefreshedAt: undefined })],
+        ['pollsClose string', ctx({ pollsClose: '2026-10-10T14:00:00+02:00' })],
+        ['base not a string', ctx({ base: 1 })],
+        ['goodBase undefined', ctx({ goodBase: undefined })],
+    ];
+
+    it.each(bad)('mergeCandidate with a non-null good throws TypeError (%s)', async (_label, badCtx) => {
+        const good = await build(routes());
+        const cand = await build(routes());
+        expect(() => mergeCandidate(cand, good, 'council', badCtx)).toThrow(TypeError);
+        expect(() => mergeCandidate(cand, good, 'overview', badCtx)).toThrow(TypeError);
+    });
+
+    it.each(bad)('validateCandidate throws TypeError (%s)', async (_label, badCtx) => {
+        const cand = await build(routes());
+        expect(() => validateCandidate(cand, null, badCtx)).toThrow(TypeError);
+        expect(() => validateCandidate(cand, cand, badCtx)).toThrow(TypeError);
+    });
+
+    it('mergeCandidate without a good snapshot needs no ctx', async () => {
+        const cand = await build(routes());
+        expect(mergeCandidate(cand, null, 'council')).toEqual({ merged: cand, complete: true });
     });
 });
 
@@ -192,7 +232,7 @@ describe('mergeCandidate — overview', () => {
         const cand = await buildOverview({ [ovPath(500097)]: fxJson('results-next.json') });
         expect(Object.keys(cand.councils)).toEqual(['500097']);
         expect(cand.missing).toBe(1);
-        const { merged, complete } = mergeCandidate(cand, good, 'overview');
+        const { merged, complete } = mergeCandidate(cand, good, 'overview', ctx());
         expect(complete).toBe(true);
         expect(Object.keys(merged.councils).sort()).toEqual(['500054', '500097']);
         expect(merged.councils[500054]).toEqual(good.councils[500054]);
@@ -206,7 +246,7 @@ describe('mergeCandidate — overview', () => {
         const good = await buildOverview(ovRoutes());
         const cand = await buildOverview(ovRoutes(fxJson('results-next.json'), fxJson('raw-empty-object.json')));
         expect(cand.councils[500054].parties).toEqual([]);
-        expect(mergeCandidate(cand, good, 'overview').complete).toBe(false);
+        expect(mergeCandidate(cand, good, 'overview', ctx()).complete).toBe(false);
     });
 
     it('returns the candidate as-is and complete without a good snapshot', async () => {
@@ -319,7 +359,7 @@ describe('feed failures never reach the validator', () => {
         const good = await buildOverview(ovRoutes());
         const cand = await buildOverview(ovRoutes(fxJson('results-next.json'), fx('raw-html.txt')));
         expect(Object.keys(cand.councils)).toEqual(['500097']);
-        const { merged, complete } = mergeCandidate(cand, good, 'overview');
+        const { merged, complete } = mergeCandidate(cand, good, 'overview', ctx());
         expect(complete).toBe(true);
         expect(merged.councils[500054]).toEqual(good.councils[500054]);
     });
@@ -354,7 +394,8 @@ describe('validateCandidate — baseline (C4)', () => {
     it('same pair with good refreshed after 14:00 is rejected (monotonic checks on)', async () => {
         const good = await build(routes({ results: testData(), turnout: testTurnout() }));
         const cand = await build(realReset());
-        expect(validate(cand, good, { goodRefreshedAt: POLLS_CLOSE + 1 }).outcome).toBe('rejected');
+        expect(validate(cand, good, { goodRefreshedAt: POLLS_CLOSE + 1 }))
+            .toEqual({ outcome: 'rejected', reason: 'precincts-fewer', complete: true });
     });
 
     it('monotonic checks are off when the base differs (ČSÚ test data), even after 14:00', async () => {
@@ -457,17 +498,45 @@ describe('validateCandidate — overview', () => {
         expect(validate(cand, good, {}, 'overview')).toEqual({ outcome: 'ok', complete: true });
     });
 
-    it('top-level generated older than good → older', async () => {
+    it('an all-lagging candidate is merged back to good: ok, nothing regresses, never "older"', async () => {
         const good = await buildOverview(ovRoutes(fxJson('results-next.json'), fxJson('results-next.json')));
         const cand = await buildOverview(ovRoutes());
-        expect(validate(cand, good, {}, 'overview').outcome).toBe('older');
+        const { merged } = mergeCandidate(cand, good, 'overview', ctx());
+        expect(merged.councils).toEqual(good.councils);
+        expect(merged.precincts).toEqual(good.precincts);
+        expect(merged.generated).toBe(good.generated);
+        expect(validate(cand, good, {}, 'overview')).toEqual({ outcome: 'ok', complete: true });
     });
 
-    it('one lagging council replica (older than its good summary) → older', async () => {
-        const good = await buildOverview(ovRoutes(fxJson('results-next.json'), fxJson('results-next.json')));
+    it('one lagging council replica keeps good for that council while the advancing one is published', async () => {
+        const good = await buildOverview(ovRoutes(fxJson('results.json'), fxJson('results-next.json')));
+        // 500097 postoupil (15:01), 500054 dorazil ze zpožděné repliky (15:00 < 15:01 v good)
         const cand = await buildOverview(ovRoutes(fxJson('results-next.json'), fxJson('results.json')));
-        expect(cand.generated).toBe(good.generated); // nejnovější souhrn je stejný
-        expect(validate(cand, good, {}, 'overview').outcome).toBe('older');
+        expect(cand.generated).toBe(good.generated);
+        const { merged, complete } = mergeCandidate(cand, good, 'overview', ctx());
+        expect(complete).toBe(true);
+        expect(merged.councils[500054]).toEqual(good.councils[500054]);
+        expect(merged.councils[500097]).toEqual(cand.councils[500097]);
+        expect(merged.councils[500097].counted).toBe(3);
+        expect(merged.precincts.counted).toBe(6); // 3 + 3, ne 3 + 2
+        expect(validate(cand, good, {}, 'overview')).toEqual({ outcome: 'ok', complete: true });
+    });
+
+    it('a merge that copied councils from good cannot declare official earlier than the candidate', async () => {
+        const final = () => fxJson('results-next.json', (j) => {
+            j.zvoleno = true;
+            j.vysledky[0][7] = 3;
+            j.vysledky[1][7] = 2;
+        });
+        const good = await buildOverview(ovRoutes(final(), final()));
+        expect(good.official).toBe(true);
+        // 500054 chybí v kandidátovi → kandidát ještě není official
+        const cand = await buildOverview({ [ovPath(500097)]: final() });
+        expect(cand.official).toBe(false);
+        const { merged } = mergeCandidate(cand, good, 'overview', ctx());
+        expect(Object.keys(merged.councils)).toHaveLength(2);
+        expect(merged.official).toBe(false);
+        expect(merged.phase).not.toBe('final');
     });
 
     it('a council counted decreased with advancing generated → rejected counted-decreased', async () => {
