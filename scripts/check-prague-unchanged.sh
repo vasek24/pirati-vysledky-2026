@@ -66,6 +66,9 @@ trap cleanup EXIT
 work=$tmp/work # jedna cesta pro obě strany: cesty ve výstupech (sourcemapy) se nesmí lišit
 
 hash_dir() { (cd "$1" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 -r sha256sum); }
+# wrangler --outdir: README.md a *.map nesou cestu výstupního adresáře (liší se mezi běhy);
+# hashuje se jen spustitelný kód workeru.
+hash_worker() { (cd "$1" && find . -type f ! -name README.md ! -name '*.map' -print0 | LC_ALL=C sort -z | xargs -0 -r sha256sum); }
 
 step() { # step <label> <cmd>   (běží v $work; log do $tmp, na chybě poslední řádky)
   local label=$1 cmd=$2 t0=$SECONDS log
@@ -89,7 +92,7 @@ build_side() { # build_side <rev> <name> <record-file> <determinism 0|1>
   if [[ $SKIP_WORKER != 1 ]]; then
     export WORKER_OUT=$tmp/worker-$name
     step "$name worker dry-run" "$WORKER_CMD"
-    hash_dir "$WORKER_OUT" >"$tmp/$name.worker"
+    hash_worker "$WORKER_OUT" >"$tmp/$name.worker"
   fi
   if [[ $det == 1 ]]; then
     step "$name build (determinism re-run)" "$BUILD_CMD"
@@ -101,7 +104,7 @@ build_side() { # build_side <rev> <name> <record-file> <determinism 0|1>
     if [[ $SKIP_WORKER != 1 ]]; then
       export WORKER_OUT=$tmp/worker-$name-2
       step "$name worker dry-run (determinism re-run)" "$WORKER_CMD"
-      hash_dir "$WORKER_OUT" >"$tmp/$name.worker2"
+      hash_worker "$WORKER_OUT" >"$tmp/$name.worker2"
       if ! diff -u "$tmp/$name.worker" "$tmp/$name.worker2" >"$tmp/det.diff"; then
         cat "$tmp/det.diff" >&2
         die "wrangler dry-run output is not deterministic (same tree, two runs) — the guard cannot be trusted" 2
