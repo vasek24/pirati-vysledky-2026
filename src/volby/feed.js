@@ -168,6 +168,7 @@ export function createJsonCache({
     const files = new Map(); // path -> { etag, lastModified, json, checkedAt }
     const failures = new Map(); // path -> { at, error } — po chybě chvíli nezkoušet
     const fetching = new Map(); // path -> běžící dotaz (souběžná volání ho sdílí)
+    const versions = new Map(); // path -> počet HTTP 200 odpovědí (304 ani paměť se nepočítá)
 
     async function getJson(path, { maxAgeMs = minIntervalMs } = {}) {
         const entry = files.get(path);
@@ -209,6 +210,7 @@ export function createJsonCache({
                 json,
                 checkedAt: now,
             });
+            versions.set(path, (versions.get(path) || 0) + 1);
             failures.delete(path);
             return json;
         } catch (error) {
@@ -217,6 +219,11 @@ export function createJsonCache({
         }
     }
 
+    // Zapomene soubor: příští getJson(path) stahuje hned a bez If-None-Match
+    getJson.invalidate = (path) => {
+        files.delete(path);
+    };
+    getJson.version = (path) => versions.get(path) || 0;
     return getJson;
 }
 
@@ -272,7 +279,8 @@ export function createKvFeed({
         return job;
     }
 
-    async function build() {
+    // Vnitřní build: hodí chybu při jakémkoli selhání, `last` nemění
+    async function buildSnapshot() {
         const [resultsJson, turnoutJson] = await Promise.all([
             getJson(PATHS.results),
             getJson(PATHS.turnout),
@@ -314,15 +322,29 @@ export function createKvFeed({
             },
             okrsky,
         };
-        last = snapshot;
         return snapshot;
+    }
+
+    // Pro obnovu v Durable Objectu: na rozdíl od snapshot() selhání nepřekryje
+    // starými daty, `last` nemění a výsledek nese fetchId (mění se jen novým HTTP 200)
+    async function build() {
+        const snap = await buildSnapshot();
+        return { ...snap, fetchId: `${getJson.version(PATHS.results)}.${getJson.version(PATHS.turnout)}` };
+    }
+
+    function invalidate() {
+        getJson.invalidate(PATHS.results);
+        getJson.invalidate(PATHS.turnout);
     }
 
     // Vrací { snapshot, stale, error }. Souběžná volání sdílí jeden běh.
     // Když volby.gov.cz selže, vrátí poslední úspěšný snapshot jako stale.
     async function snapshot() {
         if (!inflight) {
-            inflight = build().finally(() => {
+            inflight = buildSnapshot().then((snap) => {
+                last = snap;
+                return snap;
+            }).finally(() => {
                 inflight = null;
             });
         }
@@ -334,5 +356,5 @@ export function createKvFeed({
         }
     }
 
-    return { snapshot };
+    return { snapshot, build, invalidate };
 }
