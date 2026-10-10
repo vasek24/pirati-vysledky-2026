@@ -12,8 +12,8 @@ export const CHANGELOG = [
         date: '2026-10-10',
         title: 'Záložní kopie pro volební večer',
         items: [
-            { type: 'new', text: 'Živá data se obnovují sama, bez ručního obnovování; nová hlavička ukazuje čas dat ČSÚ, jejich stáří a odpočet do další kontroly' },
-            { type: 'improved', text: 'Dotazy na server jsou pomalejší a rozprostřené v čase, ať kopie unese zátěž volebního večera' },
+            { type: 'new', text: 'Nová hlavička ukazuje čas dat ČSÚ, jejich stáří a odpočet do další kontroly' },
+            { type: 'improved', text: 'Dotazy na server jsou méně časté a rozprostřené v čase, takže stránka snese víc diváků' },
             { type: 'improved', text: 'Během voleb se stránka sama nenačítá znovu — nová verze se nabídne tlačítkem „Nová verze — obnovit“' },
             { type: 'new', text: 'Nově sečtené okrsky a změny výsledků jsou zvýrazněné, včetně šipek nahoru a dolů' },
             { type: 'new', text: 'Je uveden kontakt na správce této kopie' },

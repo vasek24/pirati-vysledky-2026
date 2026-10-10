@@ -273,7 +273,9 @@ function OtherRow({ council, summary, lists, fresh }) {
 function Hero({ snapshot, live, lists }) {
     // odpočet tiká jen v hlavičce — ne celá stránka (desítky karet) každou vteřinu
     const now = useNow(1000);
-    const phase = snapshot?.phase || (now < POLLS_CLOSE ? 'pre' : 'waiting');
+    // čas serveru = hodiny klienta + skew (stejně jako v ElectionHeader)
+    const nowC = now + (live.skew || 0);
+    const phase = snapshot?.phase || (nowC < POLLS_CLOSE ? 'pre' : 'waiting');
     const s = snapshot?.councils || {};
     const mag = s[MAGISTRAT.zastup];
     const magList = lists[MAGISTRAT.zastup]?.[MAGISTRAT.pirates];
@@ -287,9 +289,8 @@ function Hero({ snapshot, live, lists }) {
     const p = snapshot?.precincts;
     const dataTime = DEMO ? snapshot?.fetchedAt : parseCsuTime(snapshot?.generated);
 
-    // čerstvost dat: čas serveru = hodiny klienta + skew (stejně jako v ElectionHeader)
+    // čerstvost dat
     const online = useOnline();
-    const nowC = now + (live.skew || 0);
     // Worker nevrací nic použitelného: chyba a žádný snapshot
     const unavailable = !snapshot && live.status === 'error';
     const pillState = unavailable
@@ -300,7 +301,7 @@ function Hero({ snapshot, live, lists }) {
     const nextLabel = live.fetching ? null : nextCheckLabel(live.nextAt, nowC);
 
     let line;
-    if (phase === 'pre') line = <>Místnosti se zavírají v sobotu 10. 10. ve 14:00 — za <b className="text-[#FEC900] whitespace-nowrap">{countdown(POLLS_CLOSE - now)}</b></>;
+    if (phase === 'pre') line = <>Místnosti se zavírají v sobotu 10. 10. ve 14:00 — za <b className="text-[#FEC900] whitespace-nowrap">{countdown(POLLS_CLOSE - nowC)}</b></>;
     else if (phase === 'waiting' || !p?.counted) line = 'Volby skončily — čekáme na první okrskové komise';
     else line = <>Sečteno <b className="text-white">{fmtInt(p.counted)}</b> z {fmtInt(p.total)} okrsků v MČ ({fmtPct(p.pct)})</>;
 
@@ -311,7 +312,7 @@ function Hero({ snapshot, live, lists }) {
                     <img src="/brand/logo-full-white.svg" alt="Česká pirátská strana" className="h-8 md:h-10" />
                     <div className="ml-auto flex items-center gap-2">
                         <StatusPill phase={phase} demo={DEMO} stale={live.stale} state={pillState} />
-                        <RefreshButton live={live} now={now} demo={DEMO} showLabel="" />
+                        <RefreshButton live={live} now={now} demo={DEMO} showLabel="hidden" />
                     </div>
                 </div>
 
