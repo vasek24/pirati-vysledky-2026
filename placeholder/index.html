@@ -58,9 +58,9 @@ footer a:focus-visible{outline:3px solid var(--y);outline-offset:2px}
       <!-- STAV: připravujeme (mesta.dg12.cz). Zapnutí = značku div (začátek i konec) změnit na a s href=mesta.dg12.cz v uvozovkách (https), odebrat aria-disabled, data-live="true". -->
       <li><div class="card" data-live="false" aria-disabled="true">
         <b>Města</b><span>Další města — připravujeme</span><small>mesta.dg12.cz</small></div></li>
-      <!-- STAV: připravujeme (senat.dg12.cz). Zapnutí stejně jako u Měst. -->
-      <li><div class="card" data-live="false" aria-disabled="true">
-        <b>Senát</b><span>Senátní volby — připravujeme</span><small>senat.dg12.cz</small></div></li>
+      <!-- STAV: aktivní (senat.dg12.cz). Vypnutí = tuto kartu přepsat na div s aria-disabled jako u Měst. -->
+      <li><a class="card" data-live="true" href="https://senat.dg12.cz">
+        <b>Senát</b><span>Senátní volby — kandidatury Pirátů</span><small>senat.dg12.cz</small></a></li>
     </ul>
   </nav>
 </main>
