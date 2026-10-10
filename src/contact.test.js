@@ -53,5 +53,8 @@ describe('kontakt na správce kopie', () => {
             expect(code).toContain('Záložní kopie originálu jsemfast/pirati-vysledky-2026');
             expect(code).toContain('tel:+420777954389');
         });
+        it(`${file} odkazuje zpět na rozcestník volby.dg12.cz`, () => {
+            expect(read(file)).toContain('href="https://volby.dg12.cz"');
+        });
     }
 });
