@@ -326,7 +326,7 @@ export function createRefresher({
             return {
                 status: 503,
                 body: UNAVAILABLE,
-                meta: { refreshedAt: null, nextRefreshAt, servedAt: now(), stale: true, complete: false, refreshing: !!refreshPromise },
+                meta: { refreshedAt: null, nextRefreshAt, servedAt: now(), stale: true, complete: false, refreshing: !!refreshPromise, phase: phaseOf(null, now()) },
             };
         }
         const meta = {
@@ -336,6 +336,9 @@ export function createRefresher({
             stale,
             complete: true,
             refreshing: !!refreshPromise,
+            // fáze pro Worker (strop TTL v Cache API); počítá se při každé odpovědi,
+            // protože se mění i bez obnovy (14:00: pre → waiting)
+            phase: phaseOf(good.snapshot, now()),
         };
         const body = `{"refreshedAt":${meta.refreshedAt},"nextRefreshAt":${meta.nextRefreshAt},"servedAt":${meta.servedAt},`
             + `"stale":${meta.stale},"complete":${meta.complete},"refreshing":${meta.refreshing},${good.str.slice(1)}`;

@@ -200,6 +200,30 @@ describe('request path', () => {
         expect(res.body.startsWith('{"refreshedAt":')).toBe(true);
     });
 
+    it('meta.phase = injected phaseOf(snapshot, now) at serving time, incl. the 503 without snapshot', async () => {
+        const seen = [];
+        const phaseOfFn = (snap, now) => {
+            seen.push([snap ? snap.precincts.counted : null, now]);
+            return snap ? 'final' : 'waiting';
+        };
+        const ok = setup({ phaseOfFn });
+        expect((await ok.r.get()).meta.phase).toBe('final');
+        expect(seen.at(-1)).toEqual([10, T0]);
+        const cold = setup({ phaseOfFn, build: async () => { throw new Error('boom'); } });
+        const res = await cold.r.get();
+        expect(res.status).toBe(503);
+        expect(res.meta.phase).toBe('waiting');
+        expect(seen.at(-1)).toEqual([null, T0]);
+    });
+
+    it('meta.phase is re-evaluated per response (not frozen at install)', async () => {
+        let phase = 'counting';
+        const { r } = setup({ phaseOfFn: () => phase });
+        expect((await r.get()).meta.phase).toBe('counting');
+        phase = 'final';
+        expect((await r.get()).meta.phase).toBe('final');
+    });
+
     it('cold with failing build → 503 {"error":"unavailable"}, then backoff without new build', async () => {
         const { r, feed } = setup({ build: async () => { throw new Error('boom'); }, random: () => 1 });
         const res = await r.get();
