@@ -15,5 +15,6 @@ Worker `pirati-senat-zaloha` (production, custom domain `senat.dg12.cz`, **not d
 
 | 2026-10-10 14:08 | **production** `pirati-senat-zaloha` | `b7911dad-2427-4171-bc6c-13a908578f30` | none (first deploy) | 201e3ec | custom domain `senat.dg12.cz` attached, cron `* * * * *`; owner go-ahead given in session |
 | 2026-10-10 14:10 | front door `pirati-rozcestnik` (volby.dg12.cz) | `71f90bee-4c70-4fec-b0db-dc41f33bf2a4` | `0ef0861e-5e97-4af5-82e6-9ef7cfe428b1` | `senate/front-door` d13b2ec | Senát card activated (link to senat.dg12.cz); deployed from an export of that branch, not yet merged to main (PR) |
+| 2026-10-10 14:17 | front door `pirati-rozcestnik` | `2848dd53-4442-4a53-b5f7-27934141285a` | `7aabef86-bcd6-4370-8e07-316595b8bee5` (other workstream's deploy from main at 14:09 had reverted the Senát card) | `senate/front-door-live` (on origin/main b0c6262) | Praha + Města + Senát cards live; PR open, not merged |
 
 Rollback production: `cd cloudflare-senat && npx wrangler rollback <previous id> --env=""` (none before the first deploy: to take the page down remove the custom domain / disable the Worker). Front door rollback: `wrangler rollback 0ef0861e-5e97-4af5-82e6-9ef7cfe428b1 -c wrangler.placeholder.jsonc` from `cloudflare/`.
