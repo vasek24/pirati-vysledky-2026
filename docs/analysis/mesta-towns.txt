@@ -1,0 +1,15 @@
+# Towns for the "mesta" product (owner-supplied list, 2026-10-10). Prague districts are NOT included (they are in the Prague tracker).
+# Source note from the owner: the Pirate directory includes individual Pirate candidates on other parties' lists; the number of towns is NOT the number of Pirate-branded lists. Some towns may have no Pirate list at all.
+Central Bohemia: Benešov · Brandýs nad Labem–Stará Boleslav · Čelákovice · Kladno · Kolín · Kralupy nad Vltavou · Kutná Hora · Mělník · Mladá Boleslav · Neratovice · Příbram · Říčany · Roztoky · Slaný · Vlašim
+South Bohemia: České Budějovice · Jindřichův Hradec · Písek · Prachatice · Tábor
+Plzeň Region: Domažlice · Plzeň · Rokycany · Sušice
+Karlovy Vary Region: Cheb · Karlovy Vary · Mariánské Lázně · Ostrov · Sokolov
+Ústí nad Labem Region: Bílina · Děčín · Chomutov · Jirkov · Kadaň · Krupka · Litoměřice · Litvínov · Louny · Most · Roudnice nad Labem · Teplice · Ústí nad Labem · Varnsdorf · Žatec
+Liberec Region: Česká Lípa · Jablonec nad Nisou · Jičín · Liberec · Turnov
+Hradec Králové Region: Dvůr Králové nad Labem · Hradec Králové · Jaroměř · Náchod · Rychnov nad Kněžnou · Trutnov
+Pardubice Region: Česká Třebová · Chrudim · Pardubice
+Vysočina Region: Havlíčkův Brod · Humpolec · Jihlava · Nové Město na Moravě · Pelhřimov · Třebíč
+South Moravia: Blansko · Brno · Břeclav · Znojmo
+Olomouc Region: Olomouc · Prostějov · Přerov · Uničov
+Moravian-Silesian Region: Frýdek-Místek · Havířov · Hlučín · Karviná · Kopřivnice · Nový Jičín · Opava · Orlová · Ostrava
+Zlín Region: Holešov · Kroměříž · Otrokovice · Rožnov pod Radhoštěm · Uherské Hradiště · Uherský Brod · Zlín
