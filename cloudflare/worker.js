@@ -1,29 +1,32 @@
 // Cloudflare Worker: statika z ../dist (assets) + /api/volby, /api/prehled,
 // /api/bug (nahlášení chyby → GitHub issue) a /hlaseni/* (screenshoty z KV).
 //
-// Serverové funkce z api/ běží BEZE ZMĚNY uvnitř Durable Objectu — jedna
-// instance na zastupitelstvo (volby:<kód>) a jedna na přehled (prehled).
-// Stav feedu (ETagy, sečtené okrsky) je tak jen jeden na celý svět, stejně
-// jako v jedné instanci Vercelu, a volby.gov.cz dostane stejnou zátěž bez
-// ohledu na počet datacenter. DO navíc nechá doběhnout okrsky stahované na
-// pozadí (bezstavový Worker by je po odeslání odpovědi zrušil).
+// Jedna instance Durable Objectu na zastupitelstvo (volby?z=<kód>) a jedna
+// na přehled (prehled) je JEDINÝ obnovovatel dat: drží poslední ověřený
+// snapshot (cloudflare/refresh.js), obsluhuje ho okamžitě a na pozadí ho
+// obnovuje z volby.gov.cz (jedno stahování na celý svět, bez ohledu na počet
+// datacenter a diváků). Serverové funkce z api/ zůstávají jen pro Vercel.
 //
-// Před DO je Cache API (per datacentrum) s TTL podle s-maxage z odpovědi
-// funkce — do DO jde zhruba jeden dotaz za 30 s na datacentrum
-// a zastupitelstvo. Hlavička x-cache: HIT/MISS slouží k ověření (obdoba
-// x-vercel-cache).
+// Před DO je Cache API (per datacentrum) s TTL 1–5 s (a v pre/final fázi
+// 300/600 s) podle nextRefreshAt (cloudflare/edge.js), k tomu 10min záložní
+// kopie, kterou Worker vydá, když DO selže. Hlavička x-cache:
+// HIT/MISS/LASTRESORT/BYPASS slouží k ověření (obdoba x-vercel-cache).
 //
 // Návštěvnost: anonymní počty do Workers Analytics Engine (viz track()) —
 // bez IP, cookies a jakýchkoli identifikátorů.
 import { DurableObject } from 'cloudflare:workers';
 import volby from '../api/volby.js';
-import prehled from '../api/prehled.js';
 import { createBugHandler } from '../api/bug.js';
-import { councilByZastup } from '../src/councils.js';
-import { FIRST_CLASS_KEYS } from './feedClasses.js';
+import { KV_BASE_URL, councilByZastup } from '../src/councils.js';
+import { LAST_RESORT_TTL, cacheControlFor, edgeTtl, lastResortRequest, markStale } from './edge.js';
+import { FIRST_CLASS_KEYS, isFirstClass } from './feedClasses.js';
+import { buildFeed, feedKind, makeLog, phaseOfSnapshot } from './feedWiring.js';
+import { createRefresher } from './refresh.js';
 import { feedTarget, runWarmup } from './warmup.js';
 
-const HANDLERS = { volby, prehled };
+// jen pro 400 na neznámé zastupitelstvo (DO se nezakládá) — feedy samotné
+// běží v Feed DO přes refresher
+const HANDLERS = { volby };
 // stejné jako rewrite ve vercel.json
 const APP_ROUTE = /^\/(praha|praha-[a-z0-9-]+)$/;
 const JSON_TYPE = 'application/json; charset=utf-8';
@@ -83,8 +86,49 @@ function track(env, request, kind, slug) {
 }
 
 export class Feed extends DurableObject {
-    run(name, url) {
-        return runHandler(name, url);
+    // Odpověď feedu ze stored snapshotu: { status, body, cacheControl, stale, phase }.
+    // `body` je hotový JSON řetězec z refresheru (neparsuje se ani nestringifikuje
+    // znovu). Refresher a feed se stavějí líně při prvním volání podle `name`/`url`
+    // z RPC (jméno DO i klíč feedu odvozuje callFeed z téhož feedTarget) a žijí
+    // do vyhození instance; rehydrate z ctx.storage je v refresheru single-flight.
+    //
+    // Obnova na pozadí přežije odeslání odpovědi, protože DO zůstává živý,
+    // dokud má rozpracované I/O (stahování z ČSÚ); ctx.waitUntil je v DO no-op
+    // (L14) — nepřepisovat ho na něco „funkčního".
+    async run(name, url) {
+        const key = name === 'prehled' ? 'prehled' : new URL(url, 'http://x').searchParams.get('z');
+        if (!this.refresher) {
+            this.feedKey = key;
+            this.refresher = this.makeRefresher(key);
+        } else if (key !== this.feedKey) {
+            // jedna DO instance = jeden feed; jiný klíč by otrávil cizí snapshot
+            throw new Error(`feed key mismatch: ${key} vs ${this.feedKey}`);
+        }
+        const { status, body, meta } = await this.refresher.get();
+        const ok = status === 200;
+        return {
+            status,
+            body,
+            cacheControl: ok ? cacheControlFor(edgeTtl({ nextRefreshAt: meta.nextRefreshAt, now: Date.now(), stale: meta.stale, phase: meta.phase })) : 'no-store',
+            stale: meta.stale,
+            phase: meta.phase,
+        };
+    }
+
+    makeRefresher(key) {
+        const base = this.env.CSU_BASE || KV_BASE_URL;
+        return createRefresher({
+            now: Date.now,
+            random: Math.random,
+            storage: { get: (k) => this.ctx.storage.get(k), put: (o) => this.ctx.storage.put(o) },
+            feed: buildFeed(key, this.env),
+            kind: feedKind(key),
+            phaseOf: phaseOfSnapshot,
+            firstClass: isFirstClass(key),
+            base,
+            log: makeLog(console),
+            waitUntil: (p) => this.ctx.waitUntil(p),
+        });
     }
 
     // Nahlášení chyby — jeden DO „bug" pro celý svět, takže limit hlášení na
@@ -106,6 +150,7 @@ export class Feed extends DurableObject {
 
 // JEDINÝ vstup do Durable Objectu pro feedy (HTTP route i cron): klíč feedu =
 // kód zastupitelstva nebo 'prehled'. Feed nemá fetch(), volá se RPC run().
+// Vrací { status, body, cacheControl, stale, phase }.
 function callFeed(env, key) {
     const { name, path, doName } = feedTarget(key);
     const stub = env.FEED.get(env.FEED.idFromName(doName), { locationHint: 'weur' });
@@ -114,11 +159,31 @@ function callFeed(env, key) {
 
 const sMaxAge = (cacheControl) => Number(/s-maxage=(\d+)/.exec(cacheControl || '')?.[1]) || 0;
 
+// JEDINÝ výstup odpovědí API (HIT, MISS, LASTRESORT, 503): x-server-now je
+// čas serveru pro korekci hodin klienta
 function reply(request, { status, headers, body }, cacheState) {
     return new Response(request.method === 'HEAD' ? null : body, {
         status,
-        headers: { ...headers, 'x-cache': cacheState },
+        headers: { ...headers, 'x-cache': cacheState, 'x-server-now': String(Date.now()) },
     });
+}
+
+const unavailable = () => ({
+    status: 503,
+    headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
+    body: JSON.stringify({ error: 'unavailable' }),
+});
+
+// DO selhal (výjimka nebo 5xx): poslední dobrá odpověď z 10min kopie jako
+// stale:true, jinak 503 JSON. Nic z toho se nevkládá do hlavní cache.
+async function lastResort(request, cache, lastResortKey) {
+    const copy = await cache.match(lastResortKey).catch(() => null);
+    if (!copy) return reply(request, unavailable(), 'MISS');
+    return reply(request, {
+        status: 200,
+        headers: { 'content-type': JSON_TYPE, 'cache-control': 'public, max-age=0, s-maxage=5' },
+        body: markStale(await copy.text()),
+    }, 'LASTRESORT');
 }
 
 async function api(request, env, ctx, url) {
@@ -145,6 +210,7 @@ async function api(request, env, ctx, url) {
     const { path } = feedTarget(key);
     const cache = caches.default;
     const cacheKey = new Request(new URL(path, url.origin));
+    const lastResortKey = lastResortRequest(cacheKey.url);
     const hit = await cache.match(cacheKey);
     if (hit) {
         const headers = Object.fromEntries(hit.headers);
@@ -153,35 +219,39 @@ async function api(request, env, ctx, url) {
         return reply(request, { status: hit.status, headers, body: hit.body }, 'HIT');
     }
 
-    let out;
+    let out = null;
     try {
         out = await callFeed(env, key);
     } catch (error) {
-        // klient po 503 nechá poslední snapshot a znovu zkouší náš server;
-        // no-store, aby se chyba nikdy neusadila v cache
         console.warn('feed-failed', key, error?.message || error);
-        out = {
-            status: 503,
-            headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
-            body: JSON.stringify({ error: 'unavailable' }),
-        };
     }
+    // klient po 503 nechá poslední snapshot a znovu zkouší náš server; 5xx se
+    // nikdy necachuje
+    if (!out || out.status >= 500) return lastResort(request, cache, lastResortKey);
 
-    // Cache API nepodporuje stale-while-revalidate a s-maxage ani nemusí
-    // brát přednostně — do cache jde explicitní max-age, klient dostane
-    // původní hlavičku funkce
-    const ttl = sMaxAge(out.headers['cache-control']);
+    const headers = { 'content-type': JSON_TYPE, 'cache-control': out.cacheControl };
+    const ttl = sMaxAge(out.cacheControl);
     if (out.status === 200 && ttl > 0) {
+        // Cache API bere TTL spolehlivě z max-age, proto stejná hodnota i tam;
+        // klient dostane původní hlavičku z x-client-cache-control (HIT cesta)
         ctx.waitUntil(cache.put(cacheKey, new Response(out.body, {
             status: 200,
             headers: {
-                ...out.headers,
-                'cache-control': `public, max-age=${ttl}`,
-                'x-client-cache-control': out.headers['cache-control'],
+                'content-type': JSON_TYPE,
+                'cache-control': `public, max-age=${ttl}, s-maxage=${ttl}`,
+                'x-client-cache-control': out.cacheControl,
+            },
+        })));
+        // 10min záložní kopie pod samostatným klíčem (C2: fragment by hlavní klíč přepsal)
+        ctx.waitUntil(cache.put(lastResortKey, new Response(out.body, {
+            status: 200,
+            headers: {
+                'content-type': JSON_TYPE,
+                'cache-control': `public, max-age=${LAST_RESORT_TTL}, s-maxage=${LAST_RESORT_TTL}`,
             },
         })));
     }
-    return reply(request, out, 'MISS');
+    return reply(request, { status: out.status, headers, body: out.body }, 'MISS');
 }
 
 async function bug(request, env, url) {
@@ -236,7 +306,9 @@ export default {
     },
 
     // Cron každou minutu: udržuje první třídu feedů (feedClasses.js) čerstvou
-    // bez diváků. Nikdy nevyhazuje — selhání jen zaloguje runWarmup.
+    // bez diváků. Nikdy nevyhazuje — selhání jen zaloguje runWarmup (úspěch =
+    // status 200 z DO). Vypršení 15 s lhůty RPC nezruší práci v DO: obnova tam
+    // běží dál a výsledek se uloží (jen cron na ni přestane čekat).
     async scheduled(controller, env) {
         await runWarmup(FIRST_CLASS_KEYS, (key) => callFeed(env, key), { concurrency: 4, timeoutMs: 15000 });
     },
