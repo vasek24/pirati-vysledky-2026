@@ -27,7 +27,7 @@ Nikdy nenasazovat zkušební/falešný `CSU_BASE` na `pirati-volby-zaloha`; dril
 cd cloudflare && npx wrangler deployments list
 npx wrangler rollback <version-id>
 ```
-Verze: produkce 2026-10-10 Phase 1a `a6495d68-e972-4127-b1d3-9826817d18c9`; staging `5e68248d-52ea-4c2b-b7c8-7f018648ce00`.
+Verze: produkce Phase 1a bez domény `a6495d68-e972-4127-b1d3-9826817d18c9`; produkce Phase 1a + doména volby.dg12.cz (2026-10-10 ~10:14) `15a89382-4b67-468d-9c7c-fcb90ffec3a3`; staging `5e68248d-52ea-4c2b-b7c8-7f018648ce00`.
 
 ## Kontroly po nasazení
 - `curl -s -o /dev/null -w "%{http_code}\n" <URL>/version.json` → 200

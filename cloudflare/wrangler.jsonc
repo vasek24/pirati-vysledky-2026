@@ -22,8 +22,8 @@
     "bindings": [{ "name": "FEED", "class_name": "Feed" }]
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Feed"] }],
-  // Vlastní doména (zatím běží jen na workers.dev)
-  // "routes": [{ "pattern": "volby.example.cz", "custom_domain": true }],
+  // Vlastní doména (jen produkce; staging má routes explicitně prázdné)
+  "routes": [{ "pattern": "volby.dg12.cz", "custom_domain": true }],
   "workers_dev": true,
   "observability": { "enabled": true },
   // Warm-up první třídy feedů (feedClasses.js) — jen produkce, ne staging
@@ -38,6 +38,7 @@
       "name": "pirati-volby-zaloha-staging",
       // triggers se dědí z produkce — prázdný seznam vypne cron na stagingu
       "triggers": { "crons": [] },
+      "routes": [],
       "workers_dev": true,
       "assets": {
         "directory": "../dist",
