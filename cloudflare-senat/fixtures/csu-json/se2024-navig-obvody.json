@@ -1,0 +1,251 @@
+{
+  "id" : "20240920/navig/obvody.json",
+  "param" : {"typ":"NAVIG_OBVODY","datumvoleb":20240920},
+  "generovano" : "2026-09-14T10:14:38",
+  "popis" : "Seznam senátních obvodů",
+  "obvody" : [
+  {
+  "obvod" : 2,
+  "nazevObvodu" : "Sokolov",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 1,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : false
+},
+  {
+  "obvod" : 5,
+  "nazevObvodu" : "Chomutov",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 8,
+  "nazevObvodu" : "Rokycany",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 11,
+  "nazevObvodu" : "Domažlice",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 14,
+  "nazevObvodu" : "České Budějovice",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 17,
+  "nazevObvodu" : "Praha 12",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 1,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : false
+},
+  {
+  "obvod" : 20,
+  "nazevObvodu" : "Praha 4",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 23,
+  "nazevObvodu" : "Praha 8",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 26,
+  "nazevObvodu" : "Praha 2",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 29,
+  "nazevObvodu" : "Litoměřice",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 32,
+  "nazevObvodu" : "Teplice",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 35,
+  "nazevObvodu" : "Jablonec nad Nisou",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 38,
+  "nazevObvodu" : "Mladá Boleslav",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 41,
+  "nazevObvodu" : "Benešov",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 44,
+  "nazevObvodu" : "Chrudim",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 47,
+  "nazevObvodu" : "Náchod",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 50,
+  "nazevObvodu" : "Svitavy",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 53,
+  "nazevObvodu" : "Třebíč",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 56,
+  "nazevObvodu" : "Břeclav",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 59,
+  "nazevObvodu" : "Brno-město",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 62,
+  "nazevObvodu" : "Prostějov",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 65,
+  "nazevObvodu" : "Šumperk",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 68,
+  "nazevObvodu" : "Opava",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+},
+  {
+  "obvod" : 71,
+  "nazevObvodu" : "Ostrava-město",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 1,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : false
+},
+  {
+  "obvod" : 74,
+  "nazevObvodu" : "Karviná",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 1,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : false
+},
+  {
+  "obvod" : 77,
+  "nazevObvodu" : "Vsetín",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 1,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : false
+},
+  {
+  "obvod" : 80,
+  "nazevObvodu" : "Zlín",
+  "odvolaniKandidati" : false,
+  "zvoleno" : true,
+  "zvoleno_kolo" : 2,
+  "existujePDF_K1" : true,
+  "existujePDF_K2" : true
+}
+]
+}

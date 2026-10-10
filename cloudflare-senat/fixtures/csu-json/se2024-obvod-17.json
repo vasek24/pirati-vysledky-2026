@@ -1,0 +1,22 @@
+{
+  "id" : "20240920/vysled/obvod/17.json",
+  "param" : {"typ":"VYSL_OBVOD","datumvoleb":20240920,"obvod":17},
+  "generovano" : "2026-09-14T10:15:30",
+  "popis" : "Výsledek za senátní obvod",
+  "obvodNazev" : "Praha 12",
+  "prehled" : [
+  [1,107,107,100,90281,29324,32.48,0,29307,29156,99.48]
+],
+  "existujePdf" : true,
+  "velikostPdf" : 72,
+  "vysledky" : [
+  [1,"Cimprichová Pynelopi Ing. Mgr.","Švýcarská dem.","Švýcarská dem.","Švýcarská dem.",371,1.27,null,null,false,false],
+  [2,"Fischer Pavel","KDU+ODS+STA+TOP","TOP 09","BEZPP",15638,53.63,null,null,false,false],
+  [3,"Tylová Eva Ing.","Piráti+LES","Piráti","BEZPP",3651,12.52,null,null,false,false],
+  [4,"Urban Milan Dr.-Ing.","SPD+Trikolora","SPD","SPD",1270,4.35,null,null,false,false],
+  [5,"Hůla Petr Ing. Ph.D.","SOCDEM","SOCDEM","SOCDEM",562,1.92,null,null,false,false],
+  [6,"Šťastný Boris MUDr. MBA","ANO+AUTO","AUTO","AUTO",7664,26.28,null,null,false,false]
+],
+  "postupuje" : [],
+  "zvoleny" : 2
+}

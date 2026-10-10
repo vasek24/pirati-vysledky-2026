@@ -1,0 +1,24 @@
+{
+  "id" : "20240920/vysled/obvod/5.json",
+  "param" : {"typ":"VYSL_OBVOD","datumvoleb":20240920,"obvod":5},
+  "generovano" : "2026-09-14T10:15:30",
+  "popis" : "Výsledek za senátní obvod",
+  "obvodNazev" : "Chomutov",
+  "prehled" : [
+  [1,118,118,100,95943,22398,23.35,0,22128,21611,97.66],
+  [2,118,118,100,95948,13023,13.57,0,13018,12959,99.55]
+],
+  "existujePdf" : true,
+  "velikostPdf" : 70,
+  "vysledky" : [
+  [1,"Kulhánek Jiří PaedDr.","KDU+ODS+TOP 09","ODS","ODS",4221,19.53,0,0,false,false],
+  [2,"Komínek Jaroslav","ČSNS+SOCDE+KSČM","KSČM","KSČM",5043,23.33,6097,47.04,false,false],
+  [3,"Brand Roman Ing.","LS","LS","BEZPP",3039,14.06,0,0,false,false],
+  [4,"Smetana Jiří Ing. MPA","SPD+Trikolora","Trikolora","BEZPP",2269,10.49,0,0,false,false],
+  [5,"Rabas Přemysl MVDr.","SEN 21","SEN 21","BEZPP",4480,20.73,6862,52.95,false,false],
+  [6,"Drozd Štefan Ing.","STAN","STAN","STAN",2046,9.46,0,0,false,false],
+  [7,"Hahnová Elvíra Bc.","ČSSD","ČSSD","ČSSD",513,2.37,0,0,false,false]
+],
+  "postupuje" : [2,5],
+  "zvoleny" : 5
+}

@@ -1,0 +1,50 @@
+{
+  "id" : "20240920/mapa_vitez.json",
+  "param" : {"typ":"STAV_MAPA_VITEZ","datumvoleb":20240920},
+  "generovano" : "2026-09-14T10:18:53",
+  "popis" : "Data pro mapu - vítezný kandidát v senátním obvodu",
+  "obvody" : {
+  "2" : {
+  "obvodNazev" : "Sokolov",
+  "pocetVitezu" : 1,
+  "kolo" : 1,
+  "kandCislo" : 2,
+  "kandJmeno" : "Mračková Vildumetzová Jana",
+  "stranaZkratka" : "ANO",
+  "stranaBarva" : "330066",
+  "hlasu" : 11424,
+  "procHlasu" : 50.72,
+  "procZprac" : 100,
+  "ukonceno" : true,
+  "stavZvolen" : 1
+},
+  "5" : {
+  "obvodNazev" : "Chomutov",
+  "pocetVitezu" : 1,
+  "kolo" : 2,
+  "kandCislo" : 5,
+  "kandJmeno" : "Rabas Přemysl",
+  "stranaZkratka" : "SEN 21",
+  "stranaBarva" : "FFFF33",
+  "hlasu" : 6862,
+  "procHlasu" : 52.95,
+  "procZprac" : 100,
+  "ukonceno" : true,
+  "stavZvolen" : 1
+},
+  "17" : {
+  "obvodNazev" : "Praha 12",
+  "pocetVitezu" : 1,
+  "kolo" : 1,
+  "kandCislo" : 2,
+  "kandJmeno" : "Fischer Pavel",
+  "stranaZkratka" : "KDU+ODS+STA+TOP",
+  "stranaBarva" : "654321",
+  "hlasu" : 15638,
+  "procHlasu" : 53.63,
+  "procZprac" : 100,
+  "ukonceno" : true,
+  "stavZvolen" : 1
+}
+}
+}

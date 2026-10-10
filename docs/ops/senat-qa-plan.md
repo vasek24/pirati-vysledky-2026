@@ -154,8 +154,9 @@ What "good" looks like from outside: `/api/senat` 200, `stale:false`, `x-cache` 
 - Soak: the week between rounds (Durable Object eviction, idle cadence), the round-2 transition in real data, daylight-saving (not until 25 Oct), Cloudflare incidents, dependency supply chain beyond `npm audit`.
 - No CI runs for `senat/` or `cloudflare-senat/`: the gates are local and manual.
 
-## 9. Baseline findings (2026-10-10 ~13:50)
+## 9. Baseline findings (2026-10-10, 13:50-14:05)
 
-- axe-core 4.14, build `index-CD-3fcsd.js`: `color-contrast` (serious, 18 nodes: grey placeholder number `#a3a3a3` on white, 2.52:1, large text needs 3:1) at 1280 and 360; `label-content-name-mismatch` (serious, 27 buttons: accessible name from `title` does not contain the visible text) at 1280.
+- axe-core 4.14. Build of 13:36 (`index-CD-3fcsd.js`), waiting phase: `color-contrast` (serious, 18 nodes: grey placeholder number `#a3a3a3` on white, 2.52:1; large text needs 3:1) and `label-content-name-mismatch` (serious, 27 tiles). Build of about 13:55, counting phase at 375 and 1280: contrast violations gone (16 / 11 nodes left in axe's "incomplete" list = need a human look), **`label-content-name-mismatch` remains** (27 obvod tiles `button[title="3 Cheb · Sčítá se"]`: the visible text is not part of the accessible name; WCAG 2.5.3 Label in Name).
 - No horizontal overflow at 360, 375, 414, 1280; `lang="cs"`, one `h1`, header/nav/main/footer landmarks; reduced-motion rule present; focus-visible styles present; smallest tap target 44 px.
-- CSP: no violation after 48 programmatic clicks over the waiting-phase page; Google Fonts (Bebas Neue, Roboto, Roboto Condensed) load under the policy.
+- CSP: no violation after 48 programmatic clicks over the waiting-phase page and again over the counting-60 page (build of about 13:55, served with the real `_headers` block); Google Fonts (Bebas Neue, Roboto, Roboto Condensed) load under the policy. A control test (inline script, inline style attribute, `fetch` to another origin) logged all three violations, so the console check is not blind.
+- Worker responses are not covered by `_headers` (see section 5).
