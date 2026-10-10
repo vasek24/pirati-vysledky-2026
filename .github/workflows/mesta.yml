@@ -1,0 +1,56 @@
+# Kontrola větví mesta/* (produkt mesta.dg12.cz): testy, lint, build mesta + kontrola
+# buildu a guard „Praha se nezměnila“. ci.yml zůstává beze změny. Nic nenasazuje.
+name: Mesta
+
+on:
+  push:
+    branches: ['mesta/**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    # push na mesta/** vždy; pull request jen z větve mesta/*
+    if: github.event_name == 'push' || startsWith(github.head_ref, 'mesta/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # u pull requestu ne syntetický merge commit, ale hlava větve
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Test
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      # vite build -c vite.mesta.config.js + scripts/mesta-build-check.mjs + _headers
+      - name: Build mesta
+        run: bash scripts/mesta.sh build
+
+      - name: Merge base with main
+        id: base
+        run: echo "sha=$(git merge-base HEAD origin/main)" >> "$GITHUB_OUTPUT"
+
+      # strana base (Praha na merge-base) se staví jednou; klíč = sha merge-base
+      - name: Cache Prague base hashes
+        uses: actions/cache@v4
+        with:
+          path: .cache/prague-base-*.sha256
+          key: prague-base-${{ steps.base.outputs.sha }}
+
+      - name: Prague unchanged
+        run: bash scripts/check-prague-unchanged.sh "${{ steps.base.outputs.sha }}"
