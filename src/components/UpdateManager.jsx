@@ -1,6 +1,8 @@
 // Mountuje se v main.jsx nad všemi stránkami. Dvě role:
 // 1. Když je nasazená nová verze, vynutí obnovení stránky (s krátkým
-//    upozorněním; nereloaduje uprostřed psaní do textového pole).
+//    upozorněním; nereloaduje uprostřed psaní do textového pole). Ve volební
+//    noci se viditelná záložka sama nikdy neobnoví (shouldAutoReload) —
+//    nabídne se jen tlačítko a reload přijde, až se záložka skryje.
 // 2. Po první návštěvě v nové verzi jednou ukáže „Co je nové".
 import React, { useCallback, useEffect, useState } from 'react';
 import { APP_VERSION } from '../changelog';
@@ -9,6 +11,7 @@ import { CHANGELOG_OPEN_EVENT } from '../utils/openChangelog';
 import { useUpdateCheck } from '../hooks/useUpdateCheck';
 import ChangelogModal from './ChangelogModal';
 import { guidePending } from '../utils/welcomeGuide';
+import { shouldAutoReload } from '../lib/reload';
 
 const SEEN_KEY = 'kv26_seen_version'; // poslední verze, jejíž novinky uživatel viděl
 const RELOADED_KEY = 'kv26_reloaded_for'; // pojistka proti reload smyčce (session)
@@ -95,10 +98,22 @@ export default function UpdateManager() {
             window.location.reload();
         };
 
+        const electionNight = isElectionNight();
+
         // Stránka na pozadí — obnovit hned, uživatel o nic nepřijde
-        if (document.visibilityState === 'hidden') {
+        if (shouldAutoReload({ hidden: document.visibilityState === 'hidden', electionNight })) {
             reload();
             return undefined;
+        }
+
+        // Volební noc, viditelná záložka: nikdy ne sama; obnovit až ve chvíli,
+        // kdy se skryje
+        if (electionNight) {
+            const onVisibility = () => {
+                if (shouldAutoReload({ hidden: document.visibilityState === 'hidden', electionNight: isElectionNight() })) reload();
+            };
+            document.addEventListener('visibilitychange', onVisibility);
+            return () => document.removeEventListener('visibilitychange', onVisibility);
         }
 
         // Krátké upozornění, pak reload; při psaní počkat na dopsání
@@ -115,7 +130,15 @@ export default function UpdateManager() {
 
     return (
         <>
-            {newVersion && (
+            {newVersion && isElectionNight() && (
+                <button
+                    onClick={() => window.location.reload()}
+                    className="fixed bottom-[calc(0.75rem+env(safe-area-inset-bottom))] mobile:bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-3 z-[4000] bg-black/85 text-white text-xs font-medium rounded-full shadow-lg px-3 py-1.5"
+                >
+                    Nová verze — obnovit
+                </button>
+            )}
+            {newVersion && !isElectionNight() && (
                 // na mobilu nad spodní lištou záložek, ne přes ni
                 <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] mobile:bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-[4000] bg-black text-white text-sm font-medium rounded-xl shadow-2xl px-4 py-3 flex items-center gap-3 max-w-[calc(100vw-2rem)]">
                     {reloadBlocked ? (

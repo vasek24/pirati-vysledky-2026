@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import { councilBySlug } from './councils.js'
 import UpdateManager from './components/UpdateManager.jsx'
-import BugReportWidget from './components/BugReportWidget.jsx'
 import WelcomeGuide from './components/WelcomeGuide.jsx'
 
 // Každá stránka (a mapa uvnitř stránky zastupitelstva) je zvlášť — přehled
@@ -23,6 +22,5 @@ createRoot(document.getElementById('root')).render(
     </Suspense>
     <UpdateManager />
     <WelcomeGuide />
-    <BugReportWidget raised={!!council} />
   </StrictMode>,
 )

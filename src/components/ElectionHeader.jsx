@@ -302,7 +302,6 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                     <span className="hidden sm:inline shrink-0 tabular-nums text-white/45" title={dataTime ? `Data ČSÚ vygenerována ${fmtTime(dataTime)}` : undefined}>
                         {phase !== 'pre' && dataTime ? `ČSÚ ${fmtTime(dataTime)} · ` : ''}
                         {live.lastSuccess ? `kontrola ${fmtTime(live.lastSuccess)}` : ''}
-                        {live.source === 'direct' && ' · přímo z ČSÚ'}
                         {(live.fetching || live.nextAt) && <span className="text-white/70"> · <AutoRefreshNote live={live} now={now} /></span>}
                     </span>
                 </div>

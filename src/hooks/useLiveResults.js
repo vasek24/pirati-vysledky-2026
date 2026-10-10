@@ -1,8 +1,8 @@
 // Živé výsledky KV 2026 s autorefreshem šetrným ke zdrojům:
 //  - primárně /api/volby (jedna sdílená, CDN-cachovaná odpověď pro všechny),
-//  - když náš server neodpovídá (2× po sobě, nebo hned při prvním načtení),
-//    záložně přímo volby.gov.cz (CORS povolen); proxy se zkusí za 3 minuty
-//    — jednorázové zaškobrtnutí (studený start) diváky na ČSÚ nepošle,
+//  - prohlížeč nikdy nesahá na volby.gov.cz; když náš server neodpovídá,
+//    zůstává poslední snapshot (označený jako zastaralý) a zkouší se dál
+//    jen náš server (backoff níže),
 //  - interval podle fáze: před 14:00 jednou za 10 min (probuzení přesně na
 //    uzavření místností), při sčítání 60 s (ČSÚ data stejně cachuje 60 s),
 //    po vyhlášení mandátů 15 min; ±15 % jitter, ať se klienti nesešikují,
@@ -16,14 +16,13 @@
 // Zdroj (source) je buď jedno zastupitelstvo (councilSource), nebo přehled
 // všech zastupitelstev (OVERVIEW_SOURCE, /api/prehled).
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createKvFeed, phaseOf, SNAPSHOT_VERSION } from '../volby/feed.js';
-import { createOverviewFeed, OVERVIEW_VERSION } from '../volby/overview.js';
-import { COUNCILS, POLLS_CLOSE } from '../councils.js';
+import { phaseOf, SNAPSHOT_VERSION } from '../volby/feed.js';
+import { OVERVIEW_VERSION } from '../volby/overview.js';
+import { POLLS_CLOSE } from '../councils.js';
 
 const INTERVAL = { pre: 10 * 60e3, waiting: 60e3, counting: 60e3, final: 15 * 60e3 };
 const DEMO_INTERVAL = 4000;
 const MANUAL_GAP_MS = 15e3;
-const PROXY_RETRY_MS = 3 * 60e3;
 const PROXY_TIMEOUT_MS = 15e3;
 const arrivalsKey = (source) => `kv26.arrivals.${source.key}`;
 const SNAP_PREFIX = 'kv26.snap.';
@@ -34,42 +33,29 @@ const MAX_CACHED_WAIT_MS = 15 * 60e3;
 const councilSources = new Map();
 export function councilSource(council) {
     if (!councilSources.has(council.zastup)) {
-        let feed = null;
         councilSources.set(council.zastup, {
             key: String(council.zastup),
             // Přesně tahle URL (bez dalších parametrů) — je to klíč CDN cache
             url: `/api/volby?z=${council.zastup}`,
             version: SNAPSHOT_VERSION,
             arrivals: true,
-            direct: () => (feed ||= createKvFeed({ council, conditional: false, minIntervalMs: 45e3, concurrency: 4, timeoutMs: 15000 })),
         });
     }
     return councilSources.get(council.zastup);
 }
 
-// Přehled všech zastupitelstev. Záloha přímo z volby.gov.cz jen za
-// zastupitelstva s Piráty, i na jiných kandidátkách (26 souborů místo 58),
-// a nejvýš jednou za 2 min.
-let overviewFeed = null;
+// Přehled všech zastupitelstev
 export const OVERVIEW_SOURCE = {
     key: 'prehled',
     url: '/api/prehled',
     version: OVERVIEW_VERSION,
     arrivals: false,
-    direct: () => (overviewFeed ||= createOverviewFeed({
-        councils: COUNCILS.filter((c) => c.pirates || c.pirateCandidates.length),
-        conditional: false,
-        minIntervalMs: 120e3,
-        concurrency: 4,
-        timeoutMs: 15000,
-    })),
 };
 
 // Anonymní návštěvnost: kolik sekund od minulého dotazu byla stránka otevřená
 // a viditelná (s), první dotaz po načtení stránky = návštěva (v) s doménou,
 // odkud člověk přišel (r), a dotykové ovládání (t). Žádné identifikátory.
-// Jen pro naše API (stejný původ) — na volby.gov.cz by vlastní hlavička
-// vynutila CORS preflight.
+// Jen pro naše API (stejný původ).
 const REFERRER = (() => {
     try {
         const host = new URL(document.referrer).hostname;
@@ -92,7 +78,7 @@ async function fetchProxy(source, view) {
     const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(PROXY_TIMEOUT_MS) : undefined;
     const res = await fetch(source.url, { headers: { Accept: 'application/json', 'X-Kv26-View': view }, signal });
     const type = res.headers.get('content-type') || '';
-    // Vite dev bez API / výpadek funkce vrátí HTML nebo chybu → záloha
+    // Vite dev bez API / výpadek funkce vrátí HTML nebo chybu → chyba (poslední data zůstávají)
     if (!type.includes('application/json')) throw new Error('proxy-unavailable');
     const body = await res.json();
     if (!res.ok || body?.v !== source.version) throw new Error(body?.error || `proxy-${res.status}`);
@@ -164,7 +150,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     const [snapshot, setSnapshot] = useState(() => cached?.snapshot ?? null);
     const [state, setState] = useState(() => ({
         status: cached ? 'ok' : 'loading', // loading | ok | error
-        source: cached?.source ?? null, // proxy | direct | demo
+        source: cached?.source ?? null, // proxy | demo
         stale: cached?.stale ?? false,
         error: cached?.error ?? null,
         lastSuccess: cached?.lastSuccess ?? null,
@@ -179,12 +165,10 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     const nextAtRef = useRef(cached?.nextAt ?? null);
     const errorsRef = useRef(0);
     const lastAttemptRef = useRef(cached?.lastAttempt ?? 0);
-    const proxyDownUntilRef = useRef(0);
     const phaseRef = useRef(cached?.snapshot.phase ?? 'pre');
     const prevKeysRef = useRef(cached ? new Set(Object.keys(cached.snapshot.okrsky || {})) : null);
     const runRef = useRef(null);
     const inFlightRef = useRef(false);
-    const proxyFailsRef = useRef(0);
     // měření návštěvnosti: první dotaz této stránky, naplánovaná pauza před
     // dalším dotazem a jak dlouho byla mezitím záložka skrytá
     const visitRef = useRef(true);
@@ -220,38 +204,16 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
         lastAttemptRef.current = started;
         setState((s) => ({ ...s, fetching: true }));
         let result = null;
-        let source = demoFeed ? 'demo' : 'proxy';
+        const source = demoFeed ? 'demo' : 'proxy';
         let error = null;
         let stored = null;
         try {
             if (demoFeed) {
                 result = await demoFeed.snapshot();
             } else {
-                let goDirect = Date.now() < proxyDownUntilRef.current;
-                if (!goDirect) {
-                    try {
-                        const visit = visitRef.current;
-                        visitRef.current = false;
-                        result = await fetchProxy(target, viewHeader(viewSeconds, visit));
-                        proxyFailsRef.current = 0;
-                    } catch (e) {
-                        proxyFailsRef.current += 1;
-                        // Bez dat (první načtení) hned záloha, jinak až po
-                        // druhém neúspěchu za sebou; mezitím backoff a stará data
-                        goDirect = proxyFailsRef.current >= 2 || !prevKeysRef.current;
-                        if (goDirect) {
-                            proxyDownUntilRef.current = Date.now() + PROXY_RETRY_MS;
-                            proxyFailsRef.current = 0;
-                            console.warn(`[volby] ${target.url} nedostupné, beru data přímo z volby.gov.cz`, e);
-                        } else {
-                            error = e;
-                        }
-                    }
-                }
-                if (!result && goDirect) {
-                    source = 'direct';
-                    result = await target.direct().snapshot();
-                }
+                const visit = visitRef.current;
+                visitRef.current = false;
+                result = await fetchProxy(target, viewHeader(viewSeconds, visit));
             }
         } catch (e) {
             error = e;
