@@ -89,6 +89,14 @@ describe('x-server-now on every reply (§2)', () => {
     }
   })
 
+  it.each([
+    ['405 on the API', '/api/senat', { method: 'POST' }],
+    ['/healthz', '/healthz', undefined],
+  ])('%s carries X-Content-Type-Options: nosniff', async (_n, path, init) => {
+    const res = await call(path, init)
+    expect(res.headers.get('x-content-type-options')).toBe('nosniff')
+  })
+
   it('asset replies keep the body, status and cache headers', async () => {
     const res = await call('/')
     expect(await res.text()).toBe('<html></html>')

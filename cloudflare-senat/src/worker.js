@@ -98,7 +98,7 @@ const sMaxAge = (cacheControl) => Number(/s-maxage=(\d+)/.exec(cacheControl || '
 function reply(request, { status, headers, body }, cacheState) {
   return new Response(request.method === 'HEAD' ? null : body, {
     status,
-    headers: { ...headers, 'x-cache': cacheState, 'x-server-now': String(Date.now()) },
+    headers: { ...headers, 'x-cache': cacheState, 'x-server-now': String(Date.now()), 'x-content-type-options': 'nosniff' },
   })
 }
 
@@ -150,7 +150,7 @@ async function api(request, env, ctx, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response(JSON.stringify({ error: 'method-not-allowed' }), {
       status: 405,
-      headers: { Allow: 'GET, HEAD', 'Content-Type': JSON_TYPE, 'Cache-Control': 'no-store', 'x-server-now': String(Date.now()) },
+      headers: { Allow: 'GET, HEAD', 'Content-Type': JSON_TYPE, 'Cache-Control': 'no-store', 'x-server-now': String(Date.now()), 'x-content-type-options': 'nosniff' },
     })
   }
   // Normalizovaná cesta: klíč cache, ostatní parametry se zahodí (náhodné ?x= nesmí obejít cache)
@@ -209,7 +209,7 @@ export default {
     if (url.pathname === '/api/senat') return api(request, env, ctx, url)
     // uptime check: konstantní odpověď, nikdy nesahá na DO
     if (url.pathname === '/healthz') {
-      return new Response('ok', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'x-server-now': String(Date.now()) } })
+      return new Response('ok', { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'x-server-now': String(Date.now()), 'x-content-type-options': 'nosniff' } })
     }
     // SPA má jedinou routu `/`; 404 z assets zůstává 404
     return withServerNow(await env.ASSETS.fetch(request))
