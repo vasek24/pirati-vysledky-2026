@@ -1,190 +1,210 @@
-# Election-Night Backup Mirror — Phase 1 Implementation Plan
+# Election-Night Backup Mirror — Phase 1 Implementation Plan (revision 2)
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax. Each implementer is a **Sonnet** subagent in its own git worktree; each task's diff gets an **Opus** review before merge.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Each task is implemented by a **Sonnet** subagent in its own git worktree/branch; every task diff gets an **Opus** review before merge to `main`. Steps use checkbox (`- [ ]`) syntax.
 
-**Goal:** Ship a backup mirror of the live election tracker at `https://volby.dg12.cz` that survives election-night load, never shows bad upstream data, and refreshes within ~35 s of ČSÚ publishing — live by ~12:30 CEST on 2026-10-10.
+**Goal:** Ship a backup mirror of the live election tracker at `https://volby.dg12.cz` that survives election-night load, never shows bad upstream data, and shows ČSÚ updates within ~35 s — a safe subset (1a) live by ~12:30, the full refresher (1b) by ~14:00 (results only start ~15:00).
 
-**Architecture:** The per-feed Durable Object (`Feed`) becomes the sole upstream refresher: it serves its persisted snapshot immediately, refreshes in the background when due, validates before publishing, and persists. The Worker fronts it with a short Cache API TTL clamped to `nextRefreshAt` and a 10-minute last-resort cache. The browser polls only our Worker on a server-provided schedule plus a random per-tab offset, with no direct-to-ČSÚ fallback.
+**Architecture:** Per-feed Durable Object = sole upstream refresher; serves its persisted snapshot immediately, refreshes in the background when due, merges + validates before publishing; first-class feeds (Magistrát + 10 big districts + overview) are warmed by a once-a-minute cron; Worker fronts the DO with a 1–5 s Cache API TTL clamped to `nextRefreshAt` and a 10-minute last-resort copy; the browser polls only our Worker on a server schedule + random per-tab offset with clock-skew correction.
 
-**Tech Stack:** React 19, Vite 7, Tailwind 4, Cloudflare Workers + Durable Objects (SQLite), Wrangler 4, Vitest (added), Node ≥ 20.
+**Tech Stack:** React 19, Vite 7, Tailwind 4, Cloudflare Workers + Durable Objects (SQLite) + cron triggers, Wrangler 4, Vitest `~3.2` (added), Node ≥ 20 (CI 22).
 
-**Spec:** `docs/superpowers/specs/2026-10-10-election-night-backup-design.md` (read it first; section numbers below refer to it).
+**Spec:** `docs/superpowers/specs/2026-10-10-election-night-backup-design.md` (revision 2). Read it first; "§" refers to it. Opus review r1 findings are cited as C1…L16 (`docs/superpowers/reviews/2026-10-10-opus-spec-plan-review-r1.md`).
 
 ## Global Constraints
 
-- Language: plain JS (ESM, `"type": "module"`), no TypeScript migration. UI copy in Czech.
-- No new database/service: Cloudflare only (Workers Paid is active). No Supabase, no SSE/WebSocket.
-- **No browser-side request to `volby.gov.cz` or `volby.cz`** anywhere in `src/` at runtime.
-- Never push to or open PRs against `jsemfast/pirati-vysledky-2026`. Work on `vasek24/pirati-vysledky-2026` only. GitHub commands use `GH_TOKEN=$(gh auth token --user vasek24)` per command; **never** run `gh auth switch`.
-- No secrets in git. Do **not** set `GITHUB_TOKEN` on the Worker (bug-report endpoint stays fail-closed 503).
-- Constants (from spec §3): refresh floor 20 s; `nextRefreshAt = max(refreshedAt+20 s, generated+60 s)` while counting/waiting; final +10 min; pre +5 min capped at 14:00:00 CEST (`2026-10-10T14:00:00+02:00`); failure retry 20 s doubling to 60 s with full jitter; overall refresh deadline 12 s; Cache API TTL `clamp(nextRefreshAt−now, 0, 5 s)`, stale responses cached ≤ 5 s; last-resort cache 10 min; client offset uniform [0, 25 s] fixed per tab; client timeout 25 s; client retry when `nextRefreshAt` already past: `random(5,10) s`; min poll gap 5 s; error backoff full jitter `random(0, min(300 s, 5 s·2^n))`; 14:00 wake spread `random(0, 60 s)`; quarantine = same hash rejected on 3 distinct fetches; snapshot size guard 1.5 MB.
-- Test command: `npm test` (Vitest, added in Task 1). Lint: `npm run lint`. Build: `npm run build`. All three must pass before any merge.
-- Maintainer contact (spec §7): name Václav Vislous, role "manages this fork and its modifications" (never "author"), phone +420 777 954 389.
-- Commit style: Czech or English imperative, one logical change per commit; end commit messages with `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
-- Deploys: `wrangler deploy` from `cloudflare/` after merge to `main`; record previous version id first (`wrangler deployments list`). One deploy at a time.
+- Plain JS ESM (`"type": "module"`), no TypeScript migration. UI copy in Czech.
+- Cloudflare only (Workers Paid active). No Supabase, SSE, WebSocket, new database.
+- **No browser-side request to `volby.gov.cz`** (S1: import-graph test + `! grep -rl "appdata/kv2026" dist/assets` after build).
+- Never push to or open PRs against `jsemfast/pirati-vysledky-2026`. Use `GH_TOKEN=$(gh auth token --user vasek24)` and `--repo vasek24/pirati-vysledky-2026` on every `gh` call. **Never run `gh auth switch`.** Never `git push` to `upstream`.
+- No secrets in git. Do not set `GITHUB_TOKEN` on any Worker.
+- `wrangler deploy` only from `cloudflare/` and only with `name` = `pirati-volby-zaloha` (or `-drill` for drills) and `account_id` `741febb7a315a409b83e5a9a1b62954d`. Before deploying, record the previous version id (`wrangler deployments list`).
+- Time handling: ČSÚ `generated` is zone-less Prague time; **always** use `parseCsuTime` from `src/volby/format.js`; tests run with `TZ=UTC`.
+- Constants (§3): first-class feeds = Magistrát `554782`, Praha 4 `500119`, 10 `500224`, 8 `500208`, 6 `500178`, 5 `500143`, 11 `547034`, 3 `500097`, 13 `539694`, 12 `547107`, 9 `500216`, plus `prehled`. Refresh floor 20 s; retry `20 s + random·(min(60 s, 20 s·2^(n−1)) − 20 s)`; phases: pre = `min(refreshedAt+5 min, 2026-10-10T14:00:00+02:00)`, waiting = `refreshedAt+60 s`, counting = `clamp(G+60 s, refreshedAt+20 s, refreshedAt+60 s)` (G null or > refreshedAt+120 s → +20 s), final = +10 min; deadline 12 s; overview `waitMs` 8000; per-file timeout 8 s; second-class bounded wait: snapshot older than 2 min → wait ≤ 3 s; edge TTL `clamp(ceil((next−now)/1000), 1, cap)`, `cap = stale?5 : final?600 : pre?300 : 5`; header `Cache-Control: public, max-age=0, s-maxage=<ttl>`; last-resort key `/__lastresort<path>` TTL 600 s; client offset uniform [0, 25 s] per tab; retry if `nextRefreshAt ≤ now`: `random(5,10) s`; min poll gap 5 s; client timeout 25 s; backoff `random(0, min(300 s, 5 s·2^n))` floored at 5 s; visibility/online delay `random(0, 5 s)`; quarantine = same reason on ≥ 3 distinct fetches spanning ≥ 2 min; size guard 1.5 MB UTF-8 bytes.
+- Test/lint/build: `npm test`, `npm run lint`, `npm run build` must be green before any merge.
+- Maintainer contact (§7): Václav Vislous, "manages this fork and its modifications" (never "author"), phone +420 777 954 389.
+- Commits: imperative, one logical change each, ending with `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
 
-## Review Focus
+## Review Focus (failure modes the tasks' tests must pin)
 
-1. **Cold DO after eviction/deploy** returns a partial build (`votes:null`, partial overview) — must never replace a complete persisted snapshot (Task 3 test).
-2. **`generated` timestamp in the future/clock skew or missing** — `nextRefreshAt` must stay within [now+5 s, now+10 min] (Task 2 test).
-3. **Upstream returns HTTP 200 with `{}`, `[]`, HTML, or a truncated body** — snapshot unchanged, `stale:true` served (Task 2/3 tests).
-4. **Two tabs/hidden-visible switches and `online` events** must not burst-poll (Task 5 test: min gap 5 s, delayed retries).
-5. **`nextRefreshAt` in the past in the response** (edge copy behind) — client retries in 5–10 s, not 60 s (Task 5 test).
-
----
+1. Zone-less `generated` parsed in a UTC runtime → refresh cadence 10 min (Task 8 test).
+2. Newly counted precincts with `votes:null` in steady state must NOT freeze the snapshot (Task 8 merge test).
+3. Pre-14:00 ČSÚ test data persisted, then real data resets counted to 0 (Task 8 baseline test).
+4. Lagging replica returns an older `generated`: no stale flag, no backoff, no flapping (Task 8 test).
+5. Client with a fast/slow clock must not poll every 5–10 s (Task 10 skew test).
 
 ## File Structure
 
 | File | Responsibility |
 |---|---|
-| `cloudflare/refresh.js` (new) | Pure refresh state machine: `createRefresher({now, storage, build, validate, random})` → `get()`; no Workers imports. |
-| `src/volby/validate.js` (new) | `validateSnapshot(candidate, last)`, `snapshotHash(candidate)`; pure. |
-| `src/hooks/schedule.js` (new) | Pure client scheduling helpers: `pickOffset`, `nextPollDelay`, `backoffDelay`, `wakeDelay`. |
-| `cloudflare/worker.js` | Wire refresher into `Feed` DO; edge TTL clamp; last-resort cache; safe analytics; `CSU_BASE` env. |
-| `api/_http.js` | TTL helpers: `edgeTtl(nextRefreshAt, now, stale)`. |
-| `src/hooks/useLiveResults.js` | Remove direct fallback; use `schedule.js`; consume `nextRefreshAt`. |
-| `src/components/UpdateManager.jsx`, `src/hooks/useUpdateCheck.js` | No visible-tab reload on election night; jitter. |
-| `src/components/ElectionHeader.jsx`, `src/pages/CouncilApp.jsx`, `src/components/WelcomeGuide.jsx`, `src/changelog.js` | Freshness UI + copy. |
-| `public/humans.txt`, `public/kontakt.txt`, `public/.well-known/security.txt`, `index.html`, footer component | Maintainer contact (§7). |
-| `cloudflare/wrangler.jsonc`, `.github/workflows/*`, `docs/ops/runbook.md`, `CLAUDE.md` | Infra, CI, runbook, agent rules. |
+| `cloudflare/feedClasses.js` (new) | `FIRST_CLASS` set, `isFirstClass(key)`, `FIRST_CLASS_KEYS` list. |
+| `src/volby/validate.js` (new) | `mergeCandidate`, `validateCandidate`, `snapshotHash` (pure). |
+| `src/volby/__fixtures__/*.json` (new) | Hand-written ČSÚ-shaped raw JSON. |
+| `cloudflare/refresh.js` (new) | Pure refresher: `createRefresher(deps)` → `get()`; `computeNextRefreshAt`. |
+| `src/volby/feed.js`, `overview.js` | `build()`, `invalidate()`, `fetchId`, `getJson.version/invalidate`; `waitMs` 8000. |
+| `cloudflare/worker.js` | DO wiring, edge TTL, last-resort cache, `x-server-now`, `scheduled()`, 503 JSON, `CSU_BASE`. |
+| `api/_http.js` | `edgeTtl(...)` helper + header builder. |
+| `src/hooks/schedule.js`, `src/hooks/useLiveResults.js` | Client scheduler, skew, no direct fallback. |
+| `src/lib/reload.js`, `src/components/UpdateManager.jsx`, `src/hooks/useUpdateCheck.js` | Deploy-safe reload. |
+| `src/lib/freshness.js`, `src/components/ElectionHeader.jsx`, copy files | Freshness UI. |
+| `public/humans.txt`, `public/kontakt.txt`, `public/.well-known/security.txt`, `index.html`, `Landing.jsx`, `CouncilApp.jsx` | Maintainer contact. |
+| `cloudflare/wrangler.jsonc`, `.github/workflows/*`, `docs/ops/runbook.md`, `CLAUDE.md`, `scripts/burst.mjs` | Infra, CI, docs. |
 
 ---
 
-### Task 1: Repo harness minimum (branch `p1/harness`)
+# PHASE 1a (target live ~12:30)
 
-**Files:**
-- Create: `CLAUDE.md`, `.nvmrc`, `vitest.config.js`, `.github/workflows/ci.yml`
-- Modify: `package.json` (scripts `test`, devDependency `vitest`), `eslint.config.js` (cover `cloudflare/**` and tests), `.github/workflows/deploy.yml` (remove `push` trigger; keep `workflow_dispatch`)
+### Task 1: Guards and harness minimum (branch `p1/harness`)
 
-**Interfaces:** Produces `npm test` (Vitest, `include: ['**/*.test.js']`, node environment); every later task adds `*.test.js` beside its module.
+**Files:** Create `CLAUDE.md`, `.nvmrc` (`22`), `vitest.config.js`, `.github/workflows/ci.yml`, `src/volby/sanity.test.js`. Modify `package.json`, `eslint.config.js`, `.github/workflows/deploy.yml`, `cloudflare/wrangler.jsonc`.
 
-- [ ] **Step 1:** `npm i -D vitest@^3` (pin the version that resolves; commit the lockfile). Add `"test": "vitest run"` to root `package.json`.
-- [ ] **Step 2:** Create `vitest.config.js` exporting `defineConfig({ test: { environment: 'node', include: ['**/*.test.js'], exclude: ['node_modules', 'dist', 'cloudflare/node_modules'] } })`.
-- [ ] **Step 3:** Add a trivial passing test `src/volby/sanity.test.js` (`expect(1+1).toBe(2)`), run `npm test` → PASS. Run `npm run lint` and `npm run build` → PASS (fix only what Task 1 itself breaks).
-- [ ] **Step 4:** Write `CLAUDE.md` (≤ 60 lines): purpose (backup mirror), the Global Constraints above (GH_TOKEN per command, never touch upstream, no secrets, deploy procedure, contact requirement), commands (`npm test`, `npm run lint`, `npm run build`), and "read the spec and plan before editing".
-- [ ] **Step 5:** `.github/workflows/ci.yml`: on `pull_request` and push to non-main branches: `npm ci`, lint, test, build, Node 22. Edit `deploy.yml` to only `workflow_dispatch` and replace the hard-coded author URL smoke test with `${{ vars.SMOKE_URL }}` (skip step if unset).
-- [ ] **Step 6:** Commit and merge to `main` (fast-forward) with the three checks green.
+**Interfaces:** Produces `npm test` (`TZ=UTC vitest run`).
 
-### Task 2: Snapshot validator (branch `p1/validate`)
+- [ ] **Step 0 (guards, reversible):**
+  ```sh
+  git remote set-url --push upstream DISABLED-never-push-upstream
+  GH_TOKEN=$(gh auth token --user vasek24) gh repo set-default vasek24/pirati-vysledky-2026
+  ```
+- [ ] **Step 1:** Edit `cloudflare/wrangler.jsonc`: `account_id` → `741febb7a315a409b83e5a9a1b62954d`; `name` → `pirati-volby-zaloha`; replace the author's KV namespace id in the `HLASENI` binding with the literal string `"CREATE-IN-TASK-5"` and add a comment saying Task 5 creates the namespace. Because that value is invalid, an accidental `wrangler deploy` before Task 5 fails instead of touching anything. Do not run any deploy.
+- [ ] **Step 2:** `npm i -D vitest@~3.2`; set `"test": "TZ=UTC vitest run"`. `vitest.config.js`:
+  ```js
+  import { defineConfig, configDefaults } from 'vitest/config';
+  export default defineConfig({ test: { environment: 'node',
+    include: ['src/**/*.test.js', 'api/**/*.test.js', 'cloudflare/*.test.js'],
+    exclude: [...configDefaults.exclude] } });
+  ```
+  Add `globals.node` for `**/*.test.js` in `eslint.config.js`.
+- [ ] **Step 3:** `src/volby/sanity.test.js` (`expect(1 + 1).toBe(2)`); run `npm test`, `npm run lint`, `npm run build` → PASS.
+- [ ] **Step 4:** `CLAUDE.md` (≤ 60 lines): purpose, the Global Constraints (guards, per-command GH_TOKEN, deploy rules, contact), commands, "read spec and plan first".
+- [ ] **Step 5:** `ci.yml` (pull_request + push to non-main): Node 22, `npm ci`, lint, test, build, then `! grep -rl "appdata/kv2026" dist/assets`. `deploy.yml`: delete the `push` trigger (keep `workflow_dispatch`), replace the hard-coded author URL smoke test by `${{ vars.SMOKE_URL }}` (step skipped when unset).
+- [ ] **Step 6:** Commit, merge to `main` fast-forward.
 
-**Files:**
-- Create: `src/volby/validate.js`, `src/volby/validate.test.js`
+### Task 2: Remove browser fallback and visible-tab reload (branch `p1/client-safe`)
 
-**Interfaces:**
-- Produces: `validateSnapshot(candidate, last) -> { ok: boolean, reason?: string }` and `snapshotHash(candidate) -> string` (stable hash that ignores `fetchedAt`, `servedAt`, `refreshedAt`, `nextRefreshAt`, `stale`, `complete`).
-- Consumes: the council snapshot shape from `src/volby/feed.js:302-314` (`zastup`, `generated`, `precincts.{total,counted}`, parties/results collections) and overview shape from `src/volby/overview.js:84` (`precincts.counted`, no `zastup`). The implementer MUST read those two places and write fixtures from the real shapes (a recorded council snapshot goes in `src/volby/__fixtures__/council.json` — build it by running the app's model builder against `scripts/` fixtures or hand-copy a snapshot from a test run).
+**Files:** Modify `src/hooks/useLiveResults.js` (remove both `direct` feed constructors at ~35-66 and every `goDirect` branch ~230-254; keep today's scheduler), `src/components/ElectionHeader.jsx` (~305 `live.source === 'direct'` + "přímo z ČSÚ" text), `src/components/UpdateManager.jsx` (~19-20, 83-114), `src/hooks/useUpdateCheck.js` (jitter), `src/pages/CouncilApp.jsx` / wherever `BugReportWidget` is rendered (stop rendering it). Create `src/lib/reload.js`, `src/lib/reload.test.js`, `src/no-direct-csu.test.js`.
 
-- [ ] **Step 1:** Write failing tests: rejects `{}`, `[]`, `null`, string; rejects non-finite numbers; rejects `counted<0` or `counted>total`; rejects `counted` decreasing vs `last`; rejects `generated` earlier than `last.generated`; rejects party votes dropping to 0 when `last` had >0; rejects `zastup` mismatch (council only); accepts first snapshot when `last` is null; accepts equal-or-higher counted; `snapshotHash` equal for two objects differing only in `fetchedAt`, different when votes differ.
-- [ ] **Step 2:** Run `npx vitest run src/volby/validate.test.js` → FAIL (module missing).
-- [ ] **Step 3:** Implement `validate.js` (pure; no imports beyond a tiny stable-stringify helper written inline). Return reason strings like `counted-decreased`.
-- [ ] **Step 4:** Run tests → PASS; run lint.
-- [ ] **Step 5:** Commit.
+**Interfaces:** Produces `shouldAutoReload({ hidden: boolean, electionNight: boolean }) -> boolean`, defined as `!electionNight || hidden`. `UpdateManager` shows a "Nová verze — obnovit" button on election night and reloads on `visibilitychange → hidden` when a new version is pending.
 
-### Task 3: Refresh state machine (branch `p1/refresh`)
+- [ ] **Step 1:** Failing tests: `reload.test.js` (visible+electionNight → false; hidden+electionNight → true; visible+!electionNight → true); `no-direct-csu.test.js` reads files: no file under `src/hooks|pages|components|lib` contains an import of `createKvFeed|createOverviewFeed|createJsonCache|KV_BASE_URL`, and `useLiveResults.js` does not contain `.direct(`.
+- [ ] **Step 2:** Run → FAIL. **Step 3:** Implement. On API failure keep the last snapshot (sessionStorage) marked stale and retry only the Worker with the existing 60 s ±15 % / backoff logic.
+- [ ] **Step 4:** `npm test`, lint, build, and `! grep -rl "appdata/kv2026" dist/assets` → PASS. Commit.
 
-**Files:**
-- Create: `cloudflare/refresh.js`, `cloudflare/refresh.test.js`
-- Test fixtures: inline in the test file
+### Task 3: Maintainer contact (branch `p1/contact`)
 
-**Interfaces:**
-- Consumes: `validateSnapshot`, `snapshotHash` from Task 2 (`import from '../src/volby/validate.js'`).
-- Produces: `createRefresher({ now: () => ms, random: () => 0..1, storage: { get(key), put(key, value) }, build: async ({ signal }) => snapshot, phaseOf: (snapshot|null, nowMs) => 'pre'|'waiting'|'counting'|'final', waitUntil: (promise) => void, log: (event, data) => void })` returning `{ get(): Promise<Response-shaped object> }` where the returned object is `{ body: snapshotWithMeta, status: 200|503 }` and `snapshotWithMeta` = persisted snapshot plus `{ refreshedAt, nextRefreshAt, servedAt, stale, complete }`.
-- Also exports pure `computeNextRefreshAt({ phase, refreshedAt, generated, now, failures, random })` and constants object `REFRESH` with the Global Constraints values.
+**Files:** Create `public/humans.txt`, `public/kontakt.txt`, `public/.well-known/security.txt`, `src/contact.test.js`. Modify `index.html`, `src/pages/Landing.jsx` (footer ~513-516, owns lines 494-516), `src/pages/CouncilApp.jsx` (next to the "Zdroj: ČSÚ" note ~419).
 
-- [ ] **Step 1:** Write failing tests with a fake clock/storage/build:
-  1. Cold, no snapshot: `get()` awaits the build once, returns `complete` snapshot, persists.
-  2. 2 000 concurrent `get()` calls when due → `build` called exactly once; all callers receive the old snapshot immediately (no awaiting) except when cold.
-  3. Not due → no build call.
-  4. Due → returns persisted snapshot immediately with `stale:false`; background refresh publishes the new one for the next `get()`.
-  5. `build` throws / times out (12 s deadline via fake timers) → snapshot unchanged, `stale:true`, `nextRefreshAt = now + 20 s` then 40 s, 60 s cap (with `random()=1`).
-  6. `build` returns invalid (`validateSnapshot` fails) → snapshot unchanged, `stale:true`, reason logged.
-  7. Quarantine: the same candidate hash rejected on 3 distinct fetches → accepted on the 3rd, logged `quarantine-accepted`; a cache replay (build returning the identical object without a new fetch marker) does not count — the builder signals a distinct fetch with `snapshot.fetchId`.
-  8. `complete:false` candidate never replaces a complete snapshot and is not counted toward quarantine; refresh retried at 20 s floor.
-  9. `computeNextRefreshAt`: counting → `max(refreshedAt+20 s, generated+60 s)`; `generated` in the future by hours → clamped to `now+10 min`; missing `generated` → `refreshedAt+60 s`; `final` → +10 min; `pre` before 14:00 → `min(now+5 min, 14:00:00+02:00)`.
-  10. Storage rehydrate: new refresher instance over the same storage serves the persisted snapshot without calling `build` when not due.
-  11. Snapshot larger than 1.5 MB is kept in memory only (storage `put` not called for it), logged once.
-- [ ] **Step 2:** Run → FAIL.
-- [ ] **Step 3:** Implement `refresh.js` per spec §3.1: in-flight `refreshPromise` single-flight; `waitUntil(refreshPromise)`; deadline via `AbortController` + timer; persisted keys `snapshot`, `meta` (`refreshedAt`, `generated`, `nextRefreshAt`, `failures`, `quarantine: {hash, count}`); serve-stale-while-refreshing; cold path awaits.
-- [ ] **Step 4:** Run tests → PASS; lint.
-- [ ] **Step 5:** Commit.
+- [ ] **Step 1:** Failing test `src/contact.test.js`: each file contains `Václav Vislous` and the phone (`777 954 389`; security.txt `tel:+420777954389`); English files contain `manages this fork`, Czech `spravuje tuto kopii`; no file calls him `author`/`autor`; `index.html` contains the phone; both `Landing.jsx` and `CouncilApp.jsx` contain the string `správce kopie: Václav Vislous`.
+- [ ] **Step 2:** FAIL. **Step 3:** Create content (`security.txt`: `Contact: tel:+420777954389`, `Expires: 2027-10-10T00:00:00Z`; footer text `Záložní kopie originálu jsemfast/pirati-vysledky-2026 · správce kopie: Václav Vislous · 777 954 389`; low-contrast, small).
+- [ ] **Step 4:** tests/lint/build → PASS. Commit.
 
-### Task 4: Wire the Worker and Durable Object (branch `p1/worker`)
+### Task 4: Worker 1a — 503 JSON, feed classes, cron warm-up (branch `p1/worker-1a`)
 
-**Files:**
-- Modify: `cloudflare/worker.js` (DO `Feed` class and the edge handler around lines 83-172 as of upstream commit 98d6bc6), `api/_http.js` (cache header helpers), `src/volby/feed.js` and `src/volby/overview.js` (minimal: expose `fetchId` per build, `complete` flag, validate-before-install ordering and delete-offending-cache-entry on rejection; lower overview `waitMs` to ≤ 12 000)
-- Create/extend tests: `api/_http.test.js`, `src/volby/feed.test.js` (only for the ordering change)
+**Files:** Create `cloudflare/feedClasses.js`, `cloudflare/feedClasses.test.js`. Modify `cloudflare/worker.js` (502 path ~150 → 503 JSON `{"error":"unavailable"}`; comment ~"klient po 502 přepne na přímé čtení" removed; add `scheduled(controller, env, ctx)`), `cloudflare/wrangler.jsonc` (`"triggers": { "crons": ["* * * * *"] }`).
 
-**Interfaces:**
-- Consumes: `createRefresher` (Task 3), `validateSnapshot`/`snapshotHash` (Task 2).
-- Produces: HTTP behaviour used by Task 5 — JSON bodies gain `refreshedAt`, `nextRefreshAt`, `servedAt`, `stale`, `complete`; `Cache-Control: public, max-age=<ttl>, s-maxage=<ttl>` where `ttl = edgeTtl(nextRefreshAt, now, stale)`; helper `edgeTtl(nextRefreshAt, now, stale) -> seconds` (integer, `clamp(floor((nextRefreshAt−now)/1000), 0, 5)`, ≤ 5 when stale; outside counting phase returns the existing longer TTLs).
-- `CSU_BASE` env var read **only** from `env`, default = `https://volby.gov.cz/appdata/kv2026/20261009`.
+**Interfaces:** Produces `FIRST_CLASS_KEYS: string[]` (the Global Constraints list of 11 zastup codes + `'prehled'`), `isFirstClass(key: string) -> boolean`.
 
-- [ ] **Step 1:** Write failing tests for `edgeTtl` (past `nextRefreshAt` → 0, 3 s → 3, 40 s → 5, stale → ≤ 5) and for the validate-before-install ordering in `feed.js` (a rejected body is not stored as `last` and its file-cache entry is removed).
-- [ ] **Step 2:** Run → FAIL.
-- [ ] **Step 3:** Implement: DO `Feed` creates one refresher per feed key, `storage` = `ctx.storage`, `waitUntil` = `ctx.waitUntil.bind(ctx)`; `build` = existing handler body builder; response includes meta. Worker: after DO call, `cache.put` main key with clamped TTL and a second key `…#lastresort` with 600 s TTL; on DO throw/overload serve `#lastresort` (marked `stale:true`), else 503 JSON `{error:'unavailable'}`. Wrap `track()` Analytics writes in `try/catch`. Add `CSU_BASE` plumbing from `env` into the feed constructors.
-- [ ] **Step 4:** `npm test`, `npm run lint`, `npm run build`, then `cd cloudflare && npx wrangler deploy --dry-run` → all pass.
-- [ ] **Step 5:** Commit.
+- [ ] **Step 1:** Failing test: `FIRST_CLASS_KEYS` has 12 unique entries, includes `554782`, `500216`, `prehled`; `isFirstClass('500216') === true`, `isFirstClass('538531') === false`.
+- [ ] **Step 2:** FAIL. **Step 3:** Implement. `scheduled()`: for each key in `FIRST_CLASS_KEYS`, with concurrency 4 and a 15 s `AbortSignal.timeout`, call the DO stub for that key via `env.FEED.get(env.FEED.idFromName(<same name the HTTP route uses: 'volby?z=<code>' or 'prehled'>)).fetch(<same internal request the HTTP route builds>)` — the implementer reads `worker.js:121-149` and reuses the exact helper; catch and `console.warn` errors.
+- [ ] **Step 4:** `npm test`, lint, build, `cd cloudflare && npm ci && npx wrangler deploy --dry-run` → PASS. Commit.
 
-### Task 5: Client scheduling and fallback removal (branch `p1/client`)
+### Task 5: Deploy 1a (maintainer: the orchestrator, not a Sonnet task)
 
-**Files:**
-- Create: `src/hooks/schedule.js`, `src/hooks/schedule.test.js`
-- Modify: `src/hooks/useLiveResults.js` (remove both `direct` feed constructors and every `goDirect` branch at about lines 35-66, 230-254; replace scheduling at about 150-156, 195-206, 345-352; timeout constant at 27)
+- [ ] **Step 1:** After Tasks 1–4 are merged and Opus-reviewed: `cd cloudflare && npx wrangler kv namespace create HLASENI`; paste the new id into `wrangler.jsonc`; commit.
+- [ ] **Step 2:** `npm ci && npm ci --prefix cloudflare && (cd cloudflare && npm run build && npx wrangler deploy)` → staging on workers.dev. Record the version id in `docs/ops/runbook.md`.
+- [ ] **Step 3:** Smoke: `curl -fsS` `/version.json`, `/api/prehled`, Magistrát and Praha 9 council API URLs (take exact paths from the app's own requests), `/humans.txt`, `/kontakt.txt`, `/.well-known/security.txt`; confirm the cron appears in `wrangler deployments`/dashboard logs (`wrangler tail` shows the scheduled invocation within 2 min).
+- [ ] **Step 4:** Add `routes: [{ pattern: "volby.dg12.cz", custom_domain: true }]`, redeploy, `curl -sI https://volby.dg12.cz/` and the endpoints. If the custom-domain step errors because a DNS record exists, **do not delete anything**; stop and report to the owner.
+- [ ] **Step 5:** Write `docs/ops/runbook.md` (deploy, rollback `wrangler rollback <id>`, logs, contact). Merge. **Phase 1a is live.**
+
+---
+
+# PHASE 1b (target staged ~13:30, deployed ~14:00)
+
+### Task 6: Merge and validate module (branch `p1/validate`)
+
+**Files:** Create `src/volby/validate.js`, `src/volby/validate.test.js`, `src/volby/__fixtures__/` (hand-written raw ČSÚ JSON: results summary, turnout rows, one precinct file — layouts at `feed.js:47-53`, `:98-100`, `:116-117`; plus `{}`, `[]`, `"<html>"`, truncated `{"prehled":[`).
 
 **Interfaces:**
-- Produces (`schedule.js`): `pickOffset(random) -> ms in [0, 25000]`; `nextPollDelay({ nextRefreshAt, now, offset, random }) -> ms` (≥ 5000; if `nextRefreshAt ≤ now` → `5000 + random*5000`; if undefined → `60000*(0.85+random*0.3)`); `backoffDelay(n, random) -> ms = random*min(300000, 5000*2**n)`; `wakeDelay(random) -> ms = random*60000`; `visibilityDelay(random) -> random*5000`.
-- Consumes: response meta from Task 4 (`nextRefreshAt`, `stale`).
+- `mergeCandidate(candidate, good, kind: 'council'|'overview') -> { merged, complete: boolean }` — council: copy votes from `good` for precincts where `candidate` has `votes:null` and `good` has votes with equal `voters/envelopes/validVotes`; overview: copy councils missing from `candidate.councils` from `good`; `complete:false` only if a precinct/council that had data in `good` still has none after the merge.
+- `validateCandidate(merged, good, ctx: { now: number, pollsClose: number, goodRefreshedAt: number, base: string, goodBase: string }) -> { outcome: 'ok'|'older'|'rejected', reason?: string }` implementing §3.2 exactly (baseline, structural rejects, older, content regression); uses `parseCsuTime(...).getTime()` for `generated`.
+- `snapshotHash(snapshot) -> string` excluding `generated` at every level, `fetchedAt`, `phase`, `missing`, `fetchId`, all response meta.
 
-- [ ] **Step 1:** Write failing tests for each helper (use fixed `random` stubs: 0, 0.5, 1) including: min gap 5 s; past `nextRefreshAt`; undefined `nextRefreshAt`; backoff caps at 300 s; `pickOffset(1) === 25000`.
-- [ ] **Step 2:** Run → FAIL.
-- [ ] **Step 3:** Implement `schedule.js`. Then modify `useLiveResults.js`: keep the snapshot cached in sessionStorage/state on failure (mark stale), retry the Worker only, schedule via helpers, per-tab offset created once per mount and kept in a ref, 25 s timeout, `online`/`visibilitychange` retries delayed by `visibilityDelay`, 14:00 pre-election wake uses `wakeDelay`.
-- [ ] **Step 4:** Add a grep-style test `src/no-direct-csu.test.js` that reads `src/**` (via `fs`) and fails if any file other than `src/councils.js`/`scripts`-only code references `volby.gov.cz` or `volby.cz` in a runtime fetch path (document the allowed file list in the test).
-- [ ] **Step 5:** `npm test`, lint, build → PASS. Commit.
+- [ ] **Step 1:** Failing tests: build candidates by running `createKvFeed({ fetchImpl })` / `createOverviewFeed({ fetchImpl })` on fixtures (C3/H4). Cases: `{}`/`[]` → rejected `parties-empty`/`generated-null`; HTML/truncated → feed throws (not validate); new precinct with `votes:null` → merged complete and ok; lost precinct filled from good; cold (no good) partial → installable; pre-14:00 baseline counted=50 then post-14:00 counted=0 → ok; `generated` older → `older`; counted decreased with advancing `generated` → `rejected:counted-decreased`; party votes dropped to 0 → rejected; overview council `parties.length===0` → rejected; `snapshotHash` equal when only `generated`/`fetchedAt` differ.
+- [ ] **Step 2:** FAIL. **Step 3:** Implement. **Step 4:** tests/lint → PASS. Commit.
 
-### Task 6: Deploy-safe reload and freshness UI (branch `p1/ui`)
+### Task 7: Feed layer (branch `p1/feed`)
 
-**Files:**
-- Modify: `src/components/UpdateManager.jsx` (gate at lines ~19-20, 83-114), `src/hooks/useUpdateCheck.js` (jittered interval), `src/components/ElectionHeader.jsx` (status area lines ~16-44, 237-324), `src/pages/CouncilApp.jsx` (~123, 299), `src/components/WelcomeGuide.jsx` (~65), `src/changelog.js` (~85), `src/pages/Landing.jsx` (contrast of last-updated text)
-- Create: `src/lib/freshness.js` + `src/lib/freshness.test.js` (pure formatting: `ageSeconds(now, generated)`, `formatAge(seconds) -> 'před 12 s'|'před 2 min'`, `nextCheckLabel(nextAt, now) -> 'M:SS'`, `liveState({snapshot, status, now, pollsClose}) -> 'live'|'pre'|'final'|'stale'|'offline'`)
+**Files:** Modify `src/volby/feed.js` (`createJsonCache` ~160-215, `createKvFeed` ~225-335, `build` ~286-317), `src/volby/overview.js` (~100-160; `waitMs` 20000 → 8000), tests `src/volby/feed.test.js`.
 
-**Interfaces:** Consumes `snapshot.generated`, `snapshot.refreshedAt`, `nextRefreshAt`, `stale` from Task 4/5.
+**Interfaces:**
+- `getJson.invalidate(path)`, `getJson.version(path) -> number` (incremented on every HTTP 200).
+- `createKvFeed({...}) -> { snapshot, build, invalidate }`, `createOverviewFeed({...}) -> { snapshot, build, invalidate }`; `build()` runs the inner build, **throws** on failure, does not set `last`, returns the snapshot with `fetchId`; `snapshot()` unchanged (Vercel still uses it).
+- Both accept `baseUrl` (already) — the DO passes `env.CSU_BASE`.
 
-- [ ] **Step 1:** Failing tests for `freshness.js`: age formatting boundaries (0 s, 59 s, 60 s, 3600 s); `liveState` returns `live` when clock is after `POLLS_CLOSE` and no snapshot yet (cold-load fix), `stale` when `snapshot.stale`, `offline` when `navigator.onLine === false` passed in.
-- [ ] **Step 2:** Run → FAIL. **Step 3:** Implement. Header shows on desktop and mobile: `ŽIVĚ` pill, `ČSÚ data z HH:MM:SS · před N s`, `další kontrola za M:SS`, one-line cadence text "ČSÚ zveřejňuje data zhruba jednou za minutu; stránka se obnovuje sama". Stale banner includes age. 503/no data: two plain `<a>` links (original: `https://github.com/jsemfast/pirati-vysledky-2026` README live link — implementer must read upstream README for the real site URL; ČSÚ: `https://www.volby.cz/`).
-- [ ] **Step 4:** `UpdateManager`: when `isElectionNight()` is true, visible tabs show a small "Nová verze — obnovit" button instead of auto-reload; hidden-tab reload unchanged; update-check interval `5 min × (0.8 + random*0.4)`.
-- [ ] **Step 5:** Fix wrong "každou minutu" copy at the three places. Tests/lint/build → PASS. Commit.
+- [ ] **Step 1:** Failing tests with fake `fetchImpl`: `build()` throws when the summary fetch fails (while `snapshot()` still returns old `last` stale); `fetchId` changes only when a new 200 arrives (304/cache replay keeps it); `invalidate()` forces the next call to refetch unconditionally; overview `waitMs` is 8000.
+- [ ] **Step 2:** FAIL. **Step 3:** Implement minimal. **Step 4:** tests/lint/build → PASS. Commit.
 
-### Task 7: Maintainer contact and mirror credit (branch `p1/contact`)
+### Task 8: Refresher (branch `p1/refresh`)
 
-**Files:**
-- Create: `public/humans.txt`, `public/kontakt.txt`, `public/.well-known/security.txt`
-- Modify: `index.html` (HTML comment + `<noscript>`/pre-hydration block with name, role and phone in small text), the app footer component (find via `grep -rn "footer" src/`) with one tiny low-contrast line
-- Test: `src/contact.test.js`
+**Files:** Create `cloudflare/refresh.js`, `cloudflare/refresh.test.js`.
 
-- [ ] **Step 1:** Failing test: reads those files and asserts each contains `Václav Vislous`, `777 954 389` (or `+420777954389` in security.txt), the phrase `manages this fork` (English files) / `spravuje tuto kopii` (Czech files), and does **not** contain the word `author`/`autor` describing him; asserts `index.html` contains the phone; asserts the footer string exists in `src/`.
-- [ ] **Step 2:** Run → FAIL. **Step 3:** Create content. `security.txt` needs `Contact: tel:+420777954389` and `Expires: 2027-10-10T00:00:00Z`. Footer text: `Záložní kopie originálu jsemfast/pirati-vysledky-2026 · správce kopie: Václav Vislous · 777 954 389`.
-- [ ] **Step 4:** Tests/lint/build → PASS. Commit.
+**Interfaces:**
+- Consumes `mergeCandidate`, `validateCandidate`, `snapshotHash` (Task 6); feed `{ build, invalidate }` (Task 7); `parseCsuTime` (`src/volby/format.js`).
+- Produces `createRefresher({ now, random, storage: { get(k), put(obj) }, feed, kind: 'council'|'overview', phaseOf, firstClass: boolean, base: string, log, waitMs? })` → `{ get(): Promise<{ status: 200|503, body: string, meta }> }` where `body` is the persisted JSON string with meta spliced in (`refreshedAt, nextRefreshAt, servedAt, stale, complete, refreshing`) and `computeNextRefreshAt({ phase, refreshedAt, generatedMs, now, failures, random }) -> ms`.
+- `REFRESH` constants object with the Global Constraints values.
 
-### Task 8: Infrastructure, staging, burst check, production (sequential; maintainer-agent, not a Sonnet worktree task)
+- [ ] **Step 1:** Failing tests (fake clock/timers/storage/feed; `TZ=UTC`):
+  1. Cold, no snapshot: `get()` awaits one build, persists `{snapshot, meta}` in **one** `put`.
+  2. 2 000 concurrent `get()` when due → exactly one `build`; all but a cold caller get the old snapshot immediately.
+  3. Not due → no build. Due → old snapshot immediately, new one on the next `get()`.
+  4. Zone-less `generated` `'2026-10-10T14:31:05'`, `refreshedAt = Date.parse('2026-10-10T14:31:20+02:00')` → `nextRefreshAt = Date.parse('2026-10-10T14:32:05+02:00')` (**C1**, run under TZ=UTC); `generated` hours in the future → `refreshedAt+20 s`; null → `+20 s`; waiting → `+60 s`; final → `+10 min`; pre at 13:58 → `14:00:00+02:00`.
+  5. `build` throws / 12 s timeout / `rejected` → snapshot unchanged, `stale:true`, retry delays 20 s then 20–40 s then 20–60 s (assert with `random()=1` → 20/40/60 and `random()=0` → 20/20/20) and `feed.invalidate()` called on `rejected`.
+  6. **Merge (C3):** new precinct with `votes:null` replaces the snapshot, not stale; lost precinct filled; cold DO with only a partial build installs it; `complete:false` never counted toward quarantine, retried at 20 s.
+  7. **Baseline/older/regression (C4):** pre-14:00 baseline then post-14:00 `counted=0` → accepted; `older` → good kept, `stale:false`, no backoff, still not installed after 5 repeats; counted regression with advancing `generated` on 3 distinct `fetchId`s spanning ≥ 2 min → accepted (`quarantine-accepted` logged); same `fetchId` replays don't count.
+  8. Rehydrate: new instance over same storage serves the snapshot with no build when not due; discards on `meta.base` or `meta.schema` mismatch; two concurrent `get()` on a fresh instance → one storage read (**L15**).
+  9. Size guard: snapshot > 1.5 MB UTF-8 bytes (multi-byte Czech text) → no `put`, memory only, one log.
+  10. **S2 simulated run:** 5 simulated minutes, ČSÚ publishes every 60 s (advancing `generated`), 50 `get()`/s → `build` count ∈ [5, 15]; ČSÚ unchanged → ≈ 1 per 20 s.
+  11. **Second class bounded wait:** `firstClass:false`, snapshot older than 2 min → `get()` waits ≤ 3 s for the refresh then returns current (or old with `refreshing:true` when the wait expires); younger → immediate.
+- [ ] **Step 2:** FAIL. **Step 3:** Implement `refresh.js` per §3.1–3.2. **Step 4:** tests/lint → PASS. Commit.
 
-**Files:** `cloudflare/wrangler.jsonc`, `docs/ops/runbook.md`, `scripts/burst.mjs`
+### Task 9: Worker wiring 1b (branch `p1/worker-1b`)
 
-- [ ] **Step 1:** Edit `wrangler.jsonc`: `account_id` → `741febb7a315a409b83e5a9a1b62954d`; `name` → `pirati-volby-zaloha`; run `npx wrangler kv namespace create HLASENI` and put the new id; keep `workers_dev: true`; do not set `GITHUB_TOKEN`.
-- [ ] **Step 2:** `cd cloudflare && npm ci && npm run build && npx wrangler deploy` → staging URL `https://pirati-volby-zaloha.<subdomain>.workers.dev`. Record `wrangler deployments list` version id in the runbook.
-- [ ] **Step 3:** Smoke: `curl -s <staging>/api/prehled | head`, Magistrát and Praha 9 council API URLs (take the exact paths from the app's network calls), `/version.json`; check JSON includes `nextRefreshAt`, `stale:false`, `complete:true`.
-- [ ] **Step 4:** `scripts/burst.mjs` (Node fetch loop, 300 concurrent for 60 s against the three priority endpoints, prints status histogram, p50/p95, distinct `refreshedAt` values). Run it; expect ≤ ~3 distinct refreshes per feed per minute; read `wrangler tail` for the refresh logs.
-- [ ] **Step 5:** Failure drill on staging: temporarily deploy with `CSU_BASE` pointing at a closed port (a second throwaway Worker env or `wrangler dev --var CSU_BASE:…` locally), confirm `stale:true` is served and recovery works; then restore.
-- [ ] **Step 6:** Attach `volby.dg12.cz` as a Worker custom domain (`routes: [{ pattern: "volby.dg12.cz", custom_domain: true }]` in `wrangler.jsonc`), redeploy, verify `curl -sI https://volby.dg12.cz/` and the three endpoints. If the custom-domain step errors because a DNS record already exists, **do not delete it**: stop and report to the owner.
-- [ ] **Step 7:** Write `docs/ops/runbook.md` (deploy, rollback `wrangler rollback <id>`, where logs are, kill switches, contact). Commit and merge.
+**Files:** Modify `cloudflare/worker.js` (Feed DO ~83-103, edge handler ~105-172), `api/_http.js`; Create `api/_http.test.js`.
+
+**Interfaces:**
+- `edgeTtl({ nextRefreshAt, now, stale, phase }) -> integer seconds` per Global Constraints (floor 1, caps); `cacheControl(ttl) -> 'public, max-age=0, s-maxage=<ttl>'`.
+- Consumes `createRefresher` (Task 8), feeds `build/invalidate` (Task 7), `isFirstClass` (Task 4).
+
+- [ ] **Step 1:** Failing tests for `edgeTtl` (past → 1; 3 s → 3; 40 s → 5; stale with 40 s → 5; final with 400 s → 400; pre with 1000 s → 300) and `cacheControl`.
+- [ ] **Step 2:** FAIL. **Step 3:** Implement: each `Feed` DO builds its feed with `baseUrl: this.env.CSU_BASE || KV_BASE_URL`, creates the refresher (storage = `ctx.storage`, `firstClass = isFirstClass(key)`, `base = baseUrl`) in the constructor wrapped in `ctx.blockConcurrencyWhile` for rehydrate; request handler returns the refresher body with `Cache-Control` from `cacheControl(edgeTtl(...))`; Worker: after a DO 200 also `cache.put(lastResortKey, resp)` with key `new Request(new URL('/__lastresort' + path, origin))` and 600 s TTL; serve it (as `stale:true`) when the DO throws **or** `status >= 500`; `reply()` adds `x-server-now`; keep the `scheduled()` from Task 4.
+- [ ] **Step 4:** `npm test`, lint, build, `cd cloudflare && npm ci && npx wrangler deploy --dry-run` → PASS. Commit.
+
+### Task 10: Client scheduler, skew and freshness UI (branch `p1/client-1b`)
+
+**Files:** Create `src/hooks/schedule.js`, `schedule.test.js`, `src/lib/freshness.js`, `freshness.test.js`. Modify `src/hooks/useLiveResults.js` (~23-27, 150-156, 195-206, 345-352), `src/components/ElectionHeader.jsx` (~16-44, 237-324), `src/pages/CouncilApp.jsx` (~122-123, 299), `src/components/WelcomeGuide.jsx` (~65), `src/changelog.js` (~85). Must not touch `Landing.jsx:494-516` or `CouncilApp.jsx:~419` (Task 3 owns them).
+
+**Interfaces:**
+- `pickOffset(random) -> ms in [0,25000]`; `nextPollDelay({ nextRefreshAt, now, offset, random }) -> ms` (≥ 5000; `nextRefreshAt ≤ now` → `5000 + random*5000`; undefined → `60000*(0.85+random*0.3)`); `backoffDelay(n, random) -> ms ≥ 5000`; `visibilityDelay(random) -> random*5000`; `computeSkew(serverNowHeader, clientNow) -> ms`.
+- `ageSeconds(nowCorrected, generated) -> integer ≥ 0` (uses `parseCsuTime`); `formatAge(s)`; `nextCheckLabel(nextAt, nowCorrected) -> 'M:SS'`; `liveState({ snapshot, status, now, pollsClose, online }) -> 'live'|'pre'|'final'|'stale'|'offline'` (cold load after 14:00 with no snapshot → `live`).
+
+- [ ] **Step 1:** Failing tests: min gap 5 s; past `nextRefreshAt` → 5–10 s; undefined → 60 s ±15 %; backoff cap 300 s and floor 5 s; `pickOffset(1) === 25000`; **client clock +120 s with the server's `x-server-now` → normal delay, not 5–10 s (Review Focus 5)**; `ageSeconds` clamps ≥ 0; `liveState` cold-load case; age/label boundaries (0, 59, 60, 3600 s).
+- [ ] **Step 2:** FAIL. **Step 3:** Implement helpers; wire `useLiveResults.js` (read `x-server-now` from the response, per-tab offset in a ref created once, 25 s timeout, delayed `online`/`visibilitychange` retries, no separate `wakeDelay`). Header on desktop **and** mobile: `ŽIVĚ` pill, `ČSÚ data z HH:MM:SS · před N s`, `další kontrola za M:SS`, cadence sentence; stale banner with age; 503 + no snapshot → two plain links (original site; the ČSÚ link already present in the app); fix the three wrong "každou minutu" strings.
+- [ ] **Step 4:** tests/lint/build + `! grep -rl "appdata/kv2026" dist/assets` → PASS. Commit.
+
+### Task 11: Deploy 1b (orchestrator)
+
+- [ ] **Step 1:** Merge Tasks 6–10 after each Opus diff review; run the full `npm test && npm run lint && npm run build` on `main`.
+- [ ] **Step 2:** **Codex review of the whole diff** vs upstream base `98d6bc6` (`CODEX_REVIEW_MODEL=gpt-5.6-sol tools/codex-review.sh --scope code --base 98d6bc6 --spec docs/superpowers/specs/2026-10-10-election-night-backup-design.md`); fix CRITICAL/HIGH; one confirming round only if a CRITICAL/HIGH was fixed.
+- [ ] **Step 3:** Local drills under `wrangler dev` with a mock ČSÚ (`counted > 0`, `generovano` advancing every 60 s): cadence ≈ 1 refresh/20–60 s under `scripts/burst.mjs` load (300 concurrent, 60 s); forced upstream failure → `stale:true`; empty body → unchanged; restart → snapshot survives. Failure drills **never** on `pirati-volby-zaloha`.
+- [ ] **Step 4:** Record the previous version id; `cd cloudflare && npm run build && npx wrangler deploy`; watch `wrangler tail` for the first refreshes of Magistrát, Praha 9 and `prehled`; staging checks: two consecutive `x-cache: HIT` responses never carry a `refreshedAt` > 65 s older than the preceding MISS; `x-server-now` present.
+- [ ] **Step 5:** Update the runbook; merge. **Phase 1b is live.** Then Phase 2 (row flash, latency display, harness) in the quiet window.
 
 ---
 
 ## Merge order and parallelism
 
-Task 1 first (everything depends on `npm test`). Then Tasks 2, 5 (schedule/UI parts that don't need Task 4's code), 6, 7 can run in parallel worktrees; Task 3 after 2; Task 4 after 3; Task 5's integration with real responses after 4. Each task: Sonnet implements → `npm test && npm run lint && npm run build` → Opus reviews the diff → merge to `main`. After Tasks 1–7 merge: one Codex pass over the whole diff (`main` vs upstream commit `98d6bc6`), fix CRITICAL/HIGH, then Task 8.
+1 → (2, 3, 4 in parallel) → 5 [**1a live**]. In parallel with 1a: 6 and 7 (independent files), then 8 (needs 6 + 7 interfaces; may start as soon as their signatures are merged), then 9 (needs 8, after 4 because both edit `worker.js`), 10 (after 2 because both edit `useLiveResults.js`; independent of 8/9 via the response contract), then 11. Per task: Sonnet implements → `npm test && npm run lint && npm run build` → Opus diff review → merge. Codex runs once on the whole diff (Task 11 Step 2); spec+plan Codex review happens before Task 1 starts.
 
 ## Self-review notes
 
-- Spec coverage: S1→Task 5 step 4; S2/S3/S4→Tasks 2–4; S5→Tasks 3,5; S6→Task 6; S7→Task 6; S8→Task 7; deploy/domain/rollback→Task 8; §3.3 edge TTL + last-resort→Task 4; §3.2 order of operations→Task 4; quarantine→Task 3.
-- Phase 2 items intentionally absent: Codex wrapper vendoring, typecheck, row flash, latency display, bug-endpoint hardening.
-- Known soft spot to resolve by reading code (not a placeholder): exact Magistrát/Praha 9 council API paths and the original site's live URL are discovered by the implementer from the app's existing code/README.
+- Spec coverage: S1 → Tasks 2, 10 + CI grep; S2 → Task 8 test 10; S3 → Tasks 6, 8; S4 → Task 8 test 8; S5 → Tasks 8–10; S6 → Task 2; S7 → Task 10; S8 → Task 3 + Task 5 curl; S9 → Tasks 4, 8 (test 11), 9; last-resort/edge/`x-server-now` → Task 9; guards/wrangler swap → Task 1; domain → Task 5.
+- Phase 2 intentionally absent: row flash, arrows, latency display, harness extras, README.
+- Soft spots resolved by the implementer reading code (not placeholders): exact Magistrát/Praha 9 API paths and the DO naming helper in `worker.js:121-149`; the original site's live URL for the fallback links (read upstream README).
