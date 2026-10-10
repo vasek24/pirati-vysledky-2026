@@ -9,19 +9,19 @@ Váš seznam (`docs/analysis/mesta-towns.txt`) jsme nebrali jako hotový: každ�
 - ČSÚ senátní obvody 2026 (obvody.json): https://volby.gov.cz/appdata/senat/20261009/navig/obvody.json (čas souboru v cache 2026-10-10T10:42:00.280Z, sha256 `777b8c7eafea008c…`)
 - ČSÚ Počet obyvatel v obcích k 1. 1. 2025 (13007225_data.zip): https://csu.gov.cz/docs/107508/31d73e49-141b-ecbc-3bcc-4089cac638c3/13007225_data.zip?version=1.1 (čas souboru v cache 2026-10-10T10:52:37.735Z, sha256 `2cef401562d24036…`)
 - Počty obyvatel k 1. 1. 2025 (kontrola pásma): načteno z tabulky ČSÚ
-- Kontrola jmenným seznamem kandidátů (jmsez): 78 měst
+- Kontrola jmenným seznamem kandidátů (jmsez): 81 měst
 
 ## Počty
 
-- potvrzeno: 73
-- zamítnuto z vašeho seznamu: 15
+- potvrzeno: 76
+- zamítnuto z vašeho seznamu: 12
 - na vašem seznamu celkem: 88 (soubor `docs/analysis/mesta-towns.txt` má 88 jmen: součet sedí)
 - splňují pravidla, ale nejsou na vašem seznamu: 5
 - hraniční města zařazená (důvod zařazení vyplněn): 3 (Nové Město na Moravě, Mikulov, Rychvald)
 - hraniční města bez důvodu, nezařazená: 6
 - mimo soubor seznamu, zmíněno vámi: Litovel – viz tabulka 2 (nepočítá se do 88)
 
-## 1. Potvrzená města z vašeho seznamu (73)
+## 1. Potvrzená města z vašeho seznamu (76)
 
 | Kraj | Město | Kód obce | Obyvatel (2026 / 2025) | Typ | Zařazení | Důvod zařazení<br><sub>borderline_reason</sub> | Poznámky generátoru | Na vašem seznamu |
 |---|---|---|---|---|---|---|---|---|
@@ -63,9 +63,11 @@ Váš seznam (`docs/analysis/mesta-towns.txt`) jsme nebrali jako hotový: každ�
 | Liberecký kraj | **Jablonec nad Nisou** | 563510 | 46 206 / 46 209 | b | zařazeno automaticky | – | – | ano |
 | Liberecký kraj | **Liberec** | 563889 | 108 214 / 108 090 | b | zařazeno automaticky | – | – | ano |
 | Liberecký kraj | **Turnov** | 577626 | 14 607 / 14 577 | a | zařazeno automaticky | – | – | ano |
+| Královéhradecký kraj | **Dvůr Králové nad Labem** | 579203 | 15 316 / 15 322 | b | zařazeno automaticky | – | na pirátské kandidátce není žádný člen Pirátů | ano |
 | Královéhradecký kraj | **Hradec Králové** | 569810 | 93 534 / 94 311 | b | zařazeno automaticky | – | – | ano |
 | Královéhradecký kraj | **Jaroměř** | 574121 | 12 487 / 12 483 | b | zařazeno automaticky | – | – | ano |
 | Královéhradecký kraj | **Jičín** | 572659 | 16 052 / 16 101 | b | zařazeno automaticky | – | kraj se liší od vašeho seznamu | ano |
+| Královéhradecký kraj | **Náchod** | 573868 | 19 649 / 19 827 | b | zařazeno automaticky | – | na pirátské kandidátce není žádný člen Pirátů | ano |
 | Královéhradecký kraj | **Rychnov nad Kněžnou** | 576069 | 11 693 / 11 420 | b | zařazeno automaticky | – | – | ano |
 | Pardubický kraj | **Česká Třebová** | 580031 | 14 982 / 15 010 | b | zařazeno automaticky | – | – | ano |
 | Pardubický kraj | **Chrudim** | 571164 | 23 562 / 23 564 | b | zařazeno automaticky | – | – | ano |
@@ -84,6 +86,7 @@ Váš seznam (`docs/analysis/mesta-towns.txt`) jsme nebrali jako hotový: každ�
 | Olomoucký kraj | **Prostějov** | 589250 | 43 236 / 43 408 | b | zařazeno automaticky | – | – | ano |
 | Olomoucký kraj | **Přerov** | 511382 | 40 492 / 40 906 | b | zařazeno automaticky | – | – | ano |
 | Olomoucký kraj | **Uničov** | 505587 | 11 060 / 11 237 | b | zařazeno automaticky | – | jmenuje se „Česká pirátská strana“, ale je to sdružení | ano |
+| Zlínský kraj | **Holešov** | 588458 | 11 544 / 11 616 | b | zařazeno automaticky | – | na pirátské kandidátce není žádný člen Pirátů | ano |
 | Zlínský kraj | **Kroměříž** | 588296 | 27 781 / 27 917 | b | zařazeno automaticky | – | – | ano |
 | Zlínský kraj | **Otrokovice** | 585599 | 17 239 / 17 401 | b | zařazeno automaticky | – | – | ano |
 | Zlínský kraj | **Rožnov pod Radhoštěm** | 544841 | 15 916 / 16 063 | b | zařazeno automaticky | – | – | ano |
@@ -99,7 +102,7 @@ Váš seznam (`docs/analysis/mesta-towns.txt`) jsme nebrali jako hotový: každ�
 | Moravskoslezský kraj | **Orlová** | 599069 | 27 383 / 27 540 | b | zařazeno automaticky | – | – | ano |
 | Moravskoslezský kraj | **Ostrava** | 554821 | 280 853 / 283 187 | a | zařazeno automaticky | – | – | ano |
 
-## 2. Zamítnutá města z vašeho seznamu (15 + 1 mimo soubor seznamu)
+## 2. Zamítnutá města z vašeho seznamu (12 + 1 mimo soubor seznamu)
 
 | Kraj | Město | Kód obce | Obyvatel (2026 / 2025) | Typ | Zařazení | Důvod zařazení<br><sub>borderline_reason</sub> | Poznámky generátoru | Důvod zamítnutí |
 |---|---|---|---|---|---|---|---|---|
@@ -113,11 +116,8 @@ Váš seznam (`docs/analysis/mesta-towns.txt`) jsme nebrali jako hotový: každ�
 | Ústecký kraj | **Jirkov** | 563099 | 19 067 / 19 240 | c | vyřazeno | – | – | typ c: Piráti tu jsou jen na kandidátkách jiných stran; 19 067 obyvatel |
 | Ústecký kraj | **Krupka** | 567639 | 12 731 / 12 793 | c | vyřazeno | – | – | typ c: Piráti tu jsou jen na kandidátkách jiných stran; 12 731 obyvatel |
 | Ústecký kraj | **Litoměřice** | 564567 | 22 627 / 22 767 | c | vyřazeno | – | – | typ c: Piráti tu jsou jen na kandidátkách jiných stran; 22 627 obyvatel |
-| Královéhradecký kraj | **Dvůr Králové nad Labem** | 579203 | 15 316 / 15 322 | b | vyřazeno | – | na pirátské kandidátce není žádný člen Pirátů | Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) |
-| Královéhradecký kraj | **Náchod** | 573868 | 19 649 / 19 827 | b | vyřazeno | – | na pirátské kandidátce není žádný člen Pirátů | Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) |
 | Královéhradecký kraj | **Trutnov** | 579025 | 29 337 / 29 607 | c | vyřazeno | – | – | typ c: Piráti tu jsou jen na kandidátkách jiných stran; 29 337 obyvatel |
 | Olomoucký kraj | **Litovel** | 503444 | 9 448 / 9 510 | d | vyřazeno | – | – | typ d: Piráti tu nekandidují (podle registru ČSÚ); 9 448 obyvatel; Litovel je senátní obvod 66 (volby 2026); případná pirátská vazba patří do Senátu, ne do tohoto produktu; není na vašem seznamu, uvedli jste ho jako příklad (ne – mimo soubor seznamu) |
-| Zlínský kraj | **Holešov** | 588458 | 11 544 / 11 616 | b | vyřazeno | – | na pirátské kandidátce není žádný člen Pirátů | Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) |
 | Moravskoslezský kraj | **Havířov** | 555088 | 67 998 / 68 674 | d | vyřazeno | – | – | typ d: Piráti tu nekandidují (podle registru ČSÚ); 67 998 obyvatel |
 
 ## 3. Splňují pravidla, ale nejsou na vašem seznamu (5)

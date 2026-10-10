@@ -1,7 +1,7 @@
 {
  "status": "ok",
  "source": "https://volby.gov.cz/appdata/kv2026/20261009/jmsez/<okres>/<zastup>.json",
- "fetched": 78,
+ "fetched": 81,
  "failed": [],
  "towns": {
  "500496": {"name":"Olomouc","okres":7102,"generated":"2026-10-08T16:40:31","mismatch":false, "rows": [
@@ -371,6 +371,7 @@
  "572659": {"name":"Jičín","okres":5202,"generated":"2026-10-08T16:40:24","mismatch":false, "rows": [
   {"list":9,"n":1,"name":"Ent Jan","prislusnost":"Piráti"}
  ]},
+ "573868": {"name":"Náchod","okres":5203,"generated":"2026-10-08T16:40:35","mismatch":false, "rows": []},
  "574121": {"name":"Jaroměř","okres":5203,"generated":"2026-10-08T16:40:30","mismatch":false, "rows": [
   {"list":6,"n":4,"name":"Picek Marek Mgr.","prislusnost":"Piráti"}
  ]},
@@ -382,6 +383,7 @@
   {"list":2,"n":2,"name":"Havlík Daniel","prislusnost":"Piráti"},
   {"list":2,"n":4,"name":"Poslušný František","prislusnost":"Piráti"}
  ]},
+ "579203": {"name":"Dvůr Králové nad Labem","okres":5205,"generated":"2026-10-08T16:40:38","mismatch":false, "rows": []},
  "580031": {"name":"Česká Třebová","okres":5304,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
   {"list":2,"n":2,"name":"Ducháček Jiří","prislusnost":"Piráti"},
   {"list":2,"n":6,"name":"Saifrt Martin","prislusnost":"Piráti"},
@@ -466,6 +468,7 @@
   {"list":7,"n":23,"name":"Válková Marcela Mgr.","prislusnost":"Piráti"},
   {"list":7,"n":26,"name":"Skopalová Jana Ing.","prislusnost":"Piráti"}
  ]},
+ "588458": {"name":"Holešov","okres":7201,"generated":"2026-10-08T16:40:39","mismatch":false, "rows": []},
  "589250": {"name":"Prostějov","okres":7103,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
   {"list":1,"n":1,"name":"Mochťák Jan Ing. Mgr.","prislusnost":"Piráti"},
   {"list":1,"n":2,"name":"Čečmanová Adéla Mgr.","prislusnost":"Piráti"},
