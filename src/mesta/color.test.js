@@ -13,6 +13,11 @@ describe('isNearWhite', () => {
         expect(isNearWhite('#000000')).toBe(false);
         expect(isNearWhite('#E0E0E0')).toBe(false);
     });
+    it('hranice luma 0.92', () => {
+        expect(isNearWhite('#EBEBEB')).toBe(true);
+        expect(isNearWhite('#EAEAEA')).toBe(false);
+        expect(isNearWhite('#FFFA4C')).toBe(true);
+    });
     it('neplatný vstup je false', () => {
         expect(isNearWhite('')).toBe(false);
         expect(isNearWhite(null)).toBe(false);
