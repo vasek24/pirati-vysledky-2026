@@ -3,7 +3,7 @@
 // Jediné, co se formátuje z dat, je podíl `c.pct` a počet hlasů.
 import { CHIP, T } from './text.js'
 import { nf, pc } from './format.js'
-import { currentRound, roundStats } from './view.js'
+import { currentRound, progressText, roundOf, roundStats } from './view.js'
 
 // „1 hlas“, „2 hlasy“, „5 hlasů“ (22 → hlasy, 12 → hlasů)
 export function votesText(n) {
@@ -24,6 +24,11 @@ const officialWhy = (o, c) =>
 // -> { cls, chip, why } (cls = třída čipu bez prefixu: leading = plný okraj čárkovaně, second, behind, …)
 export function outlookView(o, c) {
   if (c.official) return { cls: c.status, chip: CHIP[c.status], why: officialWhy(o, c) }
+  if (c.status === 'early') {
+    // málo sečtených okrsků: čip „Sčítá se“ a věta s počty, žádné „Předběžně“, žádný mandát ani náskok
+    const r = roundStats(o, roundOf(o, c))
+    return { cls: 'early', chip: CHIP.early, why: r ? T.whyEarly(nf(r.okrskyZprac), nf(r.okrskyCelkem), progressText(r)) : '' }
+  }
   const kind = c.outlook
   if (kind === undefined) return { cls: c.status, chip: CHIP[c.status] + T.provisional, why: '' } // starší snapshot
   if (kind === null) {

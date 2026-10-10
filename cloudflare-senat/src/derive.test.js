@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { derive, STATUSES } from './derive.js'
+import { derive, STATUSES, MIN_COUNTED } from './derive.js'
 
 const STATES = [
   'waiting', 'counting', 'counted', 'runoff', 'runoff-counting', 'runoff-counted', 'elected', 'tie',
@@ -471,17 +471,18 @@ describe('derive: Pirates and summary', () => {
       obvod(2, { r1: [4, 10, 100], cands: [cand(1, 50, P), cand(2, 30, P), cand(3, 20, P)] }), // counting
       obvod(3, { r1: [10, 10, 100], cands: [cand(1, 60, P), cand(2, 40)] }), // counted
       obvod(4, { r1: [10, 10, 100], cands: [cand(1, 40, { st1: '2.KOLO', pirate: 'endorsed' }), cand(2, 35, { st1: '2.KOLO' }), nz()] }), // runoff
-      obvod(5, { r1: [10, 10, 100], r2: [2, 10, 100], cands: [cand(1, 40, { st1: '2.KOLO', votes2: 60, pirate: 'endorsed' }), cand(2, 35, { st1: '2.KOLO', votes2: 40, pirate: 'endorsed' }), nz()] }), // runoff-counting
+      obvod(5, { r1: [10, 10, 100], r2: [3, 10, 100], cands: [cand(1, 40, { st1: '2.KOLO', votes2: 60, pirate: 'endorsed' }), cand(2, 35, { st1: '2.KOLO', votes2: 40, pirate: 'endorsed' }), nz()] }), // runoff-counting
       obvod(6, { r1: [10, 10, 100], r2: [10, 10, 100], cands: [cand(1, 40, { st1: '2.KOLO', votes2: 60 }), cand(2, 35, { st1: '2.KOLO', votes2: 40 }), nz()] }), // runoff-counted
       obvod(7, { r1: [10, 10, 100], cands: [cand(1, 60, { st1: 'ZVOLEN', pirate: 'ticket' }), cand(2, 40, { st1: 'NEZVOLEN', pirate: 'endorsed' })] }), // elected r1
       obvod(8, { r1: [10, 10, 100], r2: [10, 10, 100], cands: [cand(1, 40, { st1: '2.KOLO', votes2: 60, st2: 'ZVOLEN', pirate: 'ticket' }), cand(2, 35, { st1: '2.KOLO', votes2: 40, st2: 'NEZVOLEN', pirate: 'endorsed' }), nz()] }), // elected r2
       obvod(9, { r1: [10, 10, 100], r2: [10, 10, 100], cands: [cand(1, 40, { st1: '2.KOLO', votes2: 50, st2: 'NEZVOLEN_SHODA_HLASU', pirate: 'ticket' }), cand(2, 35, { st1: '2.KOLO', votes2: 50, st2: 'NEZVOLEN_SHODA_HLASU' }), nz({ pirate: 'endorsed' })] }), // tie
+      obvod(10, { r1: [1, 10, 100], cands: [cand(1, 60, P), cand(2, 40)] }), // counting, too few precincts: early
     )
   }
 
   it('every state and every status is reachable', () => {
     const out = derive(everything())
-    expect(out.obvody.map((o) => o.state)).toEqual(STATES.slice(0, 7).concat('elected', 'tie'))
+    expect(out.obvody.map((o) => o.state)).toEqual(STATES.slice(0, 7).concat('elected', 'tie', 'counting'))
     expect(new Set(out.obvody.map((o) => o.state))).toEqual(new Set(STATES))
     const seen = new Set(out.obvody.flatMap((o) => o.candidates.map((c) => c.status)))
     expect(seen).toEqual(new Set(STATUSES))
@@ -491,14 +492,14 @@ describe('derive: Pirates and summary', () => {
     const out = derive(everything())
     const s = out.summary
     expect(s).toMatchObject({
-      obvody: 9, decided: 2, runoff: 2, awaitingOfficial: 2, counting: 1, waiting: 1, ties: 1,
+      obvody: 10, decided: 2, runoff: 2, awaitingOfficial: 2, counting: 2, waiting: 1, ties: 1,
     })
     expect(s.decided + s.runoff + s.awaitingOfficial + s.counting + s.waiting + s.ties).toBe(s.obvody)
     expect(s.pirates.total).toBe(out.obvody.flatMap((o) => o.candidates).filter((c) => c.pirate).length)
     expect(Object.values(s.pirates.byStatus).reduce((a, b) => a + b, 0)).toBe(s.pirates.total)
     expect(s.pirates.byStatus).toMatchObject({
       elected: 2, runoffLost: 1, runoffTie: 1, notAdvancing: 2, advancing: 1,
-      leading: 2, second: 1, behind: 1, waiting: 1, runoffLeading: 1, runoffBehind: 1,
+      leading: 2, second: 1, behind: 1, waiting: 1, runoffLeading: 1, runoffBehind: 1, early: 1,
     })
   })
 
@@ -509,5 +510,74 @@ describe('derive: Pirates and summary', () => {
     ))
     expect(out.summary).toMatchObject({ obvody: 2, decided: 0, waiting: 2 })
     expect(out.summary.pirates).toMatchObject({ total: 2, byStatus: { waiting: 2 } })
+  })
+})
+
+describe('derive: too few precincts counted -> status early (MIN_COUNTED)', () => {
+  const earlyFields = (k) => ({ status: k.status, official: k.official, outlook: k.outlook, gap: k.gap, majority: k.majority })
+  const NONE = { status: 'early', official: false, outlook: null, gap: null, majority: false }
+
+  it('MIN_COUNTED is 25 %', () => {
+    expect(MIN_COUNTED).toBe(0.25)
+  })
+
+  it('1 of 242 precincts: everybody early, no outlook/gap/majority even with a 56 % share; state stays counting', () => {
+    const o = one({ r1: [1, 242, 44], cands: [cand(1, 25, P), cand(2, 19, P)] }) // 56.8 %
+    expect(o.state).toBe('counting')
+    expect(o.candidates.map(earlyFields)).toEqual([NONE, NONE])
+    expect(o.candidates.map((k) => k.rank)).toEqual([1, 2]) // numbers stay, no claim
+  })
+
+  it('60 of 242 (24.8 %) is early; 61 of 242 (25.2 %) and exactly 25 % behave normally', () => {
+    const early = one({ r1: [60, 242, 100], cands: [cand(1, 60), cand(2, 40)] })
+    expect(early.candidates.map((k) => k.status)).toEqual(['early', 'early'])
+    expect(early.candidates.map((k) => k.outlook)).toEqual([null, null])
+    const over = one({ r1: [61, 242, 100], cands: [cand(1, 60), cand(2, 40)] })
+    expect(over.candidates.map((k) => k.status)).toEqual(['leading', 'second'])
+    expect(over.candidates.map((k) => k.outlook)).toEqual(['mandate', 'out'])
+    const exact = one({ r1: [25, 100, 100], cands: [cand(1, 60), cand(2, 40)] })
+    expect(exact.candidates.map((k) => k.status)).toEqual(['leading', 'second'])
+    expect(exact.candidates[0].outlook).toBe('mandate')
+  })
+
+  it('official flags are never affected (ZVOLEN / 2.KOLO / NEZVOLEN at 1 of 242)', () => {
+    const el = one({ r1: [1, 242, 100], cands: [cand(1, 60, { st1: 'ZVOLEN', ...P }), cand(2, 40, { st1: 'NEZVOLEN' })] })
+    expect(statuses(el)).toEqual(['elected', 'notAdvancing'])
+    expect(el.candidates.every((k) => k.official)).toBe(true)
+    const ad = one({ r1: [1, 242, 100], cands: [cand(1, 40, { st1: '2.KOLO' }), cand(2, 35, { st1: '2.KOLO' }), cand(3, 25, { st1: 'NEZVOLEN' })] })
+    expect(statuses(ad)).toEqual(['advancing', 'advancing', 'notAdvancing'])
+  })
+
+  it('an unflagged candidate next to an official one is still early', () => {
+    const o = one({ r1: [1, 242, 100], cands: [cand(1, 60, { st1: 'ZVOLEN' }), cand(2, 40)] })
+    expect(statuses(o)).toEqual(['elected', 'early'])
+    expect(o.candidates[1].outlook).toBeNull()
+  })
+
+  it('round 2: 1 of 242 -> finalists early instead of runoffLeading/runoffBehind; 25 % normal; official unchanged', () => {
+    const fin = (v2, extra = {}) => cand(1, 40, { st1: '2.KOLO', votes2: v2, ...extra })
+    const nz = cand(3, 20, { st1: 'NEZVOLEN' })
+    const o = one({ r1: [242, 242, 100], r2: [1, 242, 100], cands: [fin(60), cand(2, 35, { st1: '2.KOLO', votes2: 40 }), nz] })
+    expect(o.state).toBe('runoff-counting')
+    expect(o.candidates.map(earlyFields).slice(0, 2)).toEqual([NONE, NONE])
+    expect(o.candidates[2].status).toBe('notAdvancing')
+    const ok = one({ r1: [242, 242, 100], r2: [61, 242, 100], cands: [fin(60), cand(2, 35, { st1: '2.KOLO', votes2: 40 }), nz] })
+    expect(statuses(ok).slice(0, 2)).toEqual(['runoffLeading', 'runoffBehind'])
+    expect(ok.candidates.map((k) => k.outlook).slice(0, 2)).toEqual(['lead', 'trail'])
+    const off = one({ r1: [242, 242, 100], r2: [1, 242, 100], cands: [fin(60, { st2: 'ZVOLEN' }), cand(2, 35, { st1: '2.KOLO', votes2: 40, st2: 'NEZVOLEN' }), nz] })
+    expect(statuses(off).slice(0, 2)).toEqual(['elected', 'runoffLost'])
+  })
+
+  it('Z = C awaiting official: normal (majority possible)', () => {
+    const o = one({ r1: [242, 242, 100], cands: [cand(1, 60), cand(2, 40)] })
+    expect(o.state).toBe('counted')
+    expect(statuses(o)).toEqual(['leading', 'second'])
+    expect(o.candidates[0].majority).toBe(true)
+  })
+
+  it('Pirate tally: early is its own bucket, Σ byStatus = total', () => {
+    const out = derive(mk(obvod(1, { r1: [1, 242, 44], cands: [cand(1, 25, P), cand(2, 19, { pirate: 'endorsed' })] })))
+    expect(out.summary.pirates).toMatchObject({ total: 2, byStatus: { early: 2, leading: 0, second: 0, behind: 0 } })
+    expect(Object.values(out.summary.pirates.byStatus).reduce((a, b) => a + b, 0)).toBe(2)
   })
 })

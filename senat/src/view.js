@@ -65,6 +65,7 @@ export function pirateTally(summary) {
     top: s.leading + s.second + s.runoffLeading,
     behind: s.behind + s.runoffBehind,
     out: s.notAdvancing + s.runoffLost + s.runoffTie,
+    early: s.early ?? 0,
     waiting: s.waiting,
   }
 }

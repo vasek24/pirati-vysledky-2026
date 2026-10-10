@@ -37,6 +37,7 @@ export function PirateTiles({ summary }) {
       <Tile value={p.top} label={T.pTileTop} />
       <Tile value={p.behind} label={T.pTileBehind} />
       <Tile value={p.out} label={T.pTileOut} />
+      <Tile value={p.early} label={T.pTileEarly} />
       <Tile value={p.waiting} label={T.pTileWaiting} />
     </div>
   )

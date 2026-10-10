@@ -24,7 +24,7 @@ describe('view selectors', () => {
   test('tally buckets sum to the total for every scenario', () => {
     for (const s of [waiting(), counting(), runoff(), finalR2()]) {
       const t = pirateTally(s.summary)
-      expect(t.elected + t.advancing + t.top + t.behind + t.out + t.waiting).toBe(t.total)
+      expect(t.elected + t.advancing + t.top + t.behind + t.out + t.early + t.waiting).toBe(t.total)
     }
     const t = pirateTally(runoff().summary)
     expect(t).toMatchObject({ elected: 1, advancing: 3, top: 4, out: 3 })

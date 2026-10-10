@@ -23,6 +23,7 @@ export const CHIP = {
   runoffLeading: 'Vede ve 2. kole',
   runoffBehind: 'Zaostává ve 2. kole',
   waiting: 'Čeká na sčítání',
+  early: 'Sčítá se', // příliš málo sečtených okrsků: žádné tvrzení o pořadí
 }
 
 export const STATE = {
@@ -99,6 +100,7 @@ export const T = {
   pTileTop: 'předběžně vede nebo je na 2. místě', // náhled: „…vede nebo je druhý“ (rodový tvar) — doplněno
   pTileBehind: 'předběžně bez postupu nebo bez náskoku', // náhled: „mimo postupové pozice“ (platí jen pro 1. kolo) — doplněno
   pTileOut: 'bez postupu nebo bez mandátu',
+  pTileEarly: 'sčítá se, zatím málo okrsků',
   pTileWaiting: 'čeká na sčítání',
   legendSolid: 'Plná barva',
   legendSolidNote: 'oficiální stav od ČSÚ',
@@ -131,6 +133,7 @@ export const T = {
   whyAdvLead: (pct, gap) => `Vede s ${pct}, pod 50 %: do 2. kola jdou dvě kandidatury s nejvíce hlasy. Náskok ${gap}.`,
   whyAdvTie: 'Shoda hlasů na 1. místě: do 2. kola jdou všechny kandidatury s nejvyšším počtem hlasů.',
   whyAdvSecond: (gap) => `Nikdo nemá přes 50 %. Ztráta na 1. místo: ${gap}.`,
+  whyEarly: (z, c, pct) => `Sečteno ${z} z ${c} okrsků (${pct} %): pořadí zatím nevypovídá.`,
   whyOut: (tieFirst, gap) => `${tieFirst ? 'Ztráta na 1. místo (shoda): ' : 'Ztráta na 2. místo: '}${gap}.`,
 
   // karta

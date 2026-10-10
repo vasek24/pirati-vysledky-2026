@@ -9,7 +9,7 @@ import Footer from './components/Footer.jsx'
 import Banner from './components/Banner.jsx'
 import App from './App.jsx'
 import * as text from './text.js'
-import { counting, finalR2, runoff, runoffEliminatedPirate, scrubRegistry, waiting } from './fixtures/scenarios.js'
+import { counting, finalR2, runoff, runoffEliminatedPirate, scrubRegistry, waiting, withVotes } from './fixtures/scenarios.js'
 
 // Spec §5: žádné rodově ohebné označení osoby. Zákaz ze spec + přísnější varianta s Unicode
 // (JS `\b` nezná „á“, takže `kandidát\b` samo o sobě „kandidát “ nechytí).
@@ -55,7 +55,8 @@ describe('gender-neutral wording (deny-list)', () => {
       for (const o of s.obvody) if (o.rounds[2]) o.rounds[2].okrskyZprac = 0
       return s
     }
-    for (const make of [waiting, counting, runoff, runoffEliminatedPirate, idleR2, finalR2]) {
+    const early = () => withVotes(counting(), 48, 1, 1, { 1: 25, 2: 19 }, {}, 242)
+    for (const make of [waiting, counting, runoff, runoffEliminatedPirate, idleR2, finalR2, early]) {
       const s = scrubRegistry(make())
       for (const o of s.obvody) {
         const out =

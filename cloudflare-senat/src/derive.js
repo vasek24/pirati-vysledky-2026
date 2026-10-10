@@ -3,8 +3,12 @@
 
 export const STATUSES = [
   'elected', 'advancing', 'notAdvancing', 'runoffLost', 'runoffTie',
-  'leading', 'second', 'behind', 'waiting', 'runoffLeading', 'runoffBehind',
+  'leading', 'second', 'behind', 'waiting', 'runoffLeading', 'runoffBehind', 'early',
 ]
+
+// Below this share of processed precincts (of the obvod's current round) an unofficial candidate
+// makes no claim at all (no leading/second/behind, no outlook, no majority): status 'early'.
+export const MIN_COUNTED = 0.25
 
 // Competition rank (1 + number of strictly higher) among the candidates that take part
 // in the given round; the others get null. Round 2: finalists only - candidates carrying
@@ -57,10 +61,10 @@ function statusOf(c, rank, rd, live) {
 // Round 1: 'mandate' (sole top with > 50 % of the summed votes) | 'advance' | 'out'.
 // Round 2: 'lead' | 'tie' | 'trail' (by counted votes; a rival's official flag does not suppress it).
 // Never set for the candidate's own official flag.
-function outlookOf(o, rd, key, ranks, i, live) {
+function outlookOf(o, rd, key, ranks, i, live, early) {
   const cs = o.candidates
   const k = cs[i]
-  if (k.official || !live) return [null, null]
+  if (k.official || !live || early) return [null, null]
   if (rd === 2) {
     if (ranks[i] == null) return [null, null]
     const others = cs.filter((c, j) => j !== i && ranks[j] != null).map((c) => c.votes2)
@@ -87,6 +91,8 @@ function deriveObvod(o) {
   const key = rd === 2 ? 'votes2' : 'votes1'
   const { okrskyZprac: z = 0, okrskyCelkem: c = 0, platneHlasy: valid = 0 } = o.rounds[rd] ?? {}
   const ranks = rankOf(o.candidates, key)
+  // too few precincts counted to say anything (Z > 0; Z2 unknown without a UCAST is never "early")
+  const early = z > 0 && z / c < MIN_COUNTED
   const live = z > 0 || (rd === 2 && !o.rounds[2] && o.candidates.some((k) => k.votes2 > 0))
 
   o.state = stateOf(o, rd)
@@ -99,12 +105,12 @@ function deriveObvod(o) {
   o.candidates.forEach((k, i) => {
     const [status, official] = statusOf(k, ranks[i], rd, live)
     k.rank = ranks[i]
-    k.status = status
+    k.status = !official && early && status !== 'waiting' ? 'early' : status
     k.official = official
-    k.majority = !official && z > 0 && z === c && ranks[i] != null && 2 * k[key] > valid
+    k.majority = !official && !early && z > 0 && z === c && ranks[i] != null && 2 * k[key] > valid
   })
   o.candidates.forEach((k, i) => {
-    ;[k.outlook, k.gap] = outlookOf(o, rd, key, ranks, i, live)
+    ;[k.outlook, k.gap] = outlookOf(o, rd, key, ranks, i, live, early)
   })
 }
 

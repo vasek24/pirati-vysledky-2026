@@ -181,6 +181,8 @@ export function recompute(o) {
   const second = nTop > 1 ? top : Math.max(0, ...votes.filter((v) => v < top))
   const bestR2 = (k) => Math.max(...taking.filter((m) => m !== k).map((m) => m.votes2))
 
+  // too few precincts counted (< 25 % of the current round): no claim for unofficial candidates
+  const early = Z > 0 && Z / C < 0.25
   const out = {}
   for (const k of cs) {
     const rank = rankOf(k)
@@ -197,10 +199,11 @@ export function recompute(o) {
       else if (Z === 0) status = 'waiting'
       else status = rank === 1 ? 'leading' : rank === 2 ? 'second' : 'behind'
     }
-    const majority = !official && Z > 0 && Z === C && rank != null && 2 * k[key] > valid
+    if (!official && early && status !== 'waiting') status = 'early'
+    const majority = !official && !early && Z > 0 && Z === C && rank != null && 2 * k[key] > valid
     let outlook = null
     let gap = null
-    if (!official && Z > 0) {
+    if (!official && Z > 0 && !early) {
       if (secondRound) {
         if (rank != null) {
           if (rank === 1) [outlook, gap] = taking.filter((m) => rankOf(m) === 1).length > 1 ? ['tie', 0] : ['lead', k.votes2 - Math.max(0, ...taking.filter((m) => m !== k).map((m) => m.votes2))]
@@ -358,7 +361,8 @@ const sleep = (ms) => new Promise((ok) => setTimeout(ok, ms))
 export async function verify({ ourUrl, csuBase = CSU_BASE, only = null, cacheDir = null, delayMs = 250, maxLagSec = 120, failLagSec = 900, fetchImpl = fetch, now = Date.now, userAgent = USER_AGENT } = {}) {
   const mism = []
   const fetched = { requests: 0, notModified: 0, failed: [] }
-  const note = (what, e, sev = 'lag') => { fetched.failed.push(what); mism.push({ obvod: '*', group: 'fetch', field: what, ours: '-', theirs: String(e?.message ?? e), sev, note: '' }) }
+  // a required independent ČSÚ source that cannot be fetched or parsed is a FAIL (nothing was verified)
+  const note = (what, e, sev = 'fail') => { fetched.failed.push(what); mism.push({ obvod: '*', group: 'fetch', field: what, ours: '-', theirs: String(e?.message ?? e), sev, note: '' }) }
   const getCsu = async (path) => {
     if (fetched.requests) await sleep(delayMs)
     fetched.requests++
@@ -371,7 +375,13 @@ export async function verify({ ourUrl, csuBase = CSU_BASE, only = null, cacheDir
   if (ourRes.status !== 200) throw new Error(`our API answered ${ourRes.status}`)
   const ours = JSON.parse(await ourRes.text())
   const serverNow = Number(ourRes.headers.get('x-server-now'))
-  const xml = parseResultsXml((await getCsu('odata/vysledky.xml')).body)
+  let xml
+  try {
+    xml = parseResultsXml((await getCsu('odata/vysledky.xml')).body)
+  } catch (e) {
+    note('odata/vysledky.xml', e)
+    return { obvodyCompared: 0, timing: { ourGenerated: ours.generated, csuGenerated: null, lagSec: null }, fetched, mismatches: mism, ourPhase: ours.phase, ourServerNow: serverNow || null, localClockSkewSec: null }
+  }
   mism.push(...compareOursToXml(ours, xml, only), ...compareDerived(ours, xml, only), ...checkSums(ours, xml, only))
   const t = timing(ours, xml, Number.isFinite(serverNow) && serverNow > 0 ? serverNow : now(), { maxLagSec, failLagSec })
   mism.push(...t.items)
@@ -435,8 +445,9 @@ async function main() {
     console.log(formatTable(result.mismatches.filter((m) => m.sev !== 'note')))
     const notes = result.mismatches.filter((m) => m.sev === 'note')
     if (notes.length) console.log(`\n${notes.length} note(s) (semantics unverified, never fatal):\n${formatTable(notes)}`)
+    if (result.fetched.failed.length) console.log(`\nFAIL: required ČSÚ source(s) could not be fetched or parsed (nothing verified for them): ${result.fetched.failed.join(', ')}`)
     console.log(`\n${result.obvodyCompared} obvody compared: ${s.fail} fail, ${s.lag} lag, ${s.note} note  ->  ${s.ok ? 'OK' : 'MISMATCH'}`)
-    if (s.lag && !s.fail) console.log('Only lag-class rows (different generation stamps, or an independent ČSÚ file unavailable): re-run in a minute; they must vanish.')
+    if (s.lag && !s.fail) console.log('Only lag-class rows (different generation stamps, or our snapshot older than ČSÚ): re-run in a minute; they must vanish.')
   }
   process.exit(s.ok ? 0 : 1)
 }

@@ -270,7 +270,7 @@ describe('fetching and output', () => {
     expect(summarize(r)).toMatchObject({ fail: 0, ok: true })
   })
 
-  it('verify(): a broken ČSÚ JSON endpoint is a lag-class fetch note (not fatal unless --strict)', async () => {
+  it('verify(): a failed independent ČSÚ JSON fetch is a FAIL (never a lag row), also under --strict', async () => {
     const ours = ours24()
     const fetchImpl = async (url) => {
       const u = String(url)
@@ -280,8 +280,34 @@ describe('fetching and output', () => {
     }
     const r = await verify({ ourUrl: 'https://ours.test/api/senat', csuBase: 'https://csu.test', only: 17, delayMs: 0, fetchImpl, now: () => NOW })
     expect(r.fetched.failed).toEqual(['vysled/obvod/17.json', 'mapa_vitez.json', 'navig/obvody.json'])
-    expect(summarize(r)).toMatchObject({ fail: 0, ok: true })
+    expect(r.mismatches.filter((m) => m.group === 'fetch').map((m) => m.sev)).toEqual(['fail', 'fail', 'fail'])
+    expect(summarize(r)).toMatchObject({ fail: expect.any(Number), ok: false })
     expect(summarize(r, { strict: true }).ok).toBe(false)
+  })
+
+  it('verify(): an unparseable ČSÚ JSON body is a FAIL', async () => {
+    const ours = ours24()
+    const fetchImpl = async (url) => {
+      const u = String(url)
+      if (u === 'https://ours.test/api/senat') return res(200, JSON.stringify(ours))
+      if (u.endsWith('/odata/vysledky.xml')) return res(200, XML24)
+      if (u.endsWith('/vysled/obvod/5.json')) return res(200, fx('csu-json/se2024-obvod-5.json'))
+      if (u.endsWith('/mapa_vitez.json')) return res(200, '<html>not json')
+      if (u.endsWith('/navig/obvody.json')) return res(200, fx('csu-json/se2024-navig-obvody.json'))
+      return res(404, 'no')
+    }
+    const r = await verify({ ourUrl: 'https://ours.test/api/senat', csuBase: 'https://csu.test', only: 5, delayMs: 0, fetchImpl, now: () => NOW })
+    expect(r.fetched.failed).toEqual(['mapa_vitez.json'])
+    expect(summarize(r).ok).toBe(false)
+  })
+
+  it('verify(): ČSÚ XML unavailable is a FAIL row (exit 1), not a thrown error, and not a lag', async () => {
+    const ours = ours24()
+    const fetchImpl = async (url) => (String(url) === 'https://ours.test/api/senat' ? res(200, JSON.stringify(ours)) : res(503, 'down'))
+    const r = await verify({ ourUrl: 'https://ours.test/api/senat', csuBase: 'https://csu.test', delayMs: 0, fetchImpl, now: () => NOW })
+    expect(r.fetched.failed).toEqual(['odata/vysledky.xml'])
+    expect(r.mismatches).toEqual([expect.objectContaining({ group: 'fetch', sev: 'fail' })])
+    expect(summarize(r)).toMatchObject({ fail: 1, lag: 0, ok: false })
   })
 
   it('our API not answering 200 aborts the run', async () => {

@@ -71,6 +71,25 @@ describe('render', () => {
     expect(out.match(/class="snt-why"/g).length).toBeGreaterThanOrEqual(2)
   })
 
+  // živá chyba: obvod 48 s 1 z 242 okrsků (44 hlasů) nesmí tvrdit mandát, postup ani vedení
+  test('1 of 242 precincts: chip "Sčítá se", reason line with counts, no mandate / lead / advance claims', () => {
+    const s = withVotes(waiting(), 48, 1, 1, { 1: 25, 2: 19 }, {}, 242) // jediný sčítaný obvod; 56,81 % vs 43,18 %
+    const o = s.obvody.find((x) => x.n === 48)
+    const pirate = o.candidates.filter((c) => c.pirate)
+    expect(pirate.length).toBeGreaterThan(0)
+    expect(o.candidates.slice(0, 2).map((c) => [c.status, c.outlook])).toEqual([['early', null], ['early', null]])
+    const tiles = [T.pTileTop, T.pTileBehind, T.pTileOut]
+    let out = sp(html(s, 48))
+    for (const t of tiles) out = out.replaceAll(t, '') // the Pirate tally labels legitimately contain these words
+    expect(out).toContain('Sečteno 1 z 242 okrsků (0 %): pořadí zatím nevypovídá.')
+    expect(out).toContain(`snt-chip snt-early">${CHIP.early}<`)
+    expect(out).toContain('56,81 %') // the share numbers stay visible
+    for (const bad of ['Předběžně: mandát', 'Předběžně:', 'Vede', 'bez postupu', 'Mandát získán', 'tedy nad 50 %']) expect(out, bad).not.toContain(bad)
+    // the Pirate tally: its own tile, not counted as leading / without advance
+    const tally = sp(html(s, 48))
+    expect(tally).toContain(T.pTileEarly)
+  })
+
   // ČSÚ procenta ořezává: 49,96 se nikdy nesmí ukázat jako „50,0 %“ (karta, věta důvodu, detail)
   test('share 49.96 % is shown as 49,96 %, never as 50,0 % (cards, reason line, detail)', () => {
     const s = withVotes(counting(), 30, 1, 150, { 2: 4996, 6: 3000, 3: 2004 }, {}, 200)
