@@ -301,7 +301,7 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
     mapPredecessors(lists, lists2022);
     if (MESTA) {
         for (const l of lists) {
-            if (!l.baseline && !l.split && l.slozeni.includes(PIRATES_CODE)) warnings.push(`kandidátka ${l.id} (Piráti): bez srovnání s 2022`);
+            if (!l.baseline && l.slozeni.includes(PIRATES_CODE)) warnings.push(`kandidátka ${l.id} (Piráti): bez přímého srovnání s 2022 (${l.split ? 'rozdělená' : 'nová'})`);
         }
     }
     for (const l of lists) {
