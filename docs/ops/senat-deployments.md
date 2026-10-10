@@ -10,4 +10,7 @@ Worker `pirati-senat-zaloha` (production, custom domain `senat.dg12.cz`, **not d
 | 2026-10-10 13:05 | staging | `a0598cbf-c358-4cad-b63b-6d5980fa1a09` | `16a82977` | f7208bd | back-link to volby.pirati.cz, mobile-first layout |
 | 2026-10-10 13:00 | staging | `3a744ce0-9eae-4371-adb7-e976cbe000c3` | `a0598cbf` | see git log | back-link now points to volby.dg12.cz |
 
+| 2026-10-10 13:34 | staging | `2a4390b4-5791-4da6-9927-894ccbe9c2ef` | `3a744ce0` | 6ab238f | re-skin to the Prague Pirate identity |
+| 2026-10-10 13:49 | staging | `a44ffb54-f73f-44a8-83bc-94be618ee69d` | `2a4390b4` | 310d5c8 | pre-prod review fixes (2-decimal shares, floor progress, countdown, contrast, security headers) |
+
 Production: nothing deployed. Production and the custom domain need the owner's explicit go-ahead.
