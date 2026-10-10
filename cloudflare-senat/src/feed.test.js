@@ -5,7 +5,8 @@ import { USER_AGENT, createSenatFeed } from './feed.js'
 
 const read = (n) => readFileSync(new URL(`../fixtures/${n}`, import.meta.url), 'utf8')
 const FROZEN = read('se2026-frozen.xml')
-const FINAL_2024 = read('se2024-final.xml')
+// stamped before the closes in the source file: re-stamp after R2 so the close-of-polls gates let it through
+const FINAL_2024 = read('se2024-final.xml').replace(/DATUM_CAS_GENEROVANI="[^"]*"/, 'DATUM_CAS_GENEROVANI="2026-10-18T10:00:00"')
 const R1 = Date.parse('2026-10-10T14:00:00+02:00')
 const R2 = Date.parse('2026-10-17T14:00:00+02:00')
 const AFTER = R2 + 86_400_000

@@ -1,6 +1,6 @@
-// Writes src/rev.js: CODE_REV = first 12 hex of sha256(derive.js + normalize.js + manifest.js).
-// A missing derive.js (Task 2 may not have landed yet) is hashed as empty.
-// Run after any change to those three files: node scripts/gen-rev.mjs
+// Writes src/rev.js: CODE_REV = first 12 hex of sha256 over every file that shapes the stored
+// snapshot (name + content, separated): xml.js, time.js, normalize.js, derive.js, manifest.js.
+// A missing file is hashed as empty. Run after any change to those files: node scripts/gen-rev.mjs
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -9,7 +9,8 @@ const SRC = fileURLToPath(new URL('../src/', import.meta.url))
 
 export function computeRev(dir = SRC) {
   const h = createHash('sha256')
-  for (const f of ['derive.js', 'normalize.js', 'manifest.js']) {
+  for (const f of ['xml.js', 'time.js', 'normalize.js', 'derive.js', 'manifest.js']) {
+    h.update(`\0${f}\0`)
     h.update(existsSync(dir + f) ? readFileSync(dir + f) : '')
   }
   return h.digest('hex').slice(0, 12)

@@ -118,6 +118,24 @@ describe('validateCandidate: ok paths', () => {
     });
 });
 
+describe('validateCandidate: generated in the future (ctx.now)', () => {
+    const good = mk();
+    const future = (ms) => edit(good, (s) => { s.generatedMs = ms; });
+
+    it('is a hard (non-quarantinable) reject beyond now + 5 min, with and without good', () => {
+        const bad = future(T2 + 5 * 60e3 + 1);
+        expect(validateCandidate(bad, good, ctx({ now: T2 }))).toEqual(rej('generated-in-future', false));
+        expect(validateCandidate(bad, null, { now: T2 })).toEqual(rej('generated-in-future', false));
+        expect(validateCandidate(future(9e15), good, ctx({ now: T2 }))).toEqual(rej('generated-in-future', false));
+    });
+
+    it('exactly now + 5 min passes; ctx.now is optional', () => {
+        expect(validateCandidate(future(T2 + 5 * 60e3), good, ctx({ now: T2 })).outcome).toBe('ok');
+        expect(validateCandidate(future(9e15), good, ctx()).outcome).toBe('ok'); // no now -> no check
+        expect(validateCandidate(future(9e15), null).outcome).toBe('ok');
+    });
+});
+
 describe('baselineApplies', () => {
     const good = mk();
     it('requires generated, refresh after close and same base', () => {
@@ -163,6 +181,14 @@ describe('validateCandidate: quarantinable structural changes', () => {
     it('withdrawal: candidate count -1 in an obvod', () => {
         const next = edit(good, (s) => { ob(s, 3).candidates.pop(); });
         expect(validateCandidate(next, good, ctx())).toEqual(rej('candidates-fewer', true));
+    });
+
+    it('M1: a replaced / renamed obvod (same count, different set) is caught', () => {
+        const next = edit(good, (s) => { ob(s, 6).n = 9; });
+        expect(validateCandidate(next, good, ctx())).toEqual(rej('obvody-changed', true));
+        // the review's case: obvod 3 replaced by a second copy of obvod 6
+        const copy = edit(good, (s) => { s.obvody[0] = { ...structuredClone(ob(s, 6)) }; });
+        expect(validateCandidate(copy, good, ctx()).outcome).toBe('rejected');
     });
 
     it('is not applied without the baseline (pre-close good replaced by a smaller set)', () => {
@@ -233,10 +259,22 @@ describe('validateCandidate: regression (quarantinable)', () => {
         expect(validateCandidate(next, good, ctx()).outcome).toBe('ok');
     });
 
-    it('a candidate replaced by a different number (same count) is not judged by votes/flags', () => {
+    it('M2: a candidate that carried an official flag vanishing (same count, replaced) is official-flag-changed', () => {
+        const flagged = mk({ obvody: [{ n: 3, z1: 10, cands: [{ no: 1, votes1: 60, st1: 'ZVOLEN' }, { no: 2, votes1: 40, st1: 'NEZVOLEN' }] }] });
+        const next = edit(flagged, (s) => {
+            ob(s, 3).candidates = [{ no: 2, votes1: 40, votes2: null, st1: 'NEZVOLEN', st2: null }, { no: 5, votes1: 0, votes2: null, st1: null, st2: null }];
+        });
+        expect(validateCandidate(next, flagged, ctx())).toEqual(rej('official-flag-changed', true));
+        // st2-only flag too
+        const f2 = mk({ obvody: [{ n: 6, z1: 10, z2: 10, cands: [{ no: 1, votes1: 5, votes2: 9, st2: 'ZVOLEN' }, { no: 2, votes1: 6, votes2: 8 }] }] });
+        const n2 = edit(f2, (s) => { cand(s, 6, 1).no = 7; });
+        expect(validateCandidate(n2, f2, ctx())).toEqual(rej('official-flag-changed', true));
+    });
+
+    it('an unflagged candidate replaced by a different number (same count) is not judged by votes', () => {
         const next = edit(good, (s) => {
-            const c = cand(s, 3, 2);
-            c.no = 4; c.votes1 = 0; c.st1 = null;
+            const c = cand(s, 6, 2); // obvod 6 carries no official flags
+            c.no = 4; c.votes1 = 0; c.votes2 = null;
         });
         expect(validateCandidate(next, good, ctx()).outcome).toBe('ok');
     });

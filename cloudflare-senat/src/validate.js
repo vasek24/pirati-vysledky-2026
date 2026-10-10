@@ -13,6 +13,8 @@
 
 const num = (x) => typeof x === 'number' && Number.isFinite(x);
 
+const FUTURE_SKEW_MS = 5 * 60 * 1000;
+
 const rejected = (reason, quarantinable) => ({ outcome: 'rejected', reason, quarantinable });
 const OK = { outcome: 'ok', quarantinable: false };
 
@@ -24,6 +26,9 @@ const OK = { outcome: 'ok', quarantinable: false };
  *   pollsCloseR1     epoch ms uzavření místností 1. kola (2026-10-10T14:00+02:00)
  *   base             CSU_BASE tohoto běhu
  *   goodBase         CSU_BASE, se kterým vznikl good
+ * ctx.now (nepovinný, epoch ms, čas tohoto stažení): je-li zadán, kandidát s
+ *   generatedMs > now + 5 min je hard reject `generated-in-future` (jinak by jeden
+ *   soubor s budoucím časem zablokoval všechny další jako `older`). Platí i bez good.
  */
 function assertCtx(ctx) {
     if (!ctx || typeof ctx !== 'object'
@@ -72,9 +77,11 @@ function hardReason(s) {
 function structuralReason(s, good) {
     if (s.obvody.length < good.obvody.length) return 'obvody-fewer';
     const byN = new Map(s.obvody.map((o) => [o.n, o]));
+    // množina, ne počet: nahrazený / přejmenovaný obvod nesmí projít
+    if (good.obvody.some((g) => !byN.has(g.n))) return 'obvody-changed';
     for (const g of good.obvody) {
         const o = byN.get(g.n);
-        if (o && o.candidates.length < g.candidates.length) return 'candidates-fewer';
+        if (o.candidates.length < g.candidates.length) return 'candidates-fewer';
     }
     return null;
 }
@@ -95,7 +102,11 @@ function regressionReason(s, good) {
         const cands = new Map(o.candidates.map((c) => [c.no, c]));
         for (const gc of g.candidates) {
             const c = cands.get(gc.no);
-            if (!c) continue;
+            // zmizelý kandidát s oficiálním příznakem = zmizelý příznak
+            if (!c) {
+                if (gc.st1 != null || gc.st2 != null) return 'official-flag-changed';
+                continue;
+            }
             if (lower(c.votes1, gc.votes1) || lower(c.votes2, gc.votes2)) return 'votes-decreased';
             if ((gc.st1 != null && c.st1 !== gc.st1) || (gc.st2 != null && c.st2 !== gc.st2)) return 'official-flag-changed';
         }
@@ -106,7 +117,7 @@ function regressionReason(s, good) {
 /**
  * @param {object} candidate  normalizovaný + odvozený snapshot
  * @param {object|null} good  poslední publikovaný snapshot
- * @param {{ goodRefreshedAt: number, pollsCloseR1: number, base: string, goodBase: string }} ctx
+ * @param {{ goodRefreshedAt: number, pollsCloseR1: number, base: string, goodBase: string, now?: number }} ctx
  * @returns {{ outcome: 'ok'|'older'|'rejected', reason?: string, quarantinable: boolean }}
  *   `quarantinable` je true jen u rejected, který smí po ≥ 3 odlišných stažených
  *   200 přes ≥ 2 min přijmout quarantine (skutečné stažení kandidatury, změna
@@ -115,6 +126,7 @@ function regressionReason(s, good) {
 export function validateCandidate(candidate, good, ctx) {
     const hard = hardReason(candidate);
     if (hard) return rejected(hard, false);
+    if (ctx && num(ctx.now) && candidate.generatedMs > ctx.now + FUTURE_SKEW_MS) return rejected('generated-in-future', false);
     if (!good) return OK; // studený start: ctx se nevyžaduje
     if (!baselineApplies(good, ctx)) return OK; // ověří i ctx (TypeError)
 

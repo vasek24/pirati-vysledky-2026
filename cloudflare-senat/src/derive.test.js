@@ -270,6 +270,132 @@ describe('derive: round 2', () => {
   })
 })
 
+describe('derive: round 2 edge cases (review L1-L3)', () => {
+  it('L1: a partly published st2 (loser NEZVOLEN, no ZVOLEN yet) keeps the round-2 count state', () => {
+    const cands = () => [
+      cand(1, 400, { st1: '2.KOLO', votes2: 350, st2: 'NEZVOLEN' }),
+      cand(2, 300, { st1: '2.KOLO', votes2: 650 }),
+      cand(3, 200, { st1: 'NEZVOLEN' }),
+    ]
+    const done = one({ r1: [10, 10, 1000], r2: [10, 10, 1000], cands: cands() })
+    expect(done.state).toBe('runoff-counted')
+    expect(statuses(done)).toEqual(['runoffLost', 'runoffLeading', 'notAdvancing'])
+    const part = one({ r1: [10, 10, 1000], r2: [6, 10, 1000], cands: cands() })
+    expect(part.state).toBe('runoff-counting')
+    const out = derive(mk(obvod(1, { r1: [10, 10, 1000], r2: [10, 10, 1000], cands: cands() })))
+    expect(out.summary).toMatchObject({ awaitingOfficial: 1, runoff: 0, decided: 0 })
+  })
+
+  it('L2: round-2 votes without a round-2 UCAST: round 2, finalists ranked, no crash, Z2 unknown -> advancing', () => {
+    const o = one({
+      r1: [10, 10, 1000],
+      cands: [
+        cand(1, 400, { st1: '2.KOLO', votes2: 0 }),
+        cand(2, 300, { st1: '2.KOLO', votes2: 0 }),
+        cand(3, 200, { st1: 'NEZVOLEN' }),
+      ],
+    })
+    expect(o.state).toBe('runoff')
+    expect(ranks(o)).toEqual([1, 1, null])
+    expect(statuses(o)).toEqual(['advancing', 'advancing', 'notAdvancing'])
+    expect(o.candidates.map((c) => c.outlook)).toEqual([null, null, null])
+  })
+
+  it('L3: a non-finalist carrying HLASY_2KOLO="0" gets no round-2 rank', () => {
+    const o = one({
+      r1: [10, 10, 1000], r2: [5, 10, 100],
+      cands: [
+        cand(1, 400, { st1: '2.KOLO', votes2: 30 }),
+        cand(2, 300, { st1: '2.KOLO', votes2: 70 }),
+        cand(3, 200, { st1: 'NEZVOLEN', votes2: 0 }),
+      ],
+    })
+    expect(ranks(o)).toEqual([2, 1, null])
+    expect(statuses(o)).toEqual(['runoffBehind', 'runoffLeading', 'notAdvancing'])
+    expect(o.candidates[2].majority).toBe(false)
+  })
+
+  it('round-2 rank is only among candidates with votes2 (no flags at all)', () => {
+    const o = one({ r1: [10, 10, 1000], r2: [5, 10, 100], cands: [cand(1, 900), cand(2, 50, { votes2: 20 }), cand(3, 40, { votes2: 80 })] })
+    expect(ranks(o)).toEqual([null, 2, 1])
+  })
+})
+
+describe('derive: outlook and gap (unofficial candidates only)', () => {
+  const view = (o) => o.candidates.map((c) => [c.outlook, c.gap])
+
+  it('majority winner: mandate (no gap), the others out with the deficit to the winner', () => {
+    const o = one({ r1: [5, 10, 100], cands: [cand(1, 30), cand(2, 60), cand(3, 10)] })
+    expect(o.state).toBe('counting')
+    expect(view(o)).toEqual([['out', 30], ['mandate', null], ['out', 50]])
+  })
+
+  it('50.004 % is a mandate even though the rounded percentage reads 50.00; exactly 50 % is not', () => {
+    const win = one({ r1: [5, 10, 100000], cands: [cand(1, 50004, { pct1: 50.0 }), cand(2, 49996)] })
+    expect(view(win)).toEqual([['mandate', null], ['out', 8]])
+    const half = one({ r1: [5, 10, 100000], cands: [cand(1, 50000), cand(2, 30000), cand(3, 20000)] })
+    expect(view(half)).toEqual([['advance', 20000], ['advance', 20000], ['out', 10000]])
+  })
+
+  it('no majority: rank 1 lead, rank 2 deficit to 1st, rank 3/4 deficit to 2nd', () => {
+    const o = one({ r1: [5, 10, 100], cands: [cand(1, 10), cand(2, 40), cand(3, 30), cand(4, 20)] })
+    expect(ranks(o)).toEqual([4, 1, 2, 3])
+    expect(view(o)).toEqual([['out', 20], ['advance', 10], ['advance', 10], ['out', 10]])
+  })
+
+  it('tie for 1st: both advance with gap 0; the rest are out against the tied votes', () => {
+    const o = one({ r1: [5, 10, 1000], cands: [cand(1, 300), cand(2, 300), cand(3, 200), cand(4, 100)] })
+    expect(ranks(o)).toEqual([1, 1, 3, 4])
+    expect(view(o)).toEqual([['advance', 0], ['advance', 0], ['out', 100], ['out', 200]])
+  })
+
+  it('tie for 2nd: leader leads by the 2nd place, both second-placed advance, the rest out', () => {
+    const o = one({ r1: [5, 10, 1000], cands: [cand(1, 400), cand(2, 200), cand(3, 200), cand(4, 100)] })
+    expect(ranks(o)).toEqual([1, 2, 2, 4])
+    expect(view(o)).toEqual([['advance', 200], ['advance', 200], ['advance', 200], ['out', 100]])
+  })
+
+  it('waiting (Z = 0) and official candidates have no outlook', () => {
+    const w = one({ r1: [0, 10, 0], cands: [cand(1, 0), cand(2, 0)] })
+    expect(view(w)).toEqual([[null, null], [null, null]])
+    const e = one({ r1: [10, 10, 100], cands: [cand(1, 60, { st1: 'ZVOLEN' }), cand(2, 40, { st1: 'NEZVOLEN' })] })
+    expect(view(e)).toEqual([[null, null], [null, null]])
+    const r = one({ r1: [10, 10, 100], cands: [cand(1, 40, { st1: '2.KOLO' }), cand(2, 35, { st1: '2.KOLO' }), cand(3, 25, { st1: 'NEZVOLEN' })] })
+    expect(view(r)).toEqual([[null, null], [null, null], [null, null]])
+  })
+
+  it('an unflagged candidate next to official ones is still judged by the votes', () => {
+    const o = one({ r1: [10, 10, 100], cands: [cand(1, 60, { st1: 'ZVOLEN' }), cand(2, 40)] })
+    expect(view(o)).toEqual([[null, null], ['out', 20]])
+  })
+
+  const fin = (a, b, z = 5) => ({
+    r1: [10, 10, 1000], r2: [z, 10, 1000],
+    cands: [cand(1, 400, { st1: '2.KOLO', votes2: a }), cand(2, 300, { st1: '2.KOLO', votes2: b }), cand(3, 200, { st1: 'NEZVOLEN' })],
+  })
+
+  it('round 2: lead / trail with the gap to the other finalist', () => {
+    expect(view(one(fin(650, 350)))).toEqual([['lead', 300], ['trail', 300], [null, null]])
+  })
+
+  it('round 2: equal votes -> tie, gap 0', () => {
+    expect(view(one(fin(500, 500)))).toEqual([['tie', 0], ['tie', 0], [null, null]])
+  })
+
+  it('round 2: Z2 = 0 or any st2 flag -> no outlook', () => {
+    expect(view(one(fin(0, 0, 0))).every(([o, g]) => o === null && g === null)).toBe(true)
+    const flagged = one({ ...fin(650, 350, 10), cands: [cand(1, 400, { st1: '2.KOLO', votes2: 650 }), cand(2, 300, { st1: '2.KOLO', votes2: 350, st2: 'NEZVOLEN' }), cand(3, 200, { st1: 'NEZVOLEN' })] })
+    expect(view(flagged)).toEqual([[null, null], [null, null], [null, null]])
+    const done = one({ ...fin(650, 350, 10), cands: [cand(1, 400, { st1: '2.KOLO', votes2: 650, st2: 'ZVOLEN' }), cand(2, 300, { st1: '2.KOLO', votes2: 350, st2: 'NEZVOLEN' }), cand(3, 200, { st1: 'NEZVOLEN' })] })
+    expect(view(done)).toEqual([[null, null], [null, null], [null, null]])
+  })
+
+  it('every derived candidate carries outlook and gap (null by default)', () => {
+    const out = derive(mk(obvod(1, { r1: [0, 10, 0], cands: [cand(1, 0), cand(2, 0)] })))
+    expect(out.obvody[0].candidates.every((c) => c.outlook === null && c.gap === null)).toBe(true)
+  })
+})
+
 describe('derive: Pirates and summary', () => {
   it('hasPirate is false for an obvod without Pirate-backed candidates', () => {
     const o = one({ r1: [3, 10, 100], cands: [cand(1, 60), cand(2, 40)] })

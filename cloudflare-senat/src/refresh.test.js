@@ -30,7 +30,8 @@ const csu = (ms) => new Date(ms + 2 * 3600 * S).toISOString().slice(0, 19)
 
 const read = (n) => readFileSync(new URL(`../fixtures/${n}`, import.meta.url), 'utf8')
 const FROZEN = read('se2026-frozen.xml')
-const FINAL_2024 = read('se2024-final.xml')
+// stamped before the closes in the source file: re-stamp after R2 so the close-of-polls gates let it through
+const FINAL_2024 = read('se2024-final.xml').replace(/DATUM_CAS_GENEROVANI="[^"]*"/, 'DATUM_CAS_GENEROVANI="2026-10-18T10:00:00"')
 const AFTER_R2 = R2 + 86_400_000
 const none = { CANDIDATES: {}, PIRATE_BACKED: [] }
 const fromXml = (text, m) => derive(normalize(parseResultsXml(text), { manifest: m, now: AFTER_R2, pollsCloseR1: R1, pollsCloseR2: R2 }))
@@ -498,6 +499,13 @@ describe('304 and validators (H3)', () => {
     expect(sentValidators(feed, 2)).toBeUndefined()
   })
 
+  it('a snapshot generated in the future is refused (hard reject) even on a cold start', async () => {
+    const future = snap({ generated: csu(T0 + 3_600_000) }) // +1 h
+    const { r, feed } = setup({ build: async () => ok(future, 1) })
+    expect((await r.get()).status).toBe(503)
+    expect(feed.invalidate).toHaveBeenCalled()
+  })
+
   it('a 304 with no good snapshot is a failure (cold, nothing to keep)', async () => {
     const { r } = setup({ build: async () => ({ notModified: true }) })
     expect((await r.get()).status).toBe(503)
@@ -757,11 +765,11 @@ describe('baseline, older replica, regression', () => {
   })
 
   it('a pre-close snapshot kept alive by 304s after the close does not become the baseline (H2)', async () => {
-    const t1330 = at('2026-10-10T13:30:00+02:00')
-    // test data stamped in the future: generated 17:00, fetched at 13:30
-    const test = snap({ generated: csu(R1 + 3 * 3600 * S), z: 50, c: 100, votes: [900, 500] })
+    const t1357 = at('2026-10-10T13:57:00+02:00')
+    // test data stamped 4 min ahead (the future limit is 5 min): generated 14:01 (>= close), fetched at 13:57 (< close)
+    const test = snap({ generated: csu(R1 + MIN), z: 50, c: 100, votes: [900, 500] })
     const { r, feed } = setup({
-      time: t1330,
+      time: t1357,
       build: script(
         ok(test, 1, '"test"'),
         { notModified: true },
@@ -769,8 +777,8 @@ describe('baseline, older replica, regression', () => {
       ),
     })
     await r.get()
-    await advance(36 * MIN) // 14:06
-    await poll(r) // 304: refreshedAt moves past 14:00, installedAt stays 13:30
+    await advance(9 * MIN) // 14:06
+    await poll(r) // 304: refreshedAt moves past 14:00, installedAt stays 13:57
     expect(parse(await r.get())).toMatchObject({ stale: false, refreshedAt: Date.now() })
     expect(sentValidators(feed, 1)).toEqual({ etag: '"test"', lastModified: null })
     await advance(2 * MIN)
@@ -1120,7 +1128,7 @@ describe('schedule per phase after install', () => {
   })
 
   it('counting: junk generated (> refreshedAt+120 s) → 20 s', async () => {
-    expect(await nextOf(snap({ generated: csu(T0 + 3 * 3600 * S) }))).toBe(20 * S)
+    expect(await nextOf(snap({ generated: csu(T0 + 3 * MIN) }))).toBe(20 * S) // 3 min ahead: junk for scheduling, below the 5 min future limit
   })
 
   it('idle 5 min', async () => {

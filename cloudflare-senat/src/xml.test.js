@@ -78,6 +78,29 @@ test('throws on unusable input', () => {
   for (const [name, text] of Object.entries(bad)) expect(() => parseResultsXml(text), name).toThrow()
 })
 
+test('throws on structurally wrong documents (duplicates, trailing content, unmatched tags)', () => {
+  const o7 = obvod()
+  const o8 = obvod().replace('CISLO="7"', 'CISLO="8"')
+  expect(() => parseResultsXml(doc(o7 + o8))).not.toThrow()
+  const bad = {
+    duplicateObvod: doc(o7 + o7),
+    duplicateCandidate: doc(obvod(`<KANDIDAT ${K}/><KANDIDAT ${K}/>`)),
+    duplicateUcast: doc(obvod(undefined, `<UCAST ${U1}/><UCAST ${U1}/>`)),
+    duplicateCelkemUcast: doc(`${o7}<CELKEM><UCAST ${U1}/><UCAST ${U1}/></CELKEM>`),
+    concatenatedDocuments: doc(o7) + doc(o8),
+    textAfterClose: `${doc(o7)}\njunk`,
+    tagAfterClose: `${doc(o7)}<OBVOD CISLO="9" NAZEV="X"/>`,
+    unmatchableObvodTag: doc(o7 + '<OBVOD CISLO="8" NAZEV=Louny>' + `<KANDIDAT ${K}/><UCAST ${U1}/></OBVOD>`),
+    unmatchableKandidatTag: doc(obvod(`<KANDIDAT ${K}/><KANDIDAT PORADOVE_CISLO=2 PRIJMENI="X" HLASY_1KOLO="1" HLASY_PROC_1KOLO="1"/>`)),
+    unmatchableUcastTag: doc(obvod(undefined, `<UCAST ${U1}/><UCAST KOLO=2 />`)),
+    kandidatOutsideObvod: doc(`${o7}<KANDIDAT ${K.replace('"1"', '"9"')}/>`),
+    ucastOutsideContainer: doc(`${o7}<UCAST ${U1}/>`),
+  }
+  for (const [name, text] of Object.entries(bad)) expect(() => parseResultsXml(text), name).toThrow()
+  // trailing whitespace and comments are fine
+  expect(() => parseResultsXml(`${doc(o7)}\n  \n<!-- bye -->\n`)).not.toThrow()
+})
+
 test('a minimal valid document parses', () => {
   const p = parseResultsXml(doc(obvod()))
   expect(p.generated).toBe('2026-10-10T15:00:00')

@@ -260,7 +260,7 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
 
     // goodRefreshedAt = when the good CONTENT was fetched, not the last 304: an unchanged
     // pre-close (frozen/test) file touched after 14:00 must not become the baseline
-    const ctx = prev ? { goodRefreshedAt: prev.meta.installedAt, pollsCloseR1, base, goodBase: prev.meta.base } : undefined
+    const ctx = { now: t, ...(prev ? { goodRefreshedAt: prev.meta.installedAt, pollsCloseR1, base, goodBase: prev.meta.base } : {}) }
     const verdict = validateCandidate(candidate.snapshot, prev?.snapshot ?? null, ctx)
 
     if (verdict.outcome === 'older') {

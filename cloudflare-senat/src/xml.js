@@ -70,12 +70,18 @@ export function parseResultsXml(text) {
   let obvod = null
   let celkem = false
   let closed = false
+  let ucastParsed = 0
+  let kandidatParsed = 0
   for (const m of src.matchAll(TAG)) {
     const [, name, attrSrc, closing] = m
+    if (closed) throw new Error('content after </VYSLEDKY>')
     if (closing) {
       if (closing === 'OBVOD') obvod = null
       else if (closing === 'CELKEM') celkem = false
-      else if (closing === 'VYSLEDKY') closed = true
+      else if (closing === 'VYSLEDKY') {
+        closed = true
+        if (src.slice(m.index + m[0].length).trim() !== '') throw new Error('content after </VYSLEDKY>')
+      }
       continue
     }
     if (root === null) {
@@ -88,23 +94,36 @@ export function parseResultsXml(text) {
     const a = attrs(attrSrc)
     if (name === 'OBVOD') {
       obvod = { n: num(a, 'CISLO', true, 'OBVOD'), name: a.NAZEV ?? '', candidates: [], ucast: {} }
+      if (obvody.some((o) => o.n === obvod.n)) throw new Error(`duplicate OBVOD ${obvod.n}`)
       obvody.push(obvod)
       if (/\/>$/.test(m[0])) obvod = null
     } else if (name === 'CELKEM') {
       celkem = !/\/>$/.test(m[0])
     } else if (name === 'KANDIDAT' && obvod) {
-      obvod.candidates.push(kandidat(a, `OBVOD ${obvod.n} KANDIDAT`))
+      const k = kandidat(a, `OBVOD ${obvod.n} KANDIDAT`)
+      if (obvod.candidates.some((o) => o.no === k.no)) throw new Error(`OBVOD ${obvod.n}: duplicate KANDIDAT ${k.no}`)
+      obvod.candidates.push(k)
+      kandidatParsed++
     } else if (name === 'UCAST') {
       const target = obvod ? obvod.ucast : celkem ? country : null
       if (target) {
         const u = ucast(a, obvod ? `OBVOD ${obvod.n} UCAST` : 'CELKEM UCAST')
+        if (target[u.kolo]) throw new Error(`${obvod ? `OBVOD ${obvod.n}` : 'CELKEM'}: duplicate UCAST KOLO=${u.kolo}`)
         target[u.kolo] = u
+        ucastParsed++
       }
     }
   }
   if (root === null) throw new Error('no VYSLEDKY root element')
   if (!closed) throw new Error('truncated document (no </VYSLEDKY>)')
   if (obvody.length === 0) throw new Error('no OBVOD elements')
+  // Every opening tag of these three must have been understood: one the tag regexp could
+  // not match (or one outside its parent) would otherwise vanish silently.
+  const raw = { OBVOD: 0, KANDIDAT: 0, UCAST: 0 }
+  for (const m of src.matchAll(/<(OBVOD|KANDIDAT|UCAST)(?![\w.:-])/g)) raw[m[1]]++
+  if (raw.OBVOD !== obvody.length || raw.KANDIDAT !== kandidatParsed || raw.UCAST !== ucastParsed) {
+    throw new Error(`unparsed elements: OBVOD ${raw.OBVOD}/${obvody.length}, KANDIDAT ${raw.KANDIDAT}/${kandidatParsed}, UCAST ${raw.UCAST}/${ucastParsed}`)
+  }
   for (const o of obvody) {
     if (o.candidates.length === 0) throw new Error(`OBVOD ${o.n} without candidates`)
     if (!o.ucast[1]) throw new Error(`OBVOD ${o.n} without UCAST KOLO=1`)
