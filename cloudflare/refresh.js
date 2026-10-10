@@ -157,6 +157,8 @@ export function createRefresher({
         }
         // failures / stale / quarantine jsou záměrně jen v paměti: po obnově
         // z úložiště začínají od nuly (persistují se jen publikace)
+        // meta uložená staršími verzemi nemá firstSeenAt → nejlepší odhad je refreshedAt
+        if (!Number.isFinite(meta.firstSeenAt)) meta = { ...meta, firstSeenAt: meta.refreshedAt };
         good = { snapshot, str: snapshotStr, meta };
         nextRefreshAt = meta.nextRefreshAt;
         emit('info', 'rehydrated', { refreshedAt: meta.refreshedAt });
@@ -180,8 +182,19 @@ export function createRefresher({
         const next = computeNextRefreshAt({
             phase: phaseOf(snapshot, t), refreshedAt: t, generatedMs, now: t, failures: 0, random, pollsClose,
         });
+        // firstSeenAt = kdy jsme tuhle verzi (`generated`) viděli poprvé; refreshedAt se
+        // posouvá při každé obnově, i když ČSÚ data nezměnilo
+        const sameGenerated = good && Number.isFinite(generatedMs) && good.meta.generatedMs === generatedMs
+            && Number.isFinite(good.meta.firstSeenAt);
         const meta = {
-            refreshedAt: t, generatedMs, nextRefreshAt: next, failures: 0, quarantine: null, base, schema: REFRESH.SCHEMA,
+            refreshedAt: t,
+            generatedMs,
+            nextRefreshAt: next,
+            failures: 0,
+            quarantine: null,
+            base,
+            schema: REFRESH.SCHEMA,
+            firstSeenAt: sameGenerated ? good.meta.firstSeenAt : t,
         };
         const str = JSON.stringify(snapshot);
         good = { snapshot, str, meta };
@@ -331,6 +344,7 @@ export function createRefresher({
         }
         const meta = {
             refreshedAt: good.meta.refreshedAt,
+            firstSeenAt: good.meta.firstSeenAt,
             nextRefreshAt,
             servedAt: now(),
             stale,
@@ -341,7 +355,7 @@ export function createRefresher({
             phase: phaseOf(good.snapshot, now()),
         };
         const body = `{"refreshedAt":${meta.refreshedAt},"nextRefreshAt":${meta.nextRefreshAt},"servedAt":${meta.servedAt},`
-            + `"stale":${meta.stale},"complete":${meta.complete},"refreshing":${meta.refreshing},${good.str.slice(1)}`;
+            + `"stale":${meta.stale},"complete":${meta.complete},"refreshing":${meta.refreshing},"firstSeenAt":${meta.firstSeenAt},${good.str.slice(1)}`;
         return { status: 200, body, meta };
     }
 
