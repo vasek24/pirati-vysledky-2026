@@ -55,10 +55,13 @@ function mergeOverview(candidate, good) {
     // Souhrny za přehled (okrsky, generated, phase) se odvozují ze všech
     // zastupitelstev; bez přepočtu by chybějící zastupitelstvo snížilo součet
     // a vypadalo by to jako regrese. `official` smí být true jen když byl
-    // i kandidát (expected = Infinity pak official i phase 'final' vylučuje).
+    // i kandidát, nebo good (ten obsahoval všechna očekávaná zastupitelstva a
+    // sloučená množina je obsahuje také — jinak by `final` při zpožděné replice
+    // jednoho souboru přeskočil zpět na counting). expected = Infinity jinak
+    // official i phase 'final' vylučuje.
     const composed = composeOverview(councils, {
         now: Date.parse(candidate.fetchedAt) || Date.now(),
-        expected: candidate.official ? Object.keys(councils).length : Infinity,
+        expected: candidate.official || good.official ? Object.keys(councils).length : Infinity,
     });
     return {
         merged: {
@@ -175,12 +178,11 @@ function validateOverview(s, good) {
  * @returns {{ outcome: 'ok'|'older'|'rejected', reason?: string }}
  */
 export function validateCandidate(merged, good, ctx) {
-    assertCtx(ctx);
     const overview = !!merged.councils;
     const structural = structuralReason(merged, overview);
     if (structural) return reject(structural);
-    if (!good) return OK;
-    if (!baselineApplies(good, ctx)) return OK;
+    if (!good) return OK; // studený start: ctx se nevyžaduje (jako v mergeCandidate)
+    if (!baselineApplies(good, ctx)) return OK; // ověří i ctx (TypeError)
 
     const cand = genMs(merged.generated);
     const prev = genMs(good.generated);

@@ -212,10 +212,23 @@ describe('ctx is required and validated (fail closed)', () => {
         expect(() => mergeCandidate(cand, good, 'overview', badCtx)).toThrow(TypeError);
     });
 
-    it.each(bad)('validateCandidate throws TypeError (%s)', async (_label, badCtx) => {
+    it.each(bad)('validateCandidate with a non-null good throws TypeError (%s)', async (_label, badCtx) => {
         const cand = await build(routes());
-        expect(() => validateCandidate(cand, null, badCtx)).toThrow(TypeError);
         expect(() => validateCandidate(cand, cand, badCtx)).toThrow(TypeError);
+    });
+
+    it.each(bad)('validateCandidate on a cold start (good == null) needs no valid ctx (%s)', async (_label, badCtx) => {
+        const cand = await build(routes());
+        expect(validateCandidate(cand, null, badCtx)).toEqual({ outcome: 'ok' });
+        // strukturální kontroly platí dál
+        const empty = await build(routes({ results: NO_PARTIES }));
+        expect(validateCandidate(empty, null, badCtx)).toEqual({ outcome: 'rejected', reason: 'parties-empty' });
+    });
+
+    it('validateCandidate on a cold start works with no ctx at all and with a partial ctx', async () => {
+        const cand = await build(routes());
+        expect(validateCandidate(cand, null)).toEqual({ outcome: 'ok' });
+        expect(validateCandidate(cand, null, { now: 1, pollsClose: POLLS_CLOSE, base: BASE })).toEqual({ outcome: 'ok' });
     });
 
     it('mergeCandidate without a good snapshot needs no ctx', async () => {
@@ -522,19 +535,43 @@ describe('validateCandidate — overview', () => {
         expect(validate(cand, good, {}, 'overview')).toEqual({ outcome: 'ok', complete: true });
     });
 
-    it('a merge that copied councils from good cannot declare official earlier than the candidate', async () => {
-        const final = () => fxJson('results-next.json', (j) => {
-            j.zvoleno = true;
-            j.vysledky[0][7] = 3;
-            j.vysledky[1][7] = 2;
-        });
-        const good = await buildOverview(ovRoutes(final(), final()));
+    const finalResults = () => fxJson('results-next.json', (j) => {
+        j.zvoleno = true;
+        j.vysledky[0][7] = 3;
+        j.vysledky[1][7] = 2;
+    });
+
+    it('final good + candidate MISSING a council: the council is copied from good and final stays final', async () => {
+        const good = await buildOverview(ovRoutes(finalResults(), finalResults()));
         expect(good.official).toBe(true);
-        // 500054 chybí v kandidátovi → kandidát ještě není official
-        const cand = await buildOverview({ [ovPath(500097)]: final() });
-        expect(cand.official).toBe(false);
+        const cand = await buildOverview({ [ovPath(500097)]: finalResults() });
+        expect(cand.official).toBe(false); // kandidát sám final není
         const { merged } = mergeCandidate(cand, good, 'overview', ctx());
         expect(Object.keys(merged.councils)).toHaveLength(2);
+        expect(merged.official).toBe(true);
+        expect(merged.phase).toBe('final');
+    });
+
+    it('final good + one lagging non-final council replica: no flapping back to counting', async () => {
+        const good = await buildOverview(ovRoutes(finalResults(), finalResults()));
+        expect(good.phase).toBe('final');
+        // 500054 přišel ze zpožděné repliky: starší generated, zvoleno:false
+        const lagging = fxJson('results-next.json', (j) => { j.generovano = '2026-10-10T15:00:30'; });
+        const cand = await buildOverview(ovRoutes(finalResults(), lagging));
+        expect(cand.official).toBe(false);
+        const { merged } = mergeCandidate(cand, good, 'overview', ctx());
+        expect(merged.councils[500054]).toEqual(good.councils[500054]);
+        expect(merged.official).toBe(true);
+        expect(merged.phase).toBe('final');
+        expect(validate(cand, good, {}, 'overview')).toEqual({ outcome: 'ok', complete: true });
+    });
+
+    it('a merge cannot declare official when neither the candidate nor good was official', async () => {
+        const nonFinal = fxJson('results-next.json');
+        const good = await buildOverview({ [ovPath(500097)]: finalResults(), [ovPath(500054)]: nonFinal });
+        expect(good.official).toBe(false);
+        const cand = await buildOverview({ [ovPath(500097)]: finalResults() });
+        const { merged } = mergeCandidate(cand, good, 'overview', ctx());
         expect(merged.official).toBe(false);
         expect(merged.phase).not.toBe('final');
     });
