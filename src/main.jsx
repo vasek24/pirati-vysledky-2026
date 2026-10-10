@@ -4,6 +4,7 @@ import './index.css'
 import { councilBySlug } from './councils.js'
 import UpdateManager from './components/UpdateManager.jsx'
 import WelcomeGuide from './components/WelcomeGuide.jsx'
+import ReloadOnStale from './components/ReloadOnStale.jsx'
 
 // Každá stránka (a mapa uvnitř stránky zastupitelstva) je zvlášť — přehled
 // tak na telefonu nestahuje MapLibre a Leaflet, které nepoužívá
@@ -17,9 +18,11 @@ const council = councilBySlug(slug)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Suspense fallback={<div className="h-dvh bg-black" />}>
-      {council ? <CouncilApp council={council} /> : <Landing />}
-    </Suspense>
+    <ReloadOnStale>
+      <Suspense fallback={<div className="h-dvh bg-black" />}>
+        {council ? <CouncilApp council={council} /> : <Landing />}
+      </Suspense>
+    </ReloadOnStale>
     <UpdateManager />
     <WelcomeGuide />
   </StrictMode>,
