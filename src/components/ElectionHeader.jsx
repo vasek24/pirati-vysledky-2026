@@ -13,6 +13,7 @@ import { COUNCILS, POLLS_CLOSE } from '../councils';
 import { activeCouncil } from '../volby/council';
 import { countdown, fmtPct, fmtTime, parseCsuTime, plural } from '../volby/format';
 import { ageSeconds, formatAge, liveState, nextCheckLabel } from '../lib/freshness';
+import { fmtPragueTime, formatLatencyLine, latencyChain } from '../lib/latency';
 import { PrecinctStrip } from './Precincts';
 import { useChangesContext } from '../hooks/useChanges';
 
@@ -280,6 +281,15 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
     const hasCsuTime = !demo && phase !== 'pre' && !!dataTime;
     const age = hasCsuTime ? ageSeconds(nowC, snapshot.generated) : 0;
     const nextLabel = live.fetching ? null : nextCheckLabel(live.nextAt, nowC);
+    // řetězec zpoždění ČSÚ → server → prohlížeč; bez `refreshedAt` (starší Worker) nic
+    const lat = live.latency;
+    const latencyLine = !demo && hasCsuTime && Number.isFinite(lat?.refreshedAt)
+        ? formatLatencyLine(latencyChain({ generated: live.snapshot?.generated, ...lat }), {
+            generatedLabel: fmtPragueTime(parseCsuTime(live.snapshot?.generated)?.getTime()),
+            refreshedLabel: fmtPragueTime(lat.refreshedAt),
+            renderedLabel: fmtPragueTime(lat.renderedAt),
+        })
+        : null;
 
     // shortLine = telefon: vedle se musí vejít, kdy se stránka sama obnoví
     let line;
@@ -359,6 +369,13 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                     <div className="mt-0.5 short:hidden text-[11px] leading-snug text-white/65">
                         ČSÚ zveřejňuje data zhruba jednou za minutu; stránka se obnovuje sama.
                     </div>
+                )}
+                {latencyLine && (
+                    <details className="mt-0.5 text-[11px] leading-snug text-white/80">
+                        <summary className="cursor-pointer select-none py-1 text-white/70 hover:text-white">Jak čerstvá jsou data?</summary>
+                        <div className="pb-1 tabular-nums">{latencyLine}</div>
+                        <div className="pb-1 text-white/65">Kontrola každou minutu, při zpoždění ČSÚ každých 20 s</div>
+                    </details>
                 )}
                 {unavailable && (
                     <div className="mt-1.5 text-xs leading-snug text-white/85">

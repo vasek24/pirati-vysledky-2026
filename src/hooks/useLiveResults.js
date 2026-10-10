@@ -94,7 +94,14 @@ async function fetchProxy(source, view, onServerNow) {
     // metadata plánovače a čerstvosti nejsou součástí snapshotu
     const snapshot = { ...body };
     for (const k of RESPONSE_META) delete snapshot[k];
-    return { snapshot, stale: !!body.stale, nextRefreshAt: Number.isFinite(body.nextRefreshAt) ? body.nextRefreshAt : undefined };
+    return {
+        snapshot,
+        stale: !!body.stale,
+        nextRefreshAt: Number.isFinite(body.nextRefreshAt) ? body.nextRefreshAt : undefined,
+        // čas serveru z těla odpovědi (starší Worker je nemá) — řetězec zpoždění v hlavičce
+        refreshedAt: body.refreshedAt,
+        servedAt: body.servedAt,
+    };
 }
 
 function readArrivals(source) {
@@ -175,6 +182,9 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     // okrsek → čas, kdy ho tenhle prohlížeč poprvé viděl sečtený (null = už při otevření)
     const [arrivals, setArrivals] = useState(() => (demo ? {} : readArrivals(target)));
     const [freshIds, setFreshIds] = useState([]);
+    // řetězec zpoždění posledního snapshotu (časy serveru); renderedAt doplní
+    // efekt po vykreslení. Po reloadu ze sessionStorage null = řádek se nezobrazí.
+    const [latency, setLatency] = useState(null);
 
     const timerRef = useRef(null);
     const nextAtRef = useRef(cached?.nextAt ?? null);
@@ -287,6 +297,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
                 lastAttempt: lastAttemptRef.current,
             };
             setSnapshot(stored.snapshot);
+            setLatency(demoFeed ? null : { refreshedAt: result.refreshedAt, servedAt: result.servedAt, receivedAt: serverNow(), renderedAt: null });
             setState((s) => ({
                 ...s,
                 status: 'ok',
@@ -323,6 +334,13 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     useEffect(() => {
         runRef.current = run;
     }, [run]);
+
+    // nový snapshot je vykreslený (React ho commitnul) → konec řetězce zpoždění
+    // (timeout 0 jako jinde v hooku: setState mimo tělo efektu)
+    useEffect(() => {
+        const t = setTimeout(() => setLatency((l) => (l && l.renderedAt === null ? { ...l, renderedAt: serverNow() } : l)), 0);
+        return () => clearTimeout(t);
+    }, [snapshot, serverNow]);
 
     useEffect(() => {
         if (idle) return undefined;
@@ -380,5 +398,5 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
         return true;
     }, [demoFeed, serverNow]);
 
-    return { snapshot, ...state, arrivals, freshIds, refresh };
+    return { snapshot, ...state, arrivals, freshIds, latency, refresh };
 }
