@@ -33,7 +33,7 @@ html:has(.mi-root){scroll-padding-top:128px;-webkit-text-size-adjust:100%}
 .mi-inp::placeholder{color:#76766f}
 .mi-combo .mi-ico{position:absolute;left:12px;top:13px;width:20px;height:20px;pointer-events:none;color:#555}
 .mi-clear{position:absolute;right:1px;top:1px;width:44px;height:44px;border:0;background:none;border-radius:10px;cursor:pointer;color:#444;font-size:22px;line-height:1}
-.mi-pop{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;color:var(--ink);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.35);max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px);overflow:auto;overscroll-behavior:contain}
+.mi-pop{position:absolute;z-index:32;left:0;right:0;top:calc(100% + 6px);background:#fff;color:var(--ink);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.35);max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px);overflow:auto;overscroll-behavior:contain}
 .mi-pop ul{list-style:none;margin:0;padding:4px 0}
 .mi-opt{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;align-items:center;min-height:52px;padding:6px 14px;cursor:pointer}
 .mi-opt+.mi-opt{border-top:1px solid #f0f0ec}

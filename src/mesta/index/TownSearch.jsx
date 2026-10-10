@@ -126,7 +126,7 @@ export default function TownSearch({ index, townCount, limit, mode, councilByZas
                     enterKeyHint="search"
                     maxLength={MAX_QUERY}
                     value={value}
-                    onChange={(ev) => { setValue(ev.target.value); setActive(0); setOpen(true); }}
+                    onChange={(ev) => { setValue(ev.target.value); setActive(0); setOpen(true); setInfo(null); }}
                     onFocus={() => { if (value.trim()) setOpen(true); }}
                     onKeyDown={onKeyDown}
                 />
