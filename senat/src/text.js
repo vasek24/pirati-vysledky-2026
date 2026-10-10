@@ -182,7 +182,7 @@ export const T = {
   // patička
   footSourceBefore: 'Zdroj dat: Český statistický úřad, ',
   footSourceLink: 'volby.gov.cz',
-  footSourceAfter: '. Seznam kandidatur Pirátů poskytl správce stránky.',
+  footSourceAfter: '. Seznam kandidatur Pirátů: správa stránky.',
   footContactBefore: 'Záložní kopie · správce: Václav Vislous · tel. ',
   footContactPhone: '777 954 389',
   footContactAfter: ' (spravuje tuto kopii a její úpravy)',

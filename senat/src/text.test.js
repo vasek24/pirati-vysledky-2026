@@ -14,7 +14,7 @@ import { counting, finalR2, runoff, runoffEliminatedPirate, scrubRegistry, waiti
 // Spec §5: žádné rodově ohebné označení osoby. Zákaz ze spec + přísnější varianta s Unicode
 // (JS `\b` nezná „á“, takže `kandidát\b` samo o sobě „kandidát “ nechytí).
 const DENY = /kandidát\b|kandidáti\b|kandidátů|zvolen\b|zvolena|podporovan|postoupil|navrhla|člen\/ka|nezvolen/i
-const DENY_STRICT = /kandidát(?!\p{L})|kandidát[iůk]|zvolen(?!\p{L})|zvolen[aáéýo]|podporovan|postoup(?:il|ila)|navrhl|člen\/ka|nezvolen|senátor|vítěz|ten, kdo|ta, která/iu
+const DENY_STRICT = /kandidát(?!\p{L})|kandidát[iůk]|zvolen(?!\p{L})|zvolen[aáéýo]|podporovan|postoup(?:il|ila)|navrhl|člen\/ka|nezvolen|senátor|vítěz|ten, kdo|ta, která|poskytl/iu
 
 const SAMPLES = [1, 2, 30, 'X', 'Y', null, true]
 function strings(value, out = []) {
