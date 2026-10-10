@@ -5,13 +5,13 @@
 // Běží s TZ=UTC jako Worker (`npm test`).
 import { readFileSync } from 'node:fs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildCouncils } from '../src/mesta/buildCouncils.js';
-import { buildFakeCsu } from '../tools/lib/fakeCsu.mjs';
-import { phaseOfSnapshot } from './feedWiring.js';
-import { createMestaWiring } from './mestaWiring.js';
-import { REFRESH, createRefresher } from './refresh.js';
+import { buildCouncils } from '../../src/mesta/buildCouncils.js';
+import { buildFakeCsu } from '../lib/fakeCsu.mjs';
+import { phaseOfSnapshot } from '../../cloudflare/feedWiring.js';
+import { createMestaWiring } from '../../cloudflare/mestaWiring.js';
+import { REFRESH, createRefresher } from '../../cloudflare/refresh.js';
 
-const json = (rel) => JSON.parse(readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
+const json = (rel) => JSON.parse(readFileSync(new URL(`../../${rel}`, import.meta.url), 'utf8'));
 const councils = buildCouncils(json('src/mesta/towns.generated.json'), json('src/mesta/specifics.generated.json'), { reviewedAt: null, towns: {} });
 const brno = councils.find((c) => c.slug === 'brno');
 const input = { council: brno, lists: json('public-mesta/data/brno/lists.json'), geo: json('public-mesta/data/brno/okrsky.geojson') };
