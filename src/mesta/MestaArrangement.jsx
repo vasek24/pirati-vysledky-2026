@@ -36,7 +36,7 @@ export default function MestaArrangement({ council, model }) {
         <section
             aria-labelledby={HEADING_ID}
             className={`rounded-2xl border bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${
-                view.pending ? 'border-neutral-300' : 'border-[#FEC900] ring-2 ring-[#FEC900]/50'
+                view.neutral ? 'border-neutral-300' : 'border-[#FEC900] ring-2 ring-[#FEC900]/50'
             }`}
         >
             <h2 id={HEADING_ID} className="font-display text-2xl leading-none tracking-wide text-black">
@@ -51,8 +51,8 @@ export default function MestaArrangement({ council, model }) {
                     <h3 className="font-condensed text-xs font-bold uppercase tracking-wider text-neutral-600">{view.peopleTitle}</h3>
                     <ul className="mt-1 divide-y divide-neutral-100">
                         {view.people.map((p) => <Row key={p.key} p={p} />)}
-                        {view.moreLabel && <li className="py-2 text-sm text-neutral-700">{view.moreLabel}</li>}
                     </ul>
+                    {view.moreLabel && <p className="pt-2 text-sm text-neutral-700">{view.moreLabel}</p>}
                 </div>
             )}
             {view.alsoElsewhere && <p className="mt-3 text-xs text-neutral-700 leading-snug">{view.alsoElsewhere}</p>}

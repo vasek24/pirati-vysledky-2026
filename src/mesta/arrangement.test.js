@@ -143,7 +143,24 @@ describe('members, votes and mandates', () => {
         const v = arrangementView({ council: withMembers(plzen, 2), model });
         expect(v.people[0]).toMatchObject({ seat: true, official: true, seatLabel: 'má mandát (oficiálně)' });
         expect(v.people[0].votesLabel).toBe('5\u00a0000 hl. · 12,3 %');
-        expect(v.people[1]).toMatchObject({ seat: false, official: true, seatLabel: 'bez mandátu' });
+        expect(v.people[1]).toMatchObject({ seat: false, official: true, seatLabel: 'bez mandátu (oficiálně)' });
+    });
+    it('with votes, seat holders come first, then list position; the cut keeps them', () => {
+        const rows = Array.from({ length: 9 }, (_, i) => ({ n: i + 1, votes: 100 - i, pct: 1, seat: i + 1 === 9 || i + 1 === 2 }));
+        const v = arrangementView({ council: withMembers(plzen, 9), model: votes(11, rows) });
+        expect(v.people.map((p) => p.name)).toEqual(['Člen 2', 'Člen 9', 'Člen 1', 'Člen 3', 'Člen 4', 'Člen 5']);
+        expect(v.people[1].where).toBe('9. místo');
+        expect(v.more).toBe(3);
+    });
+    it('without votes the order is plain list position', () => {
+        const v = arrangementView({ council: withMembers(plzen, 9), model: noVotes });
+        expect(v.people.map((p) => p.name)).toEqual(['Člen 1', 'Člen 2', 'Člen 3', 'Člen 4', 'Člen 5', 'Člen 6']);
+    });
+    it('matches positions numerically even if the feed gives strings', () => {
+        const model = votes(11, [{ n: '1', votes: 12, pct: 1, seat: true }]);
+        expect(arrangementView({ council: withMembers(plzen, 1), model }).people[0]).toMatchObject({ votes: 12, seat: true });
+        const c = { ...plzen, arrangement: { ...plzen.arrangement, members: [{ list: 11, n: '1', name: 'Text' }] } };
+        expect(arrangementView({ council: c, model: votes(11, [{ n: 1, votes: 5, pct: 1, seat: false }]) }).people[0].votes).toBe(5);
     });
     it('looks the person up on the Pirate list of the council, not on another list', () => {
         const model = { hasVotes: true, official: false, councilors: { 99: { list: [{ n: 1, votes: 9999, pct: 50, seat: true }] }, 4: { list: [{ n: 1, votes: 7, pct: 1, seat: false }] } } };
@@ -169,7 +186,7 @@ describe('Pirates on other lists', () => {
     it('a/b with others gets exactly one note line', () => {
         const c = { ...plzen, arrangement: { ...plzen.arrangement, others } };
         const v = arrangementView({ council: c, model: noVotes });
-        expect(v.alsoElsewhere).toBe('Piráti kandidují i na jiných kandidátkách: Lukáš Zykán (č. 7, STAN), Jana Nováková (č. 9, NK).');
+        expect(v.alsoElsewhere).toBe('Piráti kandidují i na jiných kandidátkách: Lukáš Zykán (č. 7, navrhuje STAN), Jana Nováková (č. 9, navrhuje NK).');
     });
     it('a/b without others: no note', () => {
         expect(arrangementView({ council: plzen, model: noVotes }).alsoElsewhere).toBeNull();
@@ -177,7 +194,7 @@ describe('Pirates on other lists', () => {
     it('the note is capped and stays one line', () => {
         const many = Array.from({ length: 5 }, (_, i) => ({ list: 7, listName: 'X', n: i + 1, name: `Osoba ${i + 1}`, nominatedBy: 'STAN' }));
         const v = arrangementView({ council: { ...hradec, arrangement: { ...hradec.arrangement, others: many } }, model: noVotes });
-        expect(v.alsoElsewhere).toBe('Piráti kandidují i na jiných kandidátkách: Osoba 1 (č. 7, STAN), Osoba 2 (č. 7, STAN), Osoba 3 (č. 7, STAN) a 2 další.');
+        expect(v.alsoElsewhere).toBe('Piráti kandidují i na jiných kandidátkách: Osoba 1 (č. 7, navrhuje STAN), Osoba 2 (č. 7, navrhuje STAN), Osoba 3 (č. 7, navrhuje STAN) a 2 další.');
         expect(v.alsoElsewhere).not.toContain('\n');
     });
 });
@@ -214,16 +231,28 @@ describe('forced c and d towns', () => {
     });
 });
 
+describe('neutral flag', () => {
+    it('is true for pending and type d, false for a, b and c', () => {
+        expect(arrangementView({ council: havirov, model: noVotes }).neutral).toBe(true);
+        expect(arrangementView({ council: { ...hradec, pirates: null }, model: noVotes }).neutral).toBe(true);
+        expect(arrangementView({ council: { ...plzen, pirates: null }, model: noVotes }).neutral).toBe(true);
+        for (const c of [plzen, hradec, jablonec, sokolov]) expect(arrangementView({ council: c, model: noVotes }).neutral).toBe(false);
+    });
+});
+
 describe('footer', () => {
     it('cites the register', () => {
         expect(arrangementView({ council: plzen, model: noVotes }).footer).toBe('Zdroj: registr kandidátů ČSÚ (20261007)');
     });
     it('appends the override note', () => {
-        const v = arrangementView({ council: { ...plzen, note: 'Ověřeno u krajského týmu.' }, model: noVotes });
+        const v = arrangementView({ council: { ...plzen, arrangement: { ...plzen.arrangement, note: 'Ověřeno u krajského týmu.' } }, model: noVotes });
         expect(v.footer).toBe('Zdroj: registr kandidátů ČSÚ (20261007) · Ověřeno u krajského týmu.');
     });
+    it('does not read a note from the council root (only arrangement.note)', () => {
+        expect(arrangementView({ council: { ...plzen, note: 'Nemá se zobrazit.' }, model: noVotes }).footer).toBe('Zdroj: registr kandidátů ČSÚ (20261007)');
+    });
     it('ignores a blank note', () => {
-        expect(arrangementView({ council: { ...plzen, note: '   ' }, model: noVotes }).footer).toBe('Zdroj: registr kandidátů ČSÚ (20261007)');
+        expect(arrangementView({ council: { ...plzen, arrangement: { ...plzen.arrangement, note: '   ' } }, model: noVotes }).footer).toBe('Zdroj: registr kandidátů ČSÚ (20261007)');
     });
 });
 
@@ -234,8 +263,8 @@ describe('MestaArrangement markup', () => {
         expect(out).toMatch(/<section[^>]*aria-labelledby="mesta-arr-heading"/);
         expect(out).toMatch(/<h2[^>]*id="mesta-arr-heading"[^>]*>Koalice s Piráty<\/h2>/);
         expect(out).toMatch(/<h3[^>]*>Členové Pirátů na kandidátce<\/h3>/);
-        expect(out.match(/<li/g)).toHaveLength(7); // 6 lidí + „+ dalších 2"
-        expect(out).toContain('+ dalších 2');
+        expect(out.match(/<li/g)).toHaveLength(6);
+        expect(out).toMatch(/<\/ul><p[^>]*>\+ dalších 2<\/p>/);
         expect(out).toContain('Hlasy a mandáty se počítají za celou kandidátku.');
         expect(out).toContain('registr kandidátů ČSÚ (20261007)');
     });
@@ -249,6 +278,27 @@ describe('MestaArrangement markup', () => {
         const out = html(havirov);
         expect(out).not.toContain('<ul');
         expect(out).toContain('Piráti tu letos nekandidují (podle registru ČSÚ)');
+    });
+    it('renders the also-elsewhere note', () => {
+        const others = [{ list: 7, listName: 'X', n: 3, name: 'Karel Cizí', nominatedBy: 'STAN' }];
+        const out = html({ ...plzen, arrangement: { ...plzen.arrangement, others } });
+        expect(out).toContain('Piráti kandidují i na jiných kandidátkách: Karel Cizí (č. 7, navrhuje STAN).');
+    });
+    it('renders pending for type a as well', () => {
+        const out = html({ ...plzen, pirates: null });
+        expect(out).toContain('Způsob kandidatury Pirátů ještě ověřujeme');
+        expect(out).not.toContain('Samostatná kandidátka');
+    });
+    it('renders "bez mandátu (oficiálně)" for an official non-seat', () => {
+        const model = votes(11, [{ n: 1, votes: 5, pct: 0.2, seat: false }], true);
+        expect(html(withMembers(plzen, 1), model)).toContain('bez mandátu (oficiálně)');
+    });
+    it('d and pending cards are neutral (no yellow ring); own lists keep the accent', () => {
+        for (const out of [html(havirov), html({ ...hradec, pirates: null })]) {
+            expect(out).toContain('border-neutral-300');
+            expect(out).not.toContain('ring-[#FEC900]');
+        }
+        expect(html(plzen)).toContain('ring-[#FEC900]');
     });
     it('renders the pending state without a list', () => {
         const out = html({ ...hradec, pirates: null });

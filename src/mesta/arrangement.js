@@ -29,20 +29,20 @@ export const TEXT = {
     seatEstimate: 'má mandát (odhad)',
     seatOfficial: 'má mandát (oficiálně)',
     noSeatEstimate: 'bez mandátu (odhad)',
-    noSeatOfficial: 'bez mandátu',
+    noSeatOfficial: 'bez mandátu (oficiálně)',
     alsoElsewhere: (people, rest) => `Piráti kandidují i na jiných kandidátkách: ${people}${rest ? ` a ${rest} ${rest < 5 ? 'další' : 'dalších'}` : ''}.`,
-    alsoElsewherePerson: (name, list, party) => `${name} (č. ${list}${party ? `, ${party}` : ''})`,
+    alsoElsewherePerson: (name, list, party) => `${name} (č. ${list}${party ? `, ${TEXT.nominatedBy(party)}` : ''})`,
     noOwnList: 'Piráti tu nemají vlastní kandidátku',
     onlyOtherLists: 'Piráti kandidují jen na kandidátkách jiných stran.',
     notRunning: 'Piráti tu letos nekandidují (podle registru ČSÚ)',
     source: 'Zdroj: registr kandidátů ČSÚ (20261007)',
 };
 
-const byPosition = (a, b) => a.n - b.n;
+const byPosition = (a, b) => Number(a.n) - Number(b.n);
 
 // Čísla z modelu: jen když už jsou hlasy a kandidát na své kandidátce existuje
 function person({ key, name, where, list, n }, model) {
-    const found = model?.hasVotes ? model.councilors?.[list]?.list?.find((c) => c.n === n) : null;
+    const found = model?.hasVotes ? model.councilors?.[list]?.list?.find((c) => Number(c.n) === Number(n)) : null;
     const base = { key, name, where, votes: null, pct: null, seat: null, official: false, votesLabel: null, seatLabel: null };
     if (!found) return base;
     const official = !!model.official;
@@ -76,7 +76,7 @@ function elsewhere(others) {
 }
 
 function footerOf(council) {
-    const note = String(council.note ?? council.arrangement?.note ?? '').trim();
+    const note = String(council.arrangement?.note ?? '').trim();
     return note ? `${TEXT.source} · ${note}` : TEXT.source;
 }
 
@@ -88,6 +88,7 @@ export function arrangementView({ council, model }) {
     const view = {
         heading: TEXT.heading,
         pending: false,
+        neutral: false,
         title: '',
         lines: [],
         peopleTitle: null,
@@ -97,15 +98,17 @@ export function arrangementView({ council, model }) {
         alsoElsewhere: null,
         footer: footerOf(council),
     };
+    // Podle pozice na kandidátce; jakmile jsou hlasy, napřed držitelé mandátu (ať je ořez nevyřadí)
     const withPeople = (title, rows, toPerson) => {
-        const sorted = [...rows].sort(byPosition);
-        const people = sorted.slice(0, MAX_PEOPLE).map((r) => person(toPerson(r), model));
-        const more = Math.max(0, sorted.length - people.length);
+        const all = [...rows].sort(byPosition).map((r) => person(toPerson(r), model));
+        const sorted = model?.hasVotes ? [...all.filter((p) => p.seat), ...all.filter((p) => !p.seat)] : all;
+        const people = sorted.slice(0, MAX_PEOPLE);
+        const more = sorted.length - people.length;
         return { people, more, moreLabel: more ? TEXT.more(more) : null, peopleTitle: sorted.length ? title : null };
     };
 
     if (a.type === 'a' || a.type === 'b') {
-        if (council.pirates == null || !a.list) return { ...view, pending: true, title: TEXT.pendingTitle };
+        if (council.pirates == null || !a.list) return { ...view, pending: true, neutral: true, title: TEXT.pendingTitle };
         const own = a.type === 'a';
         return {
             ...view,
@@ -132,6 +135,6 @@ export function arrangementView({ council, model }) {
         };
     }
 
-    if (a.type === 'd') return { ...view, title: TEXT.notRunning };
+    if (a.type === 'd') return { ...view, neutral: true, title: TEXT.notRunning };
     return null;
 }
