@@ -16,7 +16,7 @@ Fetched: 2026-10-10T10:52:37.735Z UTC (per-source times are the modification tim
 
 - Registry zip `csv_od/` files (UTF-8, comma): `kvrzcoco.csv`, `kvros.csv`, `kvrk.csv`. Code lists zip: `cvs.csv`, `cns.csv`, `cnumnuts.csv`.
 - Population 2025: sheet 1 of `1300722503.xlsx`, columns B (kód obce = KODZASTUP) and D (počet obyvatel), rows from 7.
-- jmsez cross-check: fetched for 81 published towns (none failed), one request per second, URL pattern `https://volby.gov.cz/appdata/kv2026/20261009/jmsez/<okres>/<zastup>.json`.
+- jmsez cross-check: fetched for 78 published towns (none failed), one request per second, URL pattern `https://volby.gov.cz/appdata/kv2026/20261009/jmsez/<okres>/<zastup>.json`.
 
 ## Files and filters
 
@@ -32,7 +32,7 @@ Fetched: 2026-10-10T10:52:37.735Z UTC (per-source times are the modification tim
 | `cns.csv` | nominating-party table | rows whose `NSTRANA` is 720, 80 or occurs in a `SLOZENI` of `lists-720.csv`/`lists.csv` or as `NSTRANA` in `candidates-720.csv` | 134 |
 | `regions-okresy.csv` | `cnumnuts` | 4-digit `NUMNUTS` only (regions 2100…8100, okresy 2101…) | 100 |
 | `senate-2026.json` | Senate constituencies voting in 2026 (`obvody.json`) | `obvod` and `nazevObvodu` only | 27 |
-| `jmsez-pirati.json` | jmsez rows labelled `Piráti` | published towns only; per town the rows with `prislusnost = Piráti` and the generator's `mismatch` verdict | 81 |
+| `jmsez-pirati.json` | jmsez rows labelled `Piráti` | published towns only; per town the rows with `prislusnost = Piráti` and the generator's `mismatch` verdict | 78 |
 
 All CSV rows are sorted by KODZASTUP (then list number, position) so reruns are byte-identical for the same inputs.
 
