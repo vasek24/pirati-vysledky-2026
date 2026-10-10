@@ -25,12 +25,12 @@ describe('rozcestnik (volby.dg12.cz)', () => {
     expect(html).toContain('<meta name="robots" content="noindex">')
   })
 
-  it('jen Praha je odkaz, Města a Senát jsou neaktivní karty', () => {
+  it('Praha a Města jsou odkazy, Senát je neaktivní karta', () => {
     const anchors = [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((m) => m[1])
     expect(anchors).toContain('https://praha.dg12.cz')
-    expect(anchors.some((h) => h.includes('mesta.dg12.cz'))).toBe(false)
+    expect(anchors).toContain('https://mesta.dg12.cz')
     expect(anchors.some((h) => h.includes('senat.dg12.cz'))).toBe(false)
-    expect(html.match(/<div class="card"[^>]*aria-disabled="true"/g)).toHaveLength(2)
+    expect(html.match(/<div class="card"[^>]*aria-disabled="true"/g)).toHaveLength(1)
   })
 
   it('je malý (< 15 KB)', () => {
