@@ -296,7 +296,8 @@ function Hero({ snapshot, live, lists }) {
     const pillState = unavailable
         ? 'offline'
         : liveState({ snapshot: snapshot && { ...snapshot, stale: live.stale }, now: nowC, pollsClose: POLLS_CLOSE, online });
-    const hasCsuTime = !DEMO && phase !== 'pre' && !!dataTime;
+    // data z doby před koncem voleb (zkušební soubor ČSÚ) nejsou výsledky — čas ani stáří se neukazuje
+    const hasCsuTime = !DEMO && phase !== 'pre' && !!dataTime && new Date(dataTime).getTime() >= POLLS_CLOSE;
     const age = hasCsuTime ? ageSeconds(nowC, snapshot.generated) : 0;
     const nextLabel = live.fetching ? null : nextCheckLabel(live.nextAt, nowC);
 
@@ -332,6 +333,7 @@ function Hero({ snapshot, live, lists }) {
                                 <span className="font-semibold text-white">{formatAge(age)}</span>
                             </span>
                         )}
+                        {!hasCsuTime && phase === 'waiting' && <span className="font-semibold text-white">Čekáme na první výsledky od ČSÚ</span>}
                         <span>
                             {live.fetching
                                 ? 'načítám nová data…'
