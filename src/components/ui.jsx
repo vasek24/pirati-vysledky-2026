@@ -73,6 +73,21 @@ export function SectionTitle({ children, right }) {
     );
 }
 
+// Šipka s textem u řádku, kterému se právě pohnula čísla (viz hooks/useChanges).
+// Plave přes okraj řádku (absolute), takže nic neposouvá; text je „▲ +123",
+// barva tedy není jediná nápověda. Čtečka dostane jednu větu jinde (aria-live).
+export function ChangeCue({ text, className = '-top-2 right-2' }) {
+    if (!text) return null;
+    return (
+        <span
+            aria-hidden="true"
+            className={`pointer-events-none absolute z-10 max-w-[92%] truncate whitespace-nowrap rounded-full bg-black px-1.5 py-px text-[10px] font-bold leading-4 tabular-nums text-[#FEC900] shadow ${className}`}
+        >
+            {text}
+        </span>
+    );
+}
+
 export function Delta({ value, className = '' }) {
     if (value === null || value === undefined) return null;
     const tone = value > 0.05 ? 'text-emerald-700' : value < -0.05 ? 'text-orange-700' : 'text-neutral-500';

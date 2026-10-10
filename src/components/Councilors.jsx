@@ -5,19 +5,22 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { partyMeta } from '../volby/council';
 import { fmtInt, fmtPct, mandatesLabel } from '../volby/format';
 import Hemicycle from './Hemicycle';
-import { Avatar, Card, PartyLogo, Pill, SectionTitle } from './ui';
+import { Avatar, Card, ChangeCue, PartyLogo, Pill, SectionTitle } from './ui';
+import { candidateChange, useChangesContext } from '../hooks/useChanges';
 import { scrollBehavior } from '../utils/motion';
 
 const cardId = (p) => `cand-${p.partyId}-${p.n}`;
 
 function PersonCard({ person, hasVotes, focused }) {
+    const change = candidateChange(useChangesContext(), `${person.partyId}-${person.n}`);
     return (
         <div
             id={cardId(person)}
-            className={`flex items-center gap-3 rounded-xl border p-2.5 bg-white transition-shadow ${
+            className={`flex items-center gap-3 rounded-xl border p-2.5 bg-white transition-shadow ${change.className} ${
                 focused ? 'border-[#000000] ring-2 ring-[#FEC900]' : 'border-neutral-200'
             }`}
         >
+            <ChangeCue text={change.cue} />
             <Avatar person={person} size={52} />
             <div className="min-w-0 flex-1">
                 <div className="text-sm font-bold text-neutral-900 leading-tight truncate">{person.display}</div>
@@ -33,11 +36,13 @@ function PersonCard({ person, hasVotes, focused }) {
 }
 
 function CompactRow({ person, hasVotes, focused, muted = false }) {
+    const change = candidateChange(useChangesContext(), `${person.partyId}-${person.n}`);
     return (
         <div
             id={cardId(person)}
-            className={`flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg ${focused ? 'bg-[#FFF6D1] ring-1 ring-[#FEC900]' : ''} ${muted ? 'opacity-70' : ''}`}
+            className={`flex items-center gap-2.5 py-1.5 px-1.5 rounded-lg ${change.className} ${focused ? 'bg-[#FFF6D1] ring-1 ring-[#FEC900]' : ''} ${muted ? 'opacity-70' : ''}`}
         >
+            <ChangeCue text={change.cue} className="-top-1.5 right-1" />
             <Avatar person={person} size={28} />
             <div className="min-w-0 flex-1">
                 <div className="text-sm text-neutral-800 truncate">

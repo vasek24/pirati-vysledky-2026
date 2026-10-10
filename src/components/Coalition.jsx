@@ -4,7 +4,9 @@ import React, { useMemo, useRef, useState } from 'react';
 import { activeCouncil, partyMeta } from '../volby/council';
 import { sumSeats } from '../volby/compute';
 import { fmtInt, fmtPct, mandatesLabel } from '../volby/format';
-import { Card, PartyChip, SectionTitle } from './ui';
+import { Card, ChangeCue, PartyChip, SectionTitle } from './ui';
+import { useChangesContext } from '../hooks/useChanges';
+import { seatsCueText } from '../lib/changes';
 import { scrollBehavior } from '../utils/motion';
 
 // Políčko za každý mandát, barevně podle stran v koalici, značka za většinou
@@ -51,6 +53,9 @@ function MajorityBadge({ seats }) {
 export function CoalitionHero({ model }) {
     const { coalition, seatsById, hasVotes, official, ours, snapshot, council } = model;
     const baseLabel = ours?.meta.baseline?.label || 'předchůdce';
+    // změna mandátů Pirátů za poslední aktualizaci (šipka nad číslem, nic neposouvá)
+    const changeCtx = useChangesContext();
+    const seatCue = ours ? seatsCueText(changeCtx.changes?.parties.get(ours.id)) : '';
     // Společná kandidátka (Piráti a Starostové, Piráti, PRAHA 3 SOBĚ a Edita
     // Janečková…) má vlastní název — pirátské logo nad ním by bez něj tvrdilo,
     // že jde o samotné Piráty
@@ -89,7 +94,8 @@ export function CoalitionHero({ model }) {
                                             : `2022 (${baseLabel}): ${fmtPct(ours.baseline)} · ${mandatesLabel(ours.baselineSeats || 0)}`}
                             </div>
                         </div>
-                        <div className="text-right shrink-0">
+                        <div className="relative text-right shrink-0">
+                            <ChangeCue text={seatCue} className="-top-3 right-0" />
                             <div className={`font-display text-5xl min-[360px]:text-6xl leading-none tabular-nums ${hasVotes ? 'text-[#FEC900]' : 'text-[#FEC900]/35'}`}>{hasVotes ? ours.seats : ours.baselineSeats ?? '–'}</div>
                             <div className="text-[11px] text-white/60">{!hasVotes ? 'mandátů v 2022' : official ? 'mandátů' : 'mandátů (odhad)'}</div>
                         </div>

@@ -150,6 +150,57 @@ body {
   animation: okrsek-flash 3s ease-out 2;
 }
 
+/* Nová data: řádek, kterému se pohnula čísla, jednou jemně probliknou pirátskou
+   žlutou (překryv ::after, takže nic nepřebije barvu pozadí a nic se nehýbe),
+   šipka s textem zůstane celé okno změny (4 s). Dvě varianty animace se
+   střídají (.flash-alt), ať se při další změně v okně spustí znovu. */
+@keyframes row-flash-a {
+  0% { opacity: 0; }
+  14% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+@keyframes row-flash-b {
+  0% { opacity: 0; }
+  14% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+.row-flash {
+  position: relative;
+}
+.row-flash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #fec900;
+  opacity: 0;
+  pointer-events: none;
+  animation: row-flash-a 2.5s ease-out 1 both;
+}
+.row-flash.flash-alt::after {
+  animation-name: row-flash-b;
+}
+
+/* Hlavička: stavový štítek jednou „cinkne" kroužkem, text s počtem okrsků
+   se krátce podbarví */
+@keyframes pill-ping {
+  0% { box-shadow: 0 0 0 0 rgba(254, 201, 0, 0.9); }
+  100% { box-shadow: 0 0 0 7px rgba(254, 201, 0, 0); }
+}
+@keyframes text-ping {
+  0%, 30% { background-color: rgba(254, 201, 0, 0.45); }
+  100% { background-color: rgba(254, 201, 0, 0); }
+}
+.pill-ping {
+  display: inline-flex;
+  border-radius: 4px;
+  animation: pill-ping 1.6s ease-out 1;
+}
+.text-ping {
+  border-radius: 4px;
+  animation: text-ping 2.5s ease-out 1;
+}
+
 /* Vypnuté animace v systému: nic nebliká ani nepulzuje, rolování skokem.
    Čerstvě sečtený okrsek zůstane jen staticky žlutě orámovaný. */
 @media (prefers-reduced-motion: reduce) {
@@ -165,5 +216,19 @@ body {
     animation: none;
     stroke: #fec900;
     stroke-width: 3px;
+  }
+  /* Změna dat bez pohybu: řádek zůstane po dobu okna staticky podbarvený,
+     šipka s textem je beze změny; štítek a text v hlavičce se nehýbou */
+  .row-flash::after,
+  .row-flash.flash-alt::after {
+    animation: none;
+    opacity: 0.28;
+  }
+  .pill-ping,
+  .text-ping {
+    animation: none;
+  }
+  .text-ping {
+    background-color: rgba(254, 201, 0, 0.3);
   }
 }

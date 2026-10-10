@@ -14,6 +14,7 @@ import { activeCouncil } from '../volby/council';
 import { countdown, fmtPct, fmtTime, parseCsuTime } from '../volby/format';
 import { ageSeconds, formatAge, liveState, nextCheckLabel } from '../lib/freshness';
 import { PrecinctStrip } from './Precincts';
+import { useChangesContext } from '../hooks/useChanges';
 
 // Když Worker nevrací nic použitelného (503 a žádný snapshot), kam se lidé podívají sami
 const ORIGINAL_SITE_URL = 'https://pirati-vysledky-2026.pirati-vysledky-2026-cloudflare.workers.dev';
@@ -259,6 +260,9 @@ function CouncilMenu({ demo }) {
 
 export default function ElectionHeader({ live, snapshot, demo, geoJson, selectedId, onSelectPrecinct, onOpenPrecincts }) {
     const now = useNow(1000);
+    // nová data: štítek jednou cinkne, počet okrsků se podbarví a ukáže „▲ +2"
+    const { changes, tick: changeTick } = useChangesContext();
+    const newPrecincts = changes?.precincts.delta > 0 ? ` ▲ +${changes.precincts.delta}` : '';
     const online = useOnline();
     // čas serveru: hodiny klienta + rozdíl z x-server-now (rychlé/pomalé hodiny)
     const nowC = now + (live.skew || 0);
@@ -304,7 +308,9 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                     </a>
                     <div className="min-w-0 flex-1 border-l border-white/20 pl-3">
                         <div className="flex items-center gap-2">
-                            <StatusPill phase={phase} demo={demo} stale={live.stale} state={pillState} />
+                            <span key={changeTick} className={`shrink-0 ${changes ? 'pill-ping' : 'inline-flex'}`}>
+                                <StatusPill phase={phase} demo={demo} stale={live.stale} state={pillState} />
+                            </span>
                             {/* na telefonu se vedle štítku stavu nevejde (useklo by se na „23 MANDÁ…“);
                                 počet mandátů je i v půlkruhu a v menu */}
                             <span className="hidden sm:inline font-condensed text-[11px] uppercase tracking-wider text-white/50 truncate">
@@ -325,8 +331,8 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                 </div>
 
                 <div className="mt-2 short:mt-1 text-[11px] text-white/80 truncate">
-                    <span className="sm:hidden">{shortLine || line}</span>
-                    <span className="hidden sm:inline">{line}</span>
+                    <span key={`s${changeTick}`} className={`sm:hidden ${changes ? 'text-ping' : ''}`}>{shortLine || line}{newPrecincts}</span>
+                    <span key={`l${changeTick}`} className={`hidden sm:inline ${changes ? 'text-ping' : ''}`}>{line}{newPrecincts}</span>
                 </div>
                 {!demo && (
                     // čerstvost dat — na telefonu i na desktopu (title na dotyku není vidět)

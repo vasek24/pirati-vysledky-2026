@@ -12,6 +12,7 @@ import { ArrivalsFeed, MapControls, PrecinctDetail } from '../components/Precinc
 import { Card, SectionTitle } from '../components/ui';
 import { councilSource, useLiveResults } from '../hooks/useLiveResults';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { ChangesContext, useChanges } from '../hooks/useChanges';
 import { setMapEnabled, useMapEnabled } from '../hooks/useMapPreference';
 import { useDialog } from '../hooks/useDialog';
 import { buildModel, emptySnapshot, precincts2022 } from '../volby/model';
@@ -212,6 +213,8 @@ export default function CouncilApp({ council }) {
         [ready, demoResults, demoKandidati],
     );
     const live = useLiveResults({ source: councilSource(council), demo: DEMO, demoFeed });
+    // Co se v posledním snapshotu pohnulo (zvýraznění řádků + jedna věta pro čtečku)
+    const change = useChanges(live.snapshot, { oursId: council.pirates, nameOf: (id) => partyMeta(id).short });
     const kandidati = statics?.kandidati;
     // Když se živá data vůbec nenačtou, ukázat aspoň odpočet, kandidátky
     // a výchozí stav 2022 (náhradní snapshot z kandidátek)
@@ -451,7 +454,10 @@ export default function CouncilApp({ council }) {
     const activeTab = tabs.some((t) => t.id === tab) ? tab : 'overview';
 
     return (
+        <ChangesContext.Provider value={change}>
         <div className="h-dvh flex flex-col bg-[#F3F3F1] text-neutral-900">
+            {/* jedna věta na jednu aktualizaci, jen když se čísla pohnula (ne po sekundách) */}
+            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{change.summary}</div>
             <ElectionHeader
                 live={live}
                 snapshot={snapshot}
@@ -529,5 +535,6 @@ export default function CouncilApp({ council }) {
                 </PrecinctSheet>
             )}
         </div>
+        </ChangesContext.Provider>
     );
 }

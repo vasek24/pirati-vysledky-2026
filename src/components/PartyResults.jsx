@@ -1,7 +1,8 @@
 // Výsledky stran: podíl hlasů, mandáty (odhad / oficiální), srovnání s 2022
 import React, { useState } from 'react';
 import { fmtInt, fmtPct } from '../volby/format';
-import { Card, Delta, PartyLogo, SectionTitle } from './ui';
+import { Card, ChangeCue, Delta, PartyLogo, SectionTitle } from './ui';
+import { partyChange, useChangesContext } from '../hooks/useChanges';
 
 // U kandidátek, jejichž předchůdce se rozdělil, jen informace bez změny v p. b.
 function SplitInfo({ split }) {
@@ -14,6 +15,7 @@ function SplitInfo({ split }) {
 
 export default function PartyResults({ model, onSelectParty, selectedParty }) {
     const { parties, hasVotes, official, threshold, council } = model;
+    const changeCtx = useChangesContext();
     // U Magistrátu (24 kandidátek) schovat drobné strany pod „další"
     const [showAll, setShowAll] = useState(false);
     const many = parties.length > 12;
@@ -42,14 +44,16 @@ export default function PartyResults({ model, onSelectParty, selectedParty }) {
                     const exact = p.meta.baseline?.exact;
                     // Bez mapy (Magistrát) klepnutí na stranu nemá co ukázat — pak jen řádek
                     const Row = onSelectParty ? 'button' : 'div';
+                    const change = partyChange(changeCtx, p.id);
                     return (
                         <Row
                             key={p.id}
                             {...(onSelectParty ? { type: 'button', onClick: () => onSelectParty(p.id), 'aria-pressed': selected } : {})}
-                            className={`block w-full text-left rounded-xl px-2.5 py-2 transition-colors ${
+                            className={`block w-full text-left rounded-xl px-2.5 py-2 transition-colors ${change.className} ${
                                 ours ? 'bg-[#FFF6D1]' : selected ? 'bg-neutral-100' : onSelectParty ? 'hover:bg-neutral-50 active:bg-neutral-100' : ''
                             } ${below ? 'opacity-60' : ''}`}
                         >
+                            <ChangeCue text={change.cue} />
                             <div className="flex items-center gap-2">
                                 <PartyLogo id={p.id} size={20} />
                                 {/* celý název kandidátky, nejvýš na dva řádky (na telefonu se dlouhé názvy useknou) */}
