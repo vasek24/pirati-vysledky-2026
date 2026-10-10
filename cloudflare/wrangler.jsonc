@@ -1,6 +1,7 @@
-// Cloudflare Worker pro pirati-vysledky-2026 — viz cloudflare/README.md.
-// Nasazuje GitHub Action (.github/workflows/deploy.yml) při každém pushi do
-// main; ručně: npm run deploy (v této složce). Secret: GITHUB_TOKEN (brouk).
+// Cloudflare Worker: záložní kopie pirati-vysledky-2026 (volby.dg12.cz).
+// Nasazuje se RUČNĚ z této složky: nejdřív `npx wrangler deploy --env staging`,
+// po kontrolách `npx wrangler deploy` (produkce). Žádný GITHUB_TOKEN secret se
+// nenastavuje (hlášení chyb je vypnuté). Viz docs/ops/runbook.md.
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "pirati-volby-zaloha",
@@ -12,9 +13,8 @@
     "binding": "ASSETS"
   },
   // Screenshoty z nahlášených chyb (brouk), servíruje je worker na /hlaseni/*
-  // Namespace zakládá Task 5; do té doby je id záměrně neplatné, takže
-  // nechtěný `wrangler deploy` selže a na nic nesáhne.
-  "kv_namespaces": [{ "binding": "HLASENI", "id": "CREATE-IN-TASK-5" }],
+  // Namespace založen 2026-10-10 (wrangler kv namespace create HLASENI).
+  "kv_namespaces": [{ "binding": "HLASENI", "id": "ea4a4866704e4392a51724bae050566b" }],
   // Návštěvnost: anonymní počty (worker.js track()); dataset se založí sám
   // při prvním zápisu, čte se přes SQL API (Account Analytics Read)
   "analytics_engine_datasets": [{ "binding": "STATS", "dataset": "pirati_vysledky_2026" }],
@@ -43,9 +43,9 @@
         "directory": "../dist",
         "binding": "ASSETS"
       },
-      // Vlastní namespace zakládá Task 5; do té doby neplatné id (viz výše).
-      "kv_namespaces": [{ "binding": "HLASENI", "id": "CREATE-IN-TASK-5" }],
-      "analytics_engine_datasets": [{ "binding": "STATS", "dataset": "pirati_vysledky_2026" }],
+      // Vlastní staging namespace (wrangler kv namespace create HLASENI --env staging).
+      "kv_namespaces": [{ "binding": "HLASENI", "id": "bef9d706e33a4100b8f4990282cf2d1e" }],
+      "analytics_engine_datasets": [{ "binding": "STATS", "dataset": "pirati_volby_zaloha_staging" }],
       "durable_objects": {
         "bindings": [{ "name": "FEED", "class_name": "Feed" }]
       },

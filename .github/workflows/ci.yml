@@ -35,4 +35,4 @@ jobs:
 
       # Prohlížeč nesmí volat volby.gov.cz přímo (jen náš Worker)
       - name: No direct ČSÚ URL in the bundle
-        run: "! grep -rl 'appdata/kv2026' dist/assets"
+        run: "test -d dist/assets && ! grep -rl 'appdata/kv2026' dist/assets"

@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 15
     environment:
       name: production
-      url: https://pirati-vysledky-2026.pirati-vysledky-2026-cloudflare.workers.dev
+      url: ${{ vars.SMOKE_URL }}
     steps:
       - uses: actions/checkout@v4
 
