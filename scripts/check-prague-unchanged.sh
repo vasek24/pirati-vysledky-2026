@@ -37,6 +37,7 @@ SKIP_WORKER=${GUARD_SKIP_WORKER:-0}
 
 die() { echo "check-prague-unchanged: $*" >&2; exit "${2:-3}"; }
 
+self_sha=$(sha256sum <"${BASH_SOURCE[0]}" | cut -c1-16)
 cd "$(git rev-parse --show-toplevel)"
 repo=$PWD
 
@@ -111,7 +112,6 @@ build_side() { # build_side <rev> <name> <record-file> <determinism 0|1>
   { sed 's/^/dist /' "$tmp/$name.dist"; if [[ $SKIP_WORKER != 1 ]]; then sed 's/^/worker /' "$tmp/$name.worker"; fi; } >"$record"
 }
 
-self_sha=$(sha256sum <"${BASH_SOURCE[0]}" | cut -c1-16)
 keyhash=$(printf '%s' "$GUARD_VERSION|$self_sha|${STRIP[*]}|$INSTALL_CMD|$BUILD_CMD|$WORKER_CMD|$SKIP_WORKER" | sha256sum | cut -c1-8)
 cache=$repo/.cache/prague-base-$base-$keyhash.sha256
 if [[ -s $cache && ${GUARD_REFRESH:-0} != 1 ]]; then
