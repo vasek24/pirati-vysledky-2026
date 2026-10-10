@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#000000">
+<title>Piráti ve městech · Komunální volby 2026 (prototyp)</title>
+<link rel="icon" href="data:,">
+<!-- Prototyp indexu mesta.dg12.cz. Vymyšlená čísla, žádné síťové požadavky. ?dev=1 = vývojářský panel.
+     Návrh: docs/analysis/mesta-index-ux-proposal.md -->
+<style>
+:root{--y:#fec900;--bg:#f3f3f1;--ink:#171717;--mute:#5f5f5b;--line:#e2e2de;--card:#fff;--or:#b45309;--gr:#047857;--red:#dc2626;--sb:64px;
+  --disp:"Bebas Neue","Bebas Neue Pro","Roboto Condensed","Arial Narrow","Liberation Sans Narrow",sans-serif-condensed,Impact,sans-serif;
+  --sans:Roboto,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent;scroll-padding-top:calc(var(--sb) + 64px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.35 var(--sans);-webkit-font-smoothing:antialiased}
+:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+button{font:inherit;color:inherit}
+a{color:inherit}
+.proto{background:var(--y);color:#000;font-size:12px;line-height:1.3;padding:6px 16px;text-align:center}
+/* hlavička */
+.hero{background:#000;color:#fff}
+.hero-in{max-width:1240px;margin:0 auto;padding:12px 16px 14px}
+.hero-top{display:flex;align-items:center;gap:12px;min-height:32px}
+.hero-top svg{height:26px;width:auto;display:block}
+.pill{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:700 11px/1 var(--sans);letter-spacing:.06em;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.16);color:#fff;white-space:nowrap}
+.pill.live{background:var(--red)}
+.pill.live::before{content:"";width:6px;height:6px;border-radius:50%;background:#fff}
+h1{font:400 36px/.9 var(--disp);text-transform:uppercase;letter-spacing:.02em;margin:10px 0 4px}
+h1 span{color:var(--y)}
+.hero p{margin:0;font-size:12.5px;color:rgba(255,255,255,.75);min-height:17px}
+/* rozložení */
+.side{display:contents}
+.side>.sec{padding:0 16px;max-width:720px;margin-left:auto;margin-right:auto}
+main{padding:0 16px 40px;max-width:720px;margin:0 auto}
+/* lepivé hledání */
+.sbar{position:sticky;top:0;z-index:30;background:#000;padding:8px 16px 10px}
+.sbar>*{max-width:688px;margin-left:auto;margin-right:auto}
+.combo{position:relative}
+.inp{display:block;width:100%;height:46px;border-radius:12px;border:2px solid #fff;background:#fff;padding:0 46px 0 40px;font:16px var(--sans);color:var(--ink);-webkit-appearance:none;appearance:none}
+.inp:focus{outline:none;border-color:var(--y);box-shadow:0 0 0 2px var(--y)}
+.inp::placeholder{color:#76766f}
+.combo .ico{position:absolute;left:12px;top:13px;width:20px;height:20px;pointer-events:none;color:#555}
+.clear{position:absolute;right:1px;top:1px;width:44px;height:44px;border:0;background:none;border-radius:10px;cursor:pointer;color:#444;font-size:22px;line-height:1}
+.pop{position:absolute;left:0;right:0;top:calc(100% + 6px);background:#fff;color:var(--ink);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.35);max-height:calc(100vh - 150px);max-height:calc(100dvh - 150px);overflow:auto;overscroll-behavior:contain}
+.pop ul{list-style:none;margin:0;padding:4px 0}
+.opt{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:10px;align-items:center;min-height:52px;padding:6px 14px;cursor:pointer}
+.opt+.opt{border-top:1px solid #f0f0ec}
+.opt[aria-selected=true]{background:#fff6d1;box-shadow:inset 4px 0 0 var(--y)}
+.o-name{font-weight:700;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.o-sub{grid-column:1;font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.o-side{grid-column:2;grid-row:1/3;font:400 22px/1 var(--disp);text-align:right;color:var(--ink)}
+.o-side small{display:block;font:500 11px var(--sans);color:var(--mute)}
+.o-kraj .o-name::before{content:"▸ ";color:#b08c00}
+.o-other .o-name{color:#444;font-weight:600}
+.pop-note{padding:12px 14px;font-size:13px;color:var(--mute);border-top:1px solid #f0f0ec}
+.pop-note b{color:var(--ink)}
+.info{margin-top:8px;background:#1d1d1b;color:#fff;border-radius:10px;padding:8px 8px 8px 12px;font-size:13px;display:flex;gap:8px;align-items:center}
+.info a{color:var(--y)}
+.info button{margin-left:auto;flex:0 0 44px;height:44px;border:0;background:none;color:#fff;font-size:20px;cursor:pointer;border-radius:8px}
+/* sekce */
+.sec{margin-top:18px}
+.sec-h{display:flex;align-items:baseline;gap:8px;font:400 26px/1 var(--disp);text-transform:uppercase;letter-spacing:.02em;margin:0 0 8px}
+.sec-h small{font:500 13px var(--sans);color:var(--mute);text-transform:none;letter-spacing:0}
+.list{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+/* řádek města */
+.row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 84px;grid-template-rows:26px 17px 16px;column-gap:10px;align-content:center;height:72px;padding:0 14px;text-decoration:none;color:inherit;background:var(--card)}
+.row+.row{border-top:1px solid var(--line)}
+.row[hidden]{display:none}
+.row:hover{background:#fafaf7}
+.row:active{background:#fff6d1}
+.row:focus-visible{outline-offset:-3px}
+.r-name{font:400 23px/26px var(--disp);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-val{font:400 24px/26px var(--disp);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.r-meta{font-size:12px;line-height:17px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r-seats{font-size:12px;line-height:17px;text-align:right;color:var(--mute);white-space:nowrap}
+.r-prog{display:flex;align-items:center;min-width:0;font-size:11.5px;line-height:16px;color:var(--mute);white-space:nowrap}
+.r-txt{overflow:hidden;text-overflow:ellipsis}
+.bar{flex:0 0 48px;height:4px;border-radius:2px;background:#e6e6e1;overflow:hidden;margin-right:8px}
+.bar i{display:block;height:100%;width:0;background:var(--y)}
+.r-time{font-size:11.5px;line-height:16px;text-align:right;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.badge{display:inline-block;font:700 10px/1 var(--sans);letter-spacing:.05em;text-transform:uppercase;padding:3px 5px;border-radius:4px;margin-right:6px;vertical-align:1px;font-style:normal}
+.b-a{background:#000;color:var(--y)}.b-k{background:#ffe680;color:#000}.b-d{background:#e6e6e1;color:#222}
+.is-fin .r-seats{color:var(--ink);font-weight:700}
+.is-fin .r-txt{color:var(--gr);font-weight:700}
+.is-stale .r-time{color:var(--or);font-weight:700}
+.is-err .r-val,.is-err .r-txt{color:var(--or)}
+.is-skel .r-val b,.is-skel .r-time span{display:inline-block;width:58px;height:18px;border-radius:4px;background:#ececE8;vertical-align:middle;color:transparent}
+.is-skel .r-time span{width:40px;height:11px}
+@media (prefers-reduced-motion:no-preference){.is-skel .r-val b,.is-skel .r-time span{animation:pulse 1.2s ease-in-out infinite}.bar i{transition:width .6s}}
+@keyframes pulse{50%{opacity:.45}}
+/* Moje obec */
+.mine .list{border:2px solid #000}
+.mine-act{display:flex;gap:8px;margin-top:6px}
+.lnk{min-height:44px;padding:0 12px;border:0;background:none;font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;border-radius:8px}
+.lnk:hover{background:#e9e9e4}
+/* čipy */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+.chip{min-height:44px;padding:0 14px;border-radius:999px;border:1px solid #c9c9c3;background:#fff;font:600 14px var(--sans);cursor:pointer;white-space:nowrap}
+.chip[aria-pressed=true]{background:#000;color:#fff;border-color:#000}
+.chip.tog[aria-pressed=true]{background:var(--y);color:#000;border-color:#c9a200}
+.chip.tog[aria-pressed=true]::before{content:"✓ "}
+.newbar{display:flex;align-items:center;min-height:44px;margin:0 0 10px;font-size:13px;color:var(--mute)}
+.newbar button{min-height:44px;border:2px solid #000;background:var(--y);border-radius:10px;padding:0 12px;font-weight:700;cursor:pointer}
+/* kraje */
+.region{margin-top:8px}
+.rh{margin:0;position:sticky;top:var(--sb);z-index:10}
+.rh button{display:grid;grid-template-columns:minmax(0,1fr) 28px;width:100%;min-height:58px;padding:8px 10px 8px 14px;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;cursor:pointer;align-content:center}
+.rh button[aria-expanded=true]{background:#000;color:#fff;border-color:#000;border-radius:14px 14px 0 0}
+.rh-name{font:400 23px/1 var(--disp);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh-sub{grid-column:1;font-size:12.5px;line-height:17px;height:17px;margin-top:3px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh button[aria-expanded=true] .rh-sub{color:rgba(255,255,255,.78)}
+.rh-sub.err{color:var(--or)!important;font-weight:700}
+.rh button[aria-expanded=true] .rh-sub.err{color:#ffb366!important}
+.chev{grid-column:2;grid-row:1/3;align-self:center;justify-self:center;width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);margin-top:-4px}
+[aria-expanded=true] .chev{transform:rotate(-135deg);margin-top:4px}
+.rl{border-radius:0 0 14px 14px;border-top:0}
+.empty{padding:14px;font-size:13px;color:var(--mute)}
+.regnav{display:none}
+footer{margin-top:28px;font-size:12px;color:var(--mute);line-height:1.5}
+footer a{text-underline-offset:3px}
+/* toast + dev */
+.toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:50;max-width:calc(100vw - 32px);width:max-content;background:#000;color:#fff;border:2px solid var(--y);border-radius:12px;padding:10px 14px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.dev{position:fixed;right:8px;bottom:8px;z-index:60;width:min(330px,calc(100vw - 16px));background:#111;color:#eee;border:1px solid #444;border-radius:10px;font:12px/1.4 ui-monospace,monospace;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.dev summary{padding:8px 10px;cursor:pointer;min-height:36px;color:var(--y)}
+.dev-in{padding:0 10px 10px;max-height:60vh;overflow:auto}
+.dev fieldset{border:1px solid #333;border-radius:6px;margin:6px 0;padding:4px 8px}
+.dev label{display:flex;gap:6px;align-items:center;min-height:26px}
+.dev button,.dev select{font:12px ui-monospace,monospace;background:#333;color:#fff;border:1px solid #555;border-radius:4px;padding:4px 6px;margin:2px 4px 2px 0}
+.dev .big{font-size:15px;color:var(--y)}
+@media (min-width:600px){h1{font-size:52px}}
+@media (min-width:700px){
+  .g2{display:grid;grid-template-columns:1fr 1fr}
+  .g2 .row+.row{border-top:0}
+  .g2 .row{border-bottom:1px solid var(--line)}
+  .g2 .row:nth-child(odd){border-right:1px solid var(--line)}
+}
+/* desktop: postranní panel s hledáním, Moje obec a skokem na kraje; řádky ve dvou sloupcích */
+@media (min-width:1024px){
+  .layout{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:320px minmax(0,1fr);gap:28px;padding:0 24px}
+  .side{display:block;position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding:16px 4px 24px 0}
+  .sbar{position:static;background:none;padding:0}
+  .inp{border-color:#000}
+  .side>.sec{padding:0}
+  main{padding:0 0 48px;max-width:none;margin:0}
+  .rh{top:0}
+  .regnav{display:block;margin-top:20px}
+  .regnav h2{font:400 22px/1 var(--disp);text-transform:uppercase;margin:0 0 6px}
+  .regnav ul{list-style:none;margin:0;padding:0}
+  .regnav a{display:flex;justify-content:space-between;align-items:center;min-height:36px;padding:0 10px;border-radius:8px;text-decoration:none;font-size:14px}
+  .regnav a:hover{background:#e9e9e4}
+  .regnav a span{color:var(--mute);font-variant-numeric:tabular-nums}
+  html{scroll-padding-top:72px}
+}
+</style>
+</head>
+<body>
+<div class="proto" role="note"><b>Prototyp</b> — čísla jsou vymyšlená, nejde o výsledky voleb.</div>
+<header class="hero">
+  <div class="hero-in">
+    <div class="hero-top">
+      <svg role="img" aria-label="Česká pirátská strana" width="144.119" height="39.908081" viewBox="0 0 144.119 39.908082" xmlns="http://www.w3.org/2000/svg" ><g transform="translate(-288.547,-170.504)"><g transform="translate(288.3,173.149)"><path d="M 306.944,211.307 A 16.912,16.912 0 1 1 323.856,194.4 16.936,16.936 0 0 1 306.944,211.312 M 320.189,181.2 a 18.571,18.571 0 1 0 5.5,13.194 18.794,18.794 0 0 0 -5.5,-13.194" transform="translate(-288.3,-175.7)" fill="#ffffff" /><path d="m 316,197.98 c -0.56,2.7 -3.515,4.126 -5.247,5.3 v -13.7 c 2.9,0.713 6.368,2.955 5.247,8.405 m -5.25,-9.885 v -2.6 h -1.63 v 3.005 c -1.121,0.357 -1.732,0.713 -1.63,0.917 a 5.119,5.119 0 0 1 1.63,-0.1 v 15.741 c -1.681,3.26 0.713,8.252 0.713,8.252 0,0 -1.783,-5.349 2.19,-7.9 3.668,-2.343 16.4,-1.223 16.352,-8.405 0,-10.188 -11.767,-10.137 -17.625,-8.915" transform="translate(-297.709,-180.508)" fill="#ffffff" /><path d="m 384.221,186.483 a 4.663,4.663 0 0 0 0.866,0.051 2.758,2.758 0 0 0 1.936,-0.611 2.117,2.117 0 0 0 0.662,-1.681 c 0,-1.375 -0.866,-2.038 -2.649,-2.038 a 5.022,5.022 0 0 0 -0.866,0.1 v 4.177 z m 0,2.853 v 4.432 H 380.4 v -14.162 a 29.174,29.174 0 0 1 4.279,-0.306 c 4.432,0 6.622,1.579 6.622,4.788 a 5.032,5.032 0 0 1 -1.477,3.922 6.265,6.265 0 0 1 -4.381,1.324 9.753,9.753 0 0 1 -1.223,0" transform="translate(-333.484,-177.466)" fill="#ffffff" /></g><rect width="4.2789998" height="14.263" transform="translate(347.951,175.187)" fill="#ffffff" x="0" y="0" /><g transform="translate(355.032,174.983)"><path d="m 423.121,185.973 h 1.07 a 2.269,2.269 0 0 0 1.579,-0.509 1.639,1.639 0 0 0 0.56,-1.375 q 0,-1.834 -2.14,-1.834 a 6.358,6.358 0 0 0 -1.07,0.1 z m 0,2.8 v 4.992 H 419.3 v -14.159 a 42.086,42.086 0 0 1 5.094,-0.306 c 3.922,0 5.858,1.477 5.858,4.381 a 3.871,3.871 0 0 1 -0.764,2.292 4.207,4.207 0 0 1 -1.988,1.527 v 0.051 a 2.646,2.646 0 0 1 0.968,0.866 6.5,6.5 0 0 1 0.764,1.477 l 1.426,3.922 h -4.024 l -1.223,-3.719 a 1.949,1.949 0 0 0 -0.56,-0.968 1.2,1.2 0 0 0 -0.866,-0.306 h -0.866 z" transform="translate(-419.3,-179.3)" fill="#ffffff" /></g><path d="m 448.551,183.8 h 2.6 l -1.273,-5.3 h -0.051 z m 2.089,-9.781 h -3.107 l 1.936,-3.515 h 4.279 z m -2.8,12.684 -0.662,2.751 H 443.1 l 4.687,-14.263 h 4.126 l 4.687,14.259 h -4.126 l -0.662,-2.751 z" transform="translate(-75.944)" fill="#ffffff" /><path d="m 480.816,179.7 v 3.209 h -3.871 v 11.054 h -3.973 V 182.909 H 469.1 V 179.7 Z" transform="translate(-88.7,-4.513)" fill="#ffffff" /><g transform="translate(393.237,175.034)"><path d="m 504.233,183.373 a 8.828,8.828 0 0 0 -4.024,-0.968 2.5,2.5 0 0 0 -1.375,0.306 1,1 0 0 0 -0.458,0.866 c 0,0.56 0.408,0.917 1.274,1.172 a 11.092,11.092 0 0 1 4.33,1.987 4.145,4.145 0 0 1 -0.2,6.164 7.27,7.27 0 0 1 -4.483,1.121 10.863,10.863 0 0 1 -2.7,-0.408 6,6 0 0 1 -2.292,-1.07 l 0.866,-3.005 a 8.413,8.413 0 0 0 2.14,1.07 6.866,6.866 0 0 0 2.139,0.408 c 1.172,0 1.783,-0.408 1.783,-1.273 0,-0.56 -0.509,-0.968 -1.579,-1.274 a 10.417,10.417 0 0 1 -4.075,-1.987 3.808,3.808 0 0 1 -1.223,-2.9 3.719,3.719 0 0 1 1.477,-3.056 6.681,6.681 0 0 1 4.177,-1.121 10.873,10.873 0 0 1 4.89,0.968 z" transform="translate(-494.3,-179.4)" fill="#ffffff" /></g><path d="m 523.722,185.762 h 0.051 l 3.668,-6.062 h 4.483 l -4.483,6.826 4.687,7.437 h -4.483 l -3.872,-6.622 h -0.051 v 6.622 H 519.8 V 179.7 h 3.922 z" transform="translate(-113.573,-4.513)" fill="#ffffff" /><path d="m 550.651,183.8 h 2.6 l -1.274,-5.3 h -0.051 z m 2.089,-9.781 h -3.107 l 1.936,-3.515 h 4.279 z m -2.8,12.684 -0.662,2.751 H 545.2 l 4.687,-14.263 h 4.126 l 4.687,14.259 h -4.126 l -0.662,-2.751 z" transform="translate(-126.034)" fill="#ffffff" /><g transform="translate(334.758,194.289)"><path d="m 389.433,221.173 a 8.828,8.828 0 0 0 -4.024,-0.968 2.5,2.5 0 0 0 -1.375,0.306 1,1 0 0 0 -0.458,0.866 c 0,0.56 0.408,0.917 1.274,1.172 a 11.093,11.093 0 0 1 4.33,1.987 4.146,4.146 0 0 1 -0.2,6.164 7.27,7.27 0 0 1 -4.483,1.121 10.866,10.866 0 0 1 -2.7,-0.408 6.866,6.866 0 0 1 -2.292,-1.07 l 0.866,-3.005 a 8.414,8.414 0 0 0 2.139,1.07 6.867,6.867 0 0 0 2.14,0.408 c 1.172,0 1.783,-0.408 1.783,-1.274 0,-0.56 -0.509,-0.968 -1.579,-1.273 a 10.419,10.419 0 0 1 -4.075,-1.987 3.808,3.808 0 0 1 -1.223,-2.9 3.719,3.719 0 0 1 1.477,-3.056 6.681,6.681 0 0 1 4.177,-1.121 10.874,10.874 0 0 1 4.89,0.968 z" transform="translate(-379.5,-217.2)" fill="#ffffff" /></g><path d="m 415.016,217.6 v 3.209 h -3.871 v 11.054 h -3.973 V 220.809 H 403.3 V 217.6 Z" transform="translate(-56.418,-23.107)" fill="#ffffff" /><g transform="translate(360.686,194.289)"><path d="m 434.221,223.822 h 1.07 a 2.269,2.269 0 0 0 1.579,-0.509 1.639,1.639 0 0 0 0.56,-1.375 q 0,-1.834 -2.14,-1.834 a 6.36,6.36 0 0 0 -1.07,0.1 z m 0,2.853 v 4.992 H 430.4 v -14.161 a 42.1,42.1 0 0 1 5.094,-0.306 c 3.922,0 5.858,1.477 5.858,4.381 a 3.871,3.871 0 0 1 -0.764,2.292 4.207,4.207 0 0 1 -1.988,1.527 v 0.051 a 2.647,2.647 0 0 1 0.968,0.866 6.5,6.5 0 0 1 0.764,1.477 l 1.426,3.922 h -4.024 L 436.513,228 a 1.949,1.949 0 0 0 -0.56,-0.968 1.2,1.2 0 0 0 -0.866,-0.306 h -0.866 z" transform="translate(-430.4,-217.2)" fill="#ffffff" /></g><path d="m 460.051,226.158 h 2.6 l -1.273,-5.3 h -0.051 z m -0.713,2.955 -0.662,2.751 H 454.6 l 4.687,-14.263 h 4.126 l 4.687,14.263 h -4.126 l -0.662,-2.751 z" transform="translate(-81.586,-23.107)" fill="#ffffff" /><path d="M 492.349,225.394 H 492.4 V 217.6 h 3.821 v 14.263 H 492.4 l -4.279,-7.845 h -0.051 v 7.845 H 484.3 V 217.6 h 3.77 z" transform="translate(-96.157,-23.107)" fill="#ffffff" /><path d="m 516.151,226.158 h 2.6 l -1.274,-5.3 h -0.051 z m -0.713,2.955 -0.662,2.751 H 510.7 l 4.686,-14.263 h 4.126 l 4.687,14.263 h -4.126 l -0.662,-2.751 z" transform="translate(-109.108,-23.107)" fill="#ffffff" /></g></svg>
+      <span class="pill" id="pill">PŘED SČÍTÁNÍM</span>
+    </div>
+    <h1>Piráti ve&nbsp;městech <span>2026</span></h1>
+    <p id="heroLine">Komunální volby 2026 · 79 měst, kde Piráti kandidují</p>
+  </div>
+</header>
+
+<div class="layout">
+  <div class="side">
+    <div class="sbar" id="sbar">
+      <div class="combo" id="combo">
+        <label for="q" class="sr">Najít město nebo okres</label>
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 21 21" stroke-linecap="round"/></svg>
+        <input id="q" class="inp" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugg" aria-describedby="qhint"
+               placeholder="Najít město nebo okres" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+        <span id="qhint" class="sr">Návrhy se ukazují během psaní, šipkami je vyberete, Enter otevře město.</span>
+        <button type="button" class="clear" id="qclear" aria-label="Vymazat hledání" hidden>×</button>
+        <div class="pop" id="pop" hidden>
+          <ul id="sugg" role="listbox" aria-label="Návrhy"></ul>
+          <div class="pop-note" id="popNote" hidden></div>
+        </div>
+      </div>
+      <div class="info" id="info" hidden><span id="infoTxt"></span><button type="button" id="infoX" aria-label="Zavřít">×</button></div>
+    </div>
+    <section class="sec mine" id="mine" aria-labelledby="mineH" hidden>
+      <h2 class="sec-h" id="mineH">Moje obec</h2>
+      <div class="list" id="mineList" aria-live="off"></div>
+      <div class="mine-act">
+        <button type="button" class="lnk" id="mineChange">Změnit</button>
+        <button type="button" class="lnk" id="mineForget">Zapomenout</button>
+      </div>
+    </section>
+    <nav class="regnav" aria-label="Skok na kraj"><h2>Kraje</h2><ul id="regnav"></ul></nav>
+  </div>
+
+  <main id="main">
+    <section class="sec" aria-labelledby="featH">
+      <h2 class="sec-h" id="featH">Největší města <small>12</small></h2>
+      <div class="list g2" id="featured" aria-live="off"></div>
+    </section>
+
+    <section class="sec" aria-labelledby="allH">
+      <h2 class="sec-h" id="allH">Všechna města <small id="allCount">79</small></h2>
+      <div class="chips" role="group" aria-label="Zobrazení seznamu">
+        <button type="button" class="chip" data-view="kraje" aria-pressed="true">Kraje</button>
+        <button type="button" class="chip" data-view="velikost" aria-pressed="false">Velikost</button>
+        <button type="button" class="chip" data-view="az" aria-pressed="false">A–Z</button>
+        <button type="button" class="chip tog" id="onlyDone" aria-pressed="false">Jen sečtené</button>
+      </div>
+      <div class="newbar" id="newbar" hidden></div>
+      <div id="regions" aria-live="off"></div>
+      <div class="list g2" id="flat" aria-live="off" hidden></div>
+      <div class="empty" id="flatEmpty" hidden>Zatím není sečtené žádné město.</div>
+    </section>
+
+    <footer>
+      <p>Data ČSÚ (volby.gov.cz), u každého města s jeho vlastním časem. Žádné součty ani odhady za kraje nebo republiku. Mandáty ukazujeme, až je ČSÚ vyhlásí.
+        Města nad 10&nbsp;000 obyvatel, kde Piráti kandidují samostatně nebo v koalici; Praha je na <a href="https://praha.dg12.cz">praha.dg12.cz</a>.</p>
+      <p>Správce: Václav Vislous · <a href="tel:+420777954389">777 954 389</a></p>
+    </footer>
+  </main>
+</div>
+
+<p id="live" class="sr" role="status" aria-live="polite"></p>
+<div class="toast" id="toast" aria-hidden="true" hidden></div>
+
+<script>
+(() => {
+'use strict';
+// [název, obyvatel, KODZASTUP, kraj, okres, druh a|k|d, kandidátka, č.] — skutečný seznam z qualifying-nationwide.tsv (79 měst)
+const RAW = [["Brno",404296,"582786",62,"Brno-město","k","Piráti a Fakt Brno TU!",15],["Ostrava",280853,"554821",81,"Ostrava-město","a","Česká pirátská strana",12],["Plzeň",187863,"554791",32,"Plzeň-město","a","Česká pirátská strana",11],["Liberec",108214,"563889",51,"Liberec","k","Liberec otevřený lidem a Piráti",6],["Olomouc",105297,"500496",71,"Olomouc","k","MILUJEME OLOMOUC - Piráti, TOP 09, Zelení",9],["České Budějovice",97128,"544256",31,"České Budějovice","k","Piráti a Budějčáci s podporou Zelených",6],["Hradec Králové",93534,"569810",52,"Hradec Králové","k","PIRÁTI a STAROSTOVÉ",4],["Pardubice",92713,"555134",53,"Pardubice","k","Progresivní Pardubice (Piráti a TOP 09 s podporou Zelených a nezávislých osobností)",3],["Ústí nad Labem",90035,"554804",42,"Ústí nad Labem","k","JEDNO ÚSTÍ",5],["Zlín",74917,"585068",72,"Zlín","k","ZLÍN SRDCEM a Piráti",5],["Kladno",69728,"532053",21,"Kladno","k","KLADEŇÁCI",8],["Most",63160,"567027",42,"Most","k","Piráti, Zelení a Starostové",6],["Opava",54881,"505927",81,"Opava","k","VIZE PRO OPAVU",7],["Jihlava",53686,"586846",61,"Jihlava","k","Piráti a Fórum Jihlava s podporou Zelených",1],["Frýdek-Místek",53164,"598003",81,"Frýdek-Místek","a","Česká pirátská strana",4],["Teplice",50856,"567442",42,"Teplice","k","Volba pro Teplice",9],["Karlovy Vary",48788,"554961",41,"Karlovy Vary","k","VARY+",4],["Karviná",48684,"598917",81,"Karviná","k","Srdcem pro Karvinou - koalice STAN, ODS, PIRÁTI a TOP 09",4],["Mladá Boleslav",47874,"535419",21,"Mladá Boleslav","k","Šance pro Mladou Boleslav",4],["Chomutov",46560,"562971",42,"Chomutov","k","JsmePRO! Chomutov",5],["Jablonec nad Nisou",46206,"563510",51,"Jablonec nad Nisou","d","Piráti a nezávislí",4],["Děčín",46003,"562335",42,"Děčín","k","HLAS DĚČÍNA (Piráti Děčín + Hlas regionů)",2],["Prostějov",43236,"589250",71,"Prostějov","d","Prostějov 2:0",1],["Přerov",40492,"511382",71,"Přerov","k","Změna pro Přerov",2],["Česká Lípa",36364,"561380",51,"Česká Lípa","k","Piráti a Zelení",8],["Třebíč",34476,"590266",61,"Třebíč","k","Piráti - Břehy - Zelení",7],["Tábor",34339,"552046",31,"Tábor","k","Živý Tábor",7],["Znojmo",33989,"593711",62,"Znojmo","d","ZNOJMO JSI TY!",7],["Kolín",33392,"533165",21,"Kolín","a","Česká pirátská strana",6],["Příbram",32917,"539911",21,"Příbram","k","Příbram zdola - sdružení Pirátů, Zelených a nezávislých kandidátů",1],["Cheb",32892,"554481",41,"Cheb","k","Koalice pro Cheb",6],["Písek",31002,"549240",31,"Písek","a","Česká pirátská strana",6],["Kroměříž",27781,"588296",72,"Kroměříž","d","První volba pro Kroměříž a místní části",7],["Orlová",27383,"599069",81,"Karviná","k","Sousedi Orlová",9],["Uherské Hradiště",24852,"592005",72,"Uherské Hradiště","d","TOŽ HRADIŠTĚ s podporou Pirátů",2],["Břeclav",24583,"584291",62,"Břeclav","k","MLADÍ A NEKLIDNÍ BŘECLAV",1],["Chrudim",23562,"571164",53,"Chrudim","d","Lidi z Chrudimi - Piráti a nezávislí",7],["Havlíčkův Brod",23368,"568414",61,"Havlíčkův Brod","a","Česká pirátská strana",7],["Klatovy",22921,"555771",32,"Klatovy","k","KLATOVY21",4],["Český Těšín",22870,"598933",81,"Karviná","d","TĚŠÍN 2.0",2],["Nový Jičín",22740,"599191",81,"Nový Jičín","k","Zelení/Piráti/TOP 09/STAN",5],["Litvínov",22258,"567256",42,"Most","k","Litvínov DO TOHO!",2],["Kutná Hora",21787,"533955",21,"Kutná Hora","k","LIPISTAN - LIDOVCI, PIRÁTI, STAROSTOVÉ, NEZÁVISLÍ",2],["Kopřivnice",21245,"599565",81,"Nový Jičín","k","Pro Zdraví a Piráti",4],["Brandýs nad Labem-Stará Boleslav",20926,"538094",21,"Praha-východ","d","Piráti a Nezávislí",5],["Jindřichův Hradec",20369,"545881",31,"Jindřichův Hradec","d","Společně s Piráty",1],["Blansko",19900,"581283",62,"Blansko","a","Česká pirátská strana",1],["Náchod",19649,"573868",52,"Náchod","k","SOUSEDÉ za lepší Náchod",5],["Žatec",18984,"566985",42,"Louny","d","Piráti a nezávislí pro Žatec",5],["Kadaň",18088,"563102",42,"Chomutov","d","Spojení pro změnu",3],["Louny",18061,"565971",42,"Louny","k","LOUNY SPOLEČNĚ: Piráti, Zelení, nezávislí",5],["Říčany",17314,"538728",21,"Praha-východ","k","Piráti se Zelení a nestranní",4],["Otrokovice",17239,"585599",72,"Zlín","d","Občané OE s podporou Pirátů",1],["Benešov",17025,"529303",21,"Benešov","k","Piráti s podporou lidovců pro Benešov",3],["Uherský Brod",16280,"592731",72,"Uherské Hradiště","d","Mladí Broďani - zlepsimebrod.cz",3],["Pelhřimov",16233,"547492",61,"Pelhřimov","a","Česká pirátská strana",7],["Jičín",16052,"572659",52,"Jičín","d","JIČÍN SRDCEM s podporou Pirátů",9],["Rožnov pod Radhoštěm",15916,"544841",72,"Vsetín","d","Zdravý Rožnov s podporou Pirátů",4],["Dvůr Králové nad Labem",15316,"579203",52,"Trutnov","k","Klíč ke Dvoru",1],["Česká Třebová",14982,"580031",53,"Ústí nad Orlicí","k","Stateční & Piráti",2],["Varnsdorf",14645,"562882",42,"Děčín","k","NÁŠ VARNSDORF",6],["Turnov",14607,"577626",51,"Semily","a","Česká pirátská strana",2],["Bílina",14401,"567451",42,"Teplice","k","MOJE BÍLINA s podporou Pirátů",10],["Rokycany",14248,"559717",32,"Rokycany","d","Naše Rokycany",1],["Mariánské Lázně",13921,"554642",41,"Cheb","d","Za lepší Mariánské Lázně",9],["Hlučín",13245,"507016",81,"Opava","d","Hlučíňáci",7],["Roudnice nad Labem",12561,"565555",42,"Litoměřice","d","Tým Roudnice",6],["Čelákovice",12507,"538132",21,"Praha-východ","k","SPOLEČNĚ pro Čelákovice",3],["Jaroměř",12487,"574121",52,"Náchod","k","Nová vlna pro Jaroměř",6],["Rychnov nad Kněžnou",11693,"576069",52,"Rychnov nad Kněžnou","k","PROSTOR 516 01 s podporou Pirátů a Starostů",3],["Holešov",11544,"588458",72,"Kroměříž","k","AKCE Holešovských Občanů",2],["Humpolec",11487,"547999",61,"Pelhřimov","a","Česká pirátská strana",6],["Vlašim",11329,"530883",21,"Benešov","d","Piráti pro Vlašim",6],["Uničov",11060,"505587",71,"Olomouc","d","Česká pirátská strana",6],["Prachatice",11036,"550094",31,"Prachatice","k","Živé Prachatice",7],["Domažlice",10973,"553425",32,"Domažlice","a","Česká pirátská strana",5],["Sušice",10689,"557153",32,"Klatovy","a","Česká pirátská strana",4],["Veselí nad Moravou",10574,"586722",62,"Hodonín","d","ZA NAŠE VESELÍ",2],["Nové Město na Moravě",9716,"596230",61,"Žďár nad Sázavou","d","Piráti a nezávislí",5]];
+const DEV = new URLSearchParams(location.search).has('dev');
+const KRAJE = {21:'Středočeský kraj',31:'Jihočeský kraj',32:'Plzeňský kraj',41:'Karlovarský kraj',42:'Ústecký kraj',51:'Liberecký kraj',52:'Královéhradecký kraj',53:'Pardubický kraj',61:'Kraj Vysočina',62:'Jihomoravský kraj',71:'Olomoucký kraj',72:'Zlínský kraj',81:'Moravskoslezský kraj'};
+const KIND = {a:'Vlastní', k:'Koalice', d:'Sdružení'};
+
+// ---------- čistá logika (v aplikaci src/mesta/search.js + indexModel.js) ----------
+const norm = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+  .replace(/[‐-―\-_.,/()"'„“‚‘]+/g, ' ').replace(/\s+/g, ' ').trim();
+const PREP = /^(?:v|ve|z|ze|do|na|u|k|ke|pro|o|po|za)\s+(?=\S{2})/;
+const slugify = (s) => norm(s).replace(/ /g, '-');
+const coll = new Intl.Collator('cs');
+const nf1 = new Intl.NumberFormat('cs-CZ', {minimumFractionDigits: 1, maximumFractionDigits: 1});
+const fmtPct = (n) => nf1.format(n) + ' %';
+const plural = (n, a, b, c) => (n === 1 ? a : n >= 2 && n <= 4 ? b : c);
+const mest = (n) => `${n} ${plural(n, 'město', 'města', 'měst')}`;
+const hhmm = (m) => { m = ((Math.floor(m) % 1440) + 1440) % 1440; return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, '0')}`; };
+
+// Ruční tabulka tvarů (pády po předložkách, přezdívky). V aplikaci src/mesta/aliases.js klíčovaná KODZASTUP.
+const ALIASES = {
+  'Brno':['Brně','Brna','Brnem'], 'Ostrava':['Ostravě','Ostravy'], 'Plzeň':['Plzni','Plzně','Pilsen'],
+  'Liberec':['Liberci','Liberce'], 'Olomouc':['Olomouci','Olomouce'],
+  'České Budějovice':['Budějovice','Budějovicích','Budějovic','Českých Budějovicích','Budějky','Budweis'],
+  'Hradec Králové':['Hradci Králové','Hradce Králové','Hradci'], 'Pardubice':['Pardubicích','Pardubic'],
+  'Ústí nad Labem':['Ústí n. L.','Ústí n/L','Ústí'], 'Zlín':['Zlíně','Zlína'], 'Kladno':['Kladně','Kladna'],
+  'Most':['Mostě','Mostu'], 'Opava':['Opavě','Opavy'], 'Jihlava':['Jihlavě','Jihlavy'],
+  'Frýdek-Místek':['Frýdku-Místku','Frýdku','Místku','Místek'], 'Teplice':['Teplicích','Teplic'],
+  'Karlovy Vary':['Karlových Varech','Karlových Varů','Varech','Vary'], 'Karviná':['Karviné'],
+  'Mladá Boleslav':['Mladé Boleslavi','Boleslavi'],
+  'Brandýs nad Labem-Stará Boleslav':['Brandýs','Brandýse','Stará Boleslav','Staré Boleslavi'],
+  'Jablonec nad Nisou':['Jablonci','Jablonce'], 'Děčín':['Děčíně'], 'Chomutov':['Chomutově'],
+  'Prostějov':['Prostějově'], 'Přerov':['Přerově'], 'Česká Lípa':['České Lípě','Lípa'], 'Třebíč':['Třebíči'],
+  'Tábor':['Táboře'], 'Znojmo':['Znojmě'], 'Kolín':['Kolíně'], 'Příbram':['Příbrami'], 'Cheb':['Chebu'],
+  'Písek':['Písku'], 'Kroměříž':['Kroměříži'], 'Uherské Hradiště':['Uherském Hradišti','Hradiště'],
+  'Havlíčkův Brod':['Havlíčkově Brodě','Havl. Brod'], 'Jindřichův Hradec':['Jindřichově Hradci'],
+  'Dvůr Králové nad Labem':['Dvoře Králové'], 'Rožnov pod Radhoštěm':['Rožnově'],
+  'Mariánské Lázně':['Mariánských Lázních','Mariánky'], 'Nové Město na Moravě':['Novém Městě na Moravě','NMNM'],
+  'Český Těšín':['Českém Těšíně','Těšín'], 'Nový Jičín':['Novém Jičíně'], 'Kutná Hora':['Kutné Hoře'],
+  'Říčany':['Říčanech'], 'Klatovy':['Klatovech'], 'Uherský Brod':['Uherském Brodě'],
+  'Roudnice nad Labem':['Roudnici'], 'Rychnov nad Kněžnou':['Rychnově'], 'Litvínov':['Litvínově'],
+};
+// Obce mimo přehled (ilustrační; v aplikaci z mesta-list-verification / generátoru) + Praha.
+const OTHER = [
+  ['Praha', 'Praha má vlastní přehled', 'https://praha.dg12.cz', ['Praze','Prahy']],
+  ...['Havířov','Kralupy nad Vltavou','Neratovice','Roztoky','Litovel'].map((n) => [n, 'Piráti tu letos nemají vlastní ani koaliční kandidátku']),
+  ...['Mělník','Slaný','Ostrov','Sokolov','Jirkov','Krupka','Litoměřice','Trutnov'].map((n) => [n, 'Piráti tu jsou jen na kandidátkách jiných stran — přehled je nezahrnuje']),
+  ...['Tišnov','Hořovice','Šlapanice','Rychvald','Černošice','Mikulov','Slavkov u Brna','Moravské Budějovice'].map((n) => [n, 'Pod 10 000 obyvatel — přehled je zatím nezahrnuje']),
+].map(([name, note, url, al]) => ({other: true, name, note, url, n: norm(name), words: ' ' + norm(name), aliases: (al || []).map(norm), pop: 0}));
+
+const TOWNS = RAW.map(([name, pop, z, kraj, okres, kind, list, num]) => ({
+  name, pop, z, kraj, okres, kind, list, num, slug: slugify(name), n: norm(name), words: ' ' + norm(name),
+  on: norm(okres), onWords: ' ' + norm(okres), aliases: (ALIASES[name] || []).map(norm), initials: null,
+}));
+const BY_Z = new Map(TOWNS.map((t) => [t.z, t]));
+// automatické zkratky z počátečních písmen (ČB, HK, KV, FM…), jen jednoznačné, jen přesná shoda
+{
+  const STOP = new Set(['nad', 'pod', 'na', 'u', 'v']), seen = new Map();
+  for (const t of TOWNS) {
+    const w = t.n.split(' ').filter((x) => !STOP.has(x));
+    if (w.length >= 2 && w.length <= 3) { t.initials = w.map((x) => x[0]).join(''); seen.set(t.initials, (seen.get(t.initials) || 0) + 1); }
+  }
+  for (const t of TOWNS) if (t.initials && seen.get(t.initials) > 1) t.initials = null;
+}
+const REGIONS = Object.keys(KRAJE).map(Number).sort((a, b) => a - b).map((code) => ({
+  code, name: KRAJE[code], words: norm(KRAJE[code]).split(' ').filter((w) => w !== 'kraj'), towns: [], shards: [],
+}));
+const REG = new Map(REGIONS.map((r) => [r.code, r]));
+const SHARDS = new Map();
+for (const r of REGIONS) { // kraj s n městy → ceil(n/8) téměř stejných shardů, města podle českého abecedního pořadí
+  const ts = TOWNS.filter((t) => t.kraj === r.code).sort((a, b) => coll.compare(a.name, b.name));
+  r.towns = ts;
+  const k = Math.ceil(ts.length / 8), base = Math.floor(ts.length / k), extra = ts.length % k;
+  for (let i = 0, i0 = 0; i < k; i++) {
+    const len = base + (i < extra ? 1 : 0), id = `${r.code}-${i + 1}`, part = ts.slice(i0, i0 + len);
+    i0 += len; part.forEach((t) => { t.shard = id; }); SHARDS.set(id, {id, region: r.code, towns: part}); r.shards.push(id);
+  }
+}
+const FEATURED = [...TOWNS].sort((a, b) => b.pop - a.pop).slice(0, 12);
+FEATURED.forEach((t, i) => { t.top = i < 6 ? 'top-1' : 'top-2'; });
+SHARDS.set('top-1', {id: 'top-1', region: null, towns: FEATURED.slice(0, 6)});
+SHARDS.set('top-2', {id: 'top-2', region: null, towns: FEATURED.slice(6)});
+
+const lowConf = new Set();           // effective confidence 'low' → mimo index, featured i výsledky hledání
+const shown = (t) => !lowConf.has(t.z);
+
+function osa(a, b) { // Damerau (optimal string alignment) vzdálenost
+  const d = Array.from({length: a.length + 1}, (_, i) => [i, ...Array(b.length).fill(0)]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++) {
+    const c = a[i - 1] === b[j - 1] ? 0 : 1;
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + c);
+    if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+  }
+  return d[a.length][b.length];
+}
+// pořadí: 0 přesný název > 1 začátek názvu > 2 začátek slova > 3 alias/zkratka > 4 okres > 5 podřetězec > 6 překlep
+function tierOf(e, q) {
+  if (e.n === q) return 0;
+  if (e.other && e.name === 'Praha' && /^praha (\d|[a-z]{1,3}$)/.test(q)) return 0;
+  if (e.n.startsWith(q)) return 1;
+  if (q.length >= 2 && e.words.includes(' ' + q)) return 2;
+  if (e.aliases.some((a) => a === q || (a.length > 3 && q.length >= 3 && a.startsWith(q))) || (e.initials && e.initials === q)) return 3;
+  if (!e.other && q.length >= 3 && e.onWords.includes(' ' + q)) return 4;
+  if (q.length >= 3 && e.n.includes(q)) return 5;
+  if (q.length >= 4) {
+    const max = q.length >= 7 ? 2 : 1;
+    for (const L of [q.length - 1, q.length, q.length + 1]) if (L > 0 && osa(q, e.n.slice(0, L)) <= max) return 6;
+  }
+  return 99;
+}
+function search(input, limit) {
+  const q0 = norm(input);
+  if (!q0) return {items: [], total: 0};
+  const qs = [q0], q1 = q0.replace(PREP, '');
+  if (q1 !== q0) qs.push(q1);
+  const hits = [];
+  for (const e of [...TOWNS, ...OTHER]) {
+    const tier = Math.min(...qs.map((q) => tierOf(e, q)));
+    if (tier < 99) hits.push({kind: e.other ? 'other' : shown(e) ? 'town' : 'verify', e, tier});
+  }
+  hits.sort((a, b) => a.tier - b.tier || (a.kind === 'town' ? 0 : 1) - (b.kind === 'town' ? 0 : 1) || b.e.pop - a.e.pop);
+  // jen překlepy, když nic lepšího není
+  const best = hits.length ? hits[0].tier : 99;
+  const pool = best < 6 ? hits.filter((h) => h.tier < 6) : hits;
+  const kq = qs[qs.length - 1];
+  const kraj = kq.length >= 3 ? REGIONS.find((r) => r.words.some((w) => w.startsWith(kq))) : null;
+  const room = limit - (kraj ? 1 : 0);
+  const items = pool.slice(0, room);
+  if (kraj) items.push({kind: 'kraj', e: kraj, tier: 7});
+  return {items, total: pool.length + (kraj ? 1 : 0), fuzzy: best === 6};
+}
+
+// ---------- simulace serveru (shardy /api/kraj?s=…) ----------
+const SIM = {mode: 'counting', failRegion: 81, t0: Date.now(), fast: false};
+const h = (s) => { let x = 2166136261; for (const c of String(s)) { x ^= c.charCodeAt(0); x = Math.imul(x, 16777619); } return (x >>> 0) / 4294967296; };
+const fakeMin = () => 15 * 60 + 10 + ((Date.now() - SIM.t0) / 1000) * 12 / 60; // 1 s = 12 s „volební noci“
+function councilSize(p) { return p > 300000 ? 55 : p > 150000 ? 47 : p > 90000 ? 39 : p > 50000 ? 35 : p > 20000 ? 27 : 21; }
+function townSim(t) {
+  const total = Math.max(6, Math.round(t.pop / 1100)), base = 3 + h(t.z + 'a') * 19;
+  if (SIM.mode === 'pre') return {phase: 'pre', total, counted: 0, gen: null};
+  if (SIM.mode === 'final') {
+    const pct = base + (h(t.z + 'f') - 0.5) * 2;
+    return {phase: 'final', total, counted: total, pct, official: true, gen: 21 * 60 + Math.floor(h(t.z + 'g') * 260),
+      seats: pct >= 5 ? Math.max(1, Math.round((pct / 100) * councilSize(t.pop) * 1.08)) : 0};
+  }
+  const start = 14 * 60 + 15 + h(t.z + 'b') * 75, dur = 40 + (0.5 + h(t.z + 'c') * 0.5) * 220 * Math.min(1, t.pop / 80000 + 0.25);
+  const now = fakeMin(), p = Math.max(0, Math.min(1, (now - start) / dur));
+  const counted = Math.floor(p * total);
+  if (!counted) return {phase: 'waiting', total, counted: 0, gen: Math.max(14 * 60 + 2, Math.min(now, start))};
+  const gen = start + (counted / total) * dur;
+  const pct = base + (h(t.z + ':' + counted) - 0.5) * 8 * (1 - counted / total);
+  const official = counted === total && now > start + dur + 15;
+  return {phase: 'counting', total, counted, pct, official, gen: official ? start + dur + 15 : gen,
+    seats: official ? (pct >= 5 ? Math.max(1, Math.round((pct / 100) * councilSize(t.pop) * 1.08)) : 0) : null};
+}
+let fetchCount = 0, firstLoad = 0, interacted = false;
+const fetchLog = [];
+function fakeFetch(id) {
+  fetchCount++; if (!interacted) firstLoad++; fetchLog.push(id); devPaint();
+  const sh = SHARDS.get(id);
+  return new Promise((res, rej) => setTimeout(() => {
+    if (SIM.mode === 'fail' && sh.region === SIM.failRegion) { rej(new Error('503')); return; }
+    const data = {};
+    for (const t of sh.towns) { const s = townSim(t); data[t.z] = s; }
+    res({shard: id, data});
+  }, 300 + Math.random() * 60));
+}
+
+// ---------- načítání a obnovování shardů ----------
+const st = new Map([...SHARDS.keys()].map((id) => [id, {status: 'idle', data: null, okAt: 0, err: 0, reasons: new Set(), timer: 0, dwell: 0, inflight: false}]));
+const interval = () => (SIM.fast ? 10e3 : 60e3);
+const tabOffset = Math.random(); // rozprostření záložek: + 0–25 s
+function mount(id, why) {
+  const s = st.get(id), was = s.reasons.size > 0;
+  s.reasons.add(why);
+  if (!was) { if (!s.okAt || Date.now() - s.okAt > interval() * 0.9) load(id); else schedule(id); }
+  devPaint();
+}
+function unmount(id, why) {
+  const s = st.get(id);
+  s.reasons.delete(why);
+  if (!s.reasons.size) { clearTimeout(s.timer); s.timer = 0; }
+  devPaint();
+}
+async function load(id) {
+  const s = st.get(id);
+  clearTimeout(s.timer); s.timer = 0;
+  if (s.inflight || document.hidden) return;
+  s.inflight = true; if (!s.data) s.status = 'loading';
+  paintShard(id);
+  try { const r = await fakeFetch(id); s.data = r.data; s.okAt = Date.now(); s.status = 'ok'; s.err = 0; }
+  catch { s.status = 'error'; s.err++; }
+  s.inflight = false;
+  paintShard(id);
+  if (s.reasons.size) schedule(id);
+}
+function schedule(id) {
+  const s = st.get(id);
+  clearTimeout(s.timer);
+  if (document.hidden) return;
+  const ms = s.status === 'error' ? Math.min(60e3, 15e3 * 2 ** (s.err - 1)) * (SIM.fast ? 0.3 : 1)
+    : interval() + tabOffset * (SIM.fast ? 3e3 : 25e3);
+  s.timer = setTimeout(() => load(id), ms);
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { for (const s of st.values()) { clearTimeout(s.timer); s.timer = 0; } paintPill(); return; }
+  let i = 0;
+  for (const [id, s] of st) if (s.reasons.size) {
+    if (Date.now() - s.okAt > interval()) setTimeout(() => load(id), 300 * i++); else schedule(id);
+  }
+  paintPill();
+});
+
+// řádek je „vidět“ → po 400 ms se jeho shard připojí; zmizí-li, po 3 s se odpojí (žádné dotazy při rychlém posunu)
+const vis = new Map();
+const io = new IntersectionObserver((entries) => {
+  for (const en of entries) {
+    const t = BY_Z.get(en.target.dataset.z), id = t.shard;
+    if (!vis.has(id)) vis.set(id, new Set());
+    if (en.isIntersecting) vis.get(id).add(en.target); else vis.get(id).delete(en.target);
+    reconcile(id);
+  }
+});
+function reconcile(id) {
+  const s = st.get(id), n = vis.get(id)?.size || 0;
+  clearTimeout(s.dwell);
+  if (n && !s.reasons.has('visible')) s.dwell = setTimeout(() => { if (vis.get(id)?.size) mount(id, 'visible'); }, 400);
+  else if (!n && s.reasons.has('visible')) s.dwell = setTimeout(() => { if (!vis.get(id)?.size) unmount(id, 'visible'); }, 3000);
+}
+function forget(el) { io.unobserve(el); for (const [id, set] of vis) if (set.delete(el)) reconcile(id); }
+
+// ---------- vykreslení ----------
+const $ = (s) => document.querySelector(s);
+const rowEls = new Map(TOWNS.map((t) => [t.z, new Set()]));
+function summaryOf(t) {
+  let best = null, src = null;
+  for (const id of [t.shard, t.top]) {
+    if (!id) continue;
+    const d = st.get(id).data?.[t.z];
+    if (d && (!best || (d.gen ?? 0) > (best.gen ?? 0) || (d.gen === best.gen && st.get(id).okAt > st.get(src).okAt))) { best = d; src = id; }
+  }
+  return {d: best, src};
+}
+function loadState(t) {
+  const ss = [t.shard, t.top].filter(Boolean).map((id) => st.get(id));
+  return ss.some((s) => s.inflight) ? 'loading' : ss.some((s) => s.status === 'error') ? 'error' : 'idle';
+}
+function makeRow(t, observe) {
+  const a = document.createElement('a');
+  a.className = 'row is-skel'; a.href = '/' + t.slug; a.dataset.z = t.z;
+  a.innerHTML = '<span class="r-name"></span><span class="r-val"><span class="sr">Piráti: </span><b></b></span>'
+    + '<span class="r-meta"><i class="badge"></i><span class="r-list"></span></span><span class="r-seats"></span>'
+    + '<span class="r-prog"><span class="bar" aria-hidden="true"><i></i></span><span class="r-txt"></span></span>'
+    + '<span class="r-time"><span></span></span>';
+  a.querySelector('.r-name').textContent = t.name;
+  const b = a.querySelector('.badge'); b.textContent = KIND[t.kind]; b.classList.add('b-' + t.kind);
+  a.querySelector('.r-list').textContent = t.list;
+  a._v = {val: a.querySelector('.r-val b'), seats: a.querySelector('.r-seats'), bar: a.querySelector('.bar i'), txt: a.querySelector('.r-txt'), time: a.querySelector('.r-time span')};
+  rowEls.get(t.z).add(a);
+  fill(a, t);
+  if (observe) io.observe(a);
+  return a;
+}
+function dropRows(container) { for (const a of container.querySelectorAll('.row')) { rowEls.get(a.dataset.z)?.delete(a); forget(a); } container.textContent = ''; }
+function fill(a, t) {
+  const {d, src} = summaryOf(t), v = a._v;
+  const ls = d ? null : loadState(t);
+  const stale = d && st.get(src).status === 'error';
+  let val = '–', seats = '', txt = '', time = '', bar = 0, fin = false;
+  if (!d) { txt = ls === 'error' ? 'data se nepodařilo načíst' : 'načítám…'; val = ls === 'error' ? '?' : ''; }
+  else if (d.phase === 'pre') txt = 'výsledky po 14:00';
+  else if (!d.counted) { txt = 'čeká na první okrsky'; time = 'ČSÚ ' + hhmm(d.gen); }
+  else {
+    val = fmtPct(d.pct); bar = d.counted / d.total; time = 'ČSÚ ' + hhmm(d.gen);
+    if (d.official) { seats = `${d.seats} ${plural(d.seats, 'mandát', 'mandáty', 'mandátů')}`; txt = 'konečné výsledky'; fin = true; }
+    else if (d.counted >= d.total) { seats = 'průběžně'; txt = 'sečteno vše, čeká na vyhlášení'; }
+    else { seats = 'průběžně'; txt = `sečteno ${Math.floor(bar * 100)} % okrsků`; }
+  }
+  a.classList.toggle('is-skel', !d && ls !== 'error');
+  a.classList.toggle('is-err', !d && ls === 'error');
+  a.classList.toggle('is-stale', !!stale);
+  a.classList.toggle('is-fin', fin);
+  v.val.textContent = val; v.seats.textContent = seats; v.txt.textContent = txt;
+  v.time.textContent = stale ? '⚠ ' + time : time;
+  v.bar.style.width = (bar * 100).toFixed(1) + '%';
+}
+function paintTown(t) { for (const a of rowEls.get(t.z)) fill(a, t); }
+function paintShard(id) {
+  const sh = SHARDS.get(id);
+  for (const t of sh.towns) paintTown(t);
+  const regs = new Set(sh.towns.map((t) => t.kraj));
+  for (const c of regs) paintRegion(c);
+  if (onlyDone && !allLoading) checkNewDone();
+  devPaint();
+}
+function isDone(t) { const {d} = summaryOf(t); return !!d && d.total > 0 && d.counted >= d.total; }
+function paintRegion(code) {
+  const r = REG.get(code), el = document.getElementById('kraj-' + code);
+  if (!el) return;
+  const towns = r.towns.filter(shown), ss = r.shards.map((id) => st.get(id)), sub = el.querySelector('.rh-sub');
+  let txt = mest(towns.length), err = false;
+  if (ss.some((s) => s.status === 'error')) { err = true; txt = ss.some((s) => s.data) ? '⚠ Data kraje jsou zastaralá — zkouším znovu' : '⚠ Data se nepodařilo načíst — zkouším znovu'; }
+  else if (ss.every((s) => s.data)) {
+    const pre = towns.every((t) => summaryOf(t).d?.phase === 'pre');
+    txt = pre ? `${mest(towns.length)} · výsledky po 14:00` : `Sečteno ${towns.filter(isDone).length} z ${towns.length} měst`;
+  } else if (ss.some((s) => s.inflight)) txt = `${mest(towns.length)} · načítám…`;
+  sub.textContent = txt; sub.classList.toggle('err', err);
+  const empty = el.querySelector('.empty');
+  if (empty) empty.hidden = !(onlyDone && !towns.some((t) => doneSnap.has(t.z)));
+}
+
+// ---------- sekce ----------
+function renderFeatured() {
+  const box = $('#featured');
+  for (const t of FEATURED.filter(shown)) box.appendChild(makeRow(t, false));
+  mount('top-1', 'featured'); mount('top-2', 'featured');
+}
+const desktop = matchMedia('(min-width: 1024px)').matches;
+function renderRegions() {
+  const box = $('#regions'), nav = $('#regnav');
+  for (const r of REGIONS) {
+    const towns = r.towns.filter(shown);
+    const sec = document.createElement('section');
+    sec.className = 'region'; sec.id = 'kraj-' + r.code;
+    sec.innerHTML = `<h3 class="rh"><button type="button" aria-expanded="false" aria-controls="kl-${r.code}" id="kh-${r.code}">`
+      + '<span class="rh-name"></span><span class="rh-sub"></span><span class="chev" aria-hidden="true"></span></button></h3>'
+      + `<div class="list rl g2" id="kl-${r.code}" hidden></div>`;
+    sec.querySelector('.rh-name').textContent = r.name;
+    const list = sec.querySelector('.rl');
+    for (const t of towns) list.appendChild(makeRow(t, true));
+    const empty = document.createElement('div'); empty.className = 'empty'; empty.hidden = true; empty.textContent = 'Zatím žádné sečtené město.';
+    list.appendChild(empty);
+    sec.querySelector('button').addEventListener('click', () => toggleRegion(r.code));
+    box.appendChild(sec);
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="#kraj-${r.code}"></a>`;
+    li.firstChild.textContent = r.name.replace(' kraj', '');
+    const n = document.createElement('span'); n.textContent = towns.length; li.firstChild.appendChild(n);
+    li.firstChild.addEventListener('click', (ev) => { ev.preventDefault(); openRegion(r.code); });
+    nav.appendChild(li);
+    if (desktop) setExpanded(r.code, true, true);
+    paintRegion(r.code);
+  }
+}
+function setExpanded(code, on, quiet) {
+  const sec = document.getElementById('kraj-' + code), btn = sec.querySelector('button'), list = sec.querySelector('.rl');
+  btn.setAttribute('aria-expanded', String(on)); list.hidden = !on;
+  if (!on) for (const a of list.querySelectorAll('.row')) { for (const [id, set] of vis) if (set.delete(a)) reconcile(id); }
+  if (!quiet) say(on ? `${REG.get(code).name}: ${mest(REG.get(code).towns.filter(shown).length)}, načítám výsledky.` : `${REG.get(code).name} sbaleno.`);
+}
+function toggleRegion(code) {
+  const on = document.getElementById('kh-' + code).getAttribute('aria-expanded') !== 'true';
+  setExpanded(code, on);
+  if (on) { const h3 = document.getElementById('kraj-' + code); if (h3.getBoundingClientRect().top < 0) h3.scrollIntoView({block: 'start'}); }
+}
+function openRegion(code) {
+  if (view !== 'kraje') setView('kraje');
+  setExpanded(code, true);
+  const sec = document.getElementById('kraj-' + code);
+  sec.scrollIntoView({block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+  sec.querySelector('button').focus({preventScroll: true});
+}
+
+// zobrazení a filtr
+let allLoading = false;
+let view = 'kraje', onlyDone = false, doneSnap = new Set(), allTimer = 0;
+function setView(v) {
+  view = v;
+  for (const c of document.querySelectorAll('.chip[data-view]')) c.setAttribute('aria-pressed', String(c.dataset.view === v));
+  const flat = $('#flat');
+  dropRows(flat);
+  $('#regions').hidden = v !== 'kraje';
+  flat.hidden = v === 'kraje';
+  if (v !== 'kraje') {
+    const ts = TOWNS.filter(shown).sort(v === 'velikost' ? (a, b) => b.pop - a.pop : (a, b) => coll.compare(a.name, b.name));
+    for (const t of ts) flat.appendChild(makeRow(t, true));
+  }
+  applyFilter();
+  say(v === 'kraje' ? 'Města po krajích.' : v === 'velikost' ? 'Města seřazená podle počtu obyvatel.' : 'Města podle abecedy.');
+}
+function applyFilter() {
+  for (const a of document.querySelectorAll('#regions .row, #flat .row')) a.hidden = onlyDone && !doneSnap.has(a.dataset.z);
+  for (const r of REGIONS) paintRegion(r.code);
+  $('#flatEmpty').hidden = !(onlyDone && view !== 'kraje' && !doneSnap.size);
+}
+async function loadAll() { // jednorázově (a pak co 3 min) načte všechny krajské shardy — jen po výslovném zapnutí filtru
+  const ids = [...SHARDS.keys()].filter((id) => !id.startsWith('top') && !(st.get(id).okAt && Date.now() - st.get(id).okAt < interval()));
+  let done = 0;
+  allLoading = true;
+  const nb = $('#newbar');
+  const worker = async () => { while (ids.length) { const id = ids.shift(); await load(id); done++; if (onlyDone) nb.textContent = `Načítám stav všech krajů: ${done} z ${done + ids.length}…`; } };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+  allLoading = false;
+  if (onlyDone) checkNewDone();
+}
+function checkNewDone() {
+  const nb = $('#newbar'), fresh = TOWNS.filter((t) => shown(t) && isDone(t) && !doneSnap.has(t.z));
+  nb.textContent = '';
+  if (!fresh.length) { nb.textContent = 'Seznam sečtených měst je aktuální.'; return; }
+  const b = document.createElement('button'); b.type = 'button';
+  b.textContent = `Ukázat ${fresh.length} ${plural(fresh.length, 'nově sečtené město', 'nově sečtená města', 'nově sečtených měst')}`;
+  b.addEventListener('click', () => { snapDone(); applyFilter(); checkNewDone(); say(`Přidáno: ${mest(fresh.length)}.`); });
+  nb.appendChild(b);
+}
+function snapDone() { doneSnap = new Set(TOWNS.filter((t) => shown(t) && isDone(t)).map((t) => t.z)); }
+async function toggleOnlyDone() {
+  onlyDone = !onlyDone;
+  $('#onlyDone').setAttribute('aria-pressed', String(onlyDone));
+  $('#newbar').hidden = !onlyDone;
+  clearInterval(allTimer);
+  if (!onlyDone) { applyFilter(); say('Zobrazena všechna města.'); return; }
+  // filtr hned podle známých dat (žádný posun obsahu po načtení); co se dočte, nabídne tlačítko v rezervovaném pruhu
+  snapDone(); applyFilter();
+  say(`Zobrazeno ${mest(doneSnap.size)}. Načítám stav ostatních krajů.`);
+  await loadAll();
+  if (!onlyDone) return;
+  checkNewDone();
+  allTimer = setInterval(loadAll, SIM.fast ? 30e3 : 180e3);
+}
+
+// Moje obec (localStorage, jen pohodlí — bez něj stránka funguje stejně)
+const MINE_KEY = 'mesta.mojeObec';
+let mineZ = null, mineShard = null;
+try { mineZ = localStorage.getItem(MINE_KEY); } catch { mineZ = null; }
+function renderMine() {
+  const sec = $('#mine'), box = $('#mineList');
+  dropRows(box);
+  if (mineShard) { unmount(mineShard, 'mine'); mineShard = null; }
+  const t = mineZ && BY_Z.get(mineZ);
+  if (!t || !shown(t)) { sec.hidden = true; return; }
+  sec.hidden = false;
+  box.appendChild(makeRow(t, false));
+  mineShard = t.top || t.shard;  // velké město: shard top-* už je připojený — žádný dotaz navíc
+  mount(mineShard, 'mine');
+}
+function setMine(t) {
+  mineZ = t ? t.z : null;
+  try { if (t) localStorage.setItem(MINE_KEY, t.z); else localStorage.removeItem(MINE_KEY); } catch { /* bez úložiště jen pro tuto návštěvu */ }
+  renderMine();
+}
+
+// ---------- hledání (APG combobox) ----------
+const inp = $('#q'), pop = $('#pop'), lb = $('#sugg'), note = $('#popNote');
+let opts = [], active = -1, chooseMine = false, sayTimer = 0;
+function openPop(on) { pop.hidden = !on; inp.setAttribute('aria-expanded', String(on)); if (!on) { active = -1; inp.removeAttribute('aria-activedescendant'); } }
+function renderSugg() {
+  const q = inp.value;
+  $('#qclear').hidden = !q;
+  if (!q.trim()) { opts = []; lb.textContent = ''; note.hidden = true; openPop(false); return; }
+  const lim = matchMedia('(min-width: 1024px)').matches ? 8 : 6;
+  const res = search(q, chooseMine ? lim + 1 : lim);
+  opts = chooseMine ? res.items.filter((o) => o.kind === 'town') : res.items;
+  active = opts.length ? 0 : -1;
+  lb.textContent = '';
+  opts.forEach((o, i) => {
+    const li = document.createElement('li');
+    li.id = 'opt-' + i; li.setAttribute('role', 'option'); li.className = 'opt o-' + o.kind;
+    const name = document.createElement('span'); name.className = 'o-name';
+    const sub = document.createElement('span'); sub.className = 'o-sub';
+    if (o.kind === 'town') {
+      name.textContent = o.e.name;
+      sub.textContent = `okres ${o.e.okres} · ${KRAJE[o.e.kraj]}`;
+      const {d} = summaryOf(o.e);
+      if (d && d.counted) { const s = document.createElement('span'); s.className = 'o-side'; s.textContent = fmtPct(d.pct); const sm = document.createElement('small'); sm.textContent = 'ČSÚ ' + hhmm(d.gen); s.appendChild(sm); li.append(name, s, sub); }
+      else li.append(name, sub);
+    } else if (o.kind === 'kraj') {
+      name.textContent = o.e.name; sub.textContent = `${mest(o.e.towns.filter(shown).length)} · otevřít v seznamu`; li.append(name, sub);
+    } else if (o.kind === 'verify') {
+      name.textContent = o.e.name; sub.textContent = 'Způsob kandidatury Pirátů ještě ověřujeme'; li.append(name, sub);
+    } else { name.textContent = o.e.name; sub.textContent = o.e.url ? `${o.e.note} → ${o.e.url.replace('https://', '')}` : o.e.note; li.append(name, sub); }
+    li.addEventListener('mousedown', (ev) => ev.preventDefault());
+    li.addEventListener('click', () => choose(i));
+    lb.appendChild(li);
+  });
+  note.hidden = false;
+  if (!opts.length) {
+    note.innerHTML = '';
+    note.append(Object.assign(document.createElement('b'), {textContent: `„${q.trim()}“ jsme nenašli.`}), document.createElement('br'),
+      'Přehled má 79 měst nad 10 000 obyvatel, kde Piráti kandidují samostatně nebo v koalici. Ostatní obce: ',
+      Object.assign(document.createElement('a'), {href: 'https://volby.gov.cz/app/kv2026/cs/20261009/home', textContent: 'výsledky ČSÚ'}), '.');
+  } else if (res.fuzzy) note.textContent = 'Přesnou shodu nemáme — myslíte některé z těchto?';
+  else if (res.total > opts.length) note.textContent = `+ ${res.total - opts.length} další — upřesněte hledání`;
+  else note.hidden = true;
+  markActive();
+  openPop(true);
+  clearTimeout(sayTimer);
+  sayTimer = setTimeout(() => say(opts.length ? `${opts.length} ${plural(opts.length, 'návrh', 'návrhy', 'návrhů')}.` : 'Nic nenalezeno.'), 500);
+}
+function markActive() {
+  [...lb.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === active)));
+  if (active >= 0) { inp.setAttribute('aria-activedescendant', 'opt-' + active); lb.children[active].scrollIntoView({block: 'nearest'}); }
+  else inp.removeAttribute('aria-activedescendant');
+}
+function choose(i) {
+  const o = opts[i];
+  if (!o) return;
+  openPop(false);
+  if (o.kind === 'town') {
+    inp.value = ''; $('#qclear').hidden = true;
+    if (chooseMine) { endChooseMine(); setMine(o.e); toast(`${o.e.name} je teď vaše obec (jen v tomto prohlížeči).`); say(`${o.e.name} uloženo jako Moje obec.`); }
+    else openTown(o.e);
+  } else if (o.kind === 'kraj') { inp.value = ''; $('#qclear').hidden = true; openRegion(o.e.code); }
+  else if (o.kind === 'verify') info(`${o.e.name}: způsob kandidatury Pirátů ještě ověřujeme, výsledky tu ukážeme po ověření.`);
+  else info(o.e.note + '.', o.e.url);
+}
+inp.addEventListener('input', renderSugg);
+inp.addEventListener('focus', () => { if (inp.value.trim()) renderSugg(); });
+inp.addEventListener('keydown', (ev) => {
+  const n = opts.length, open = !pop.hidden;
+  if (ev.key === 'ArrowDown') { ev.preventDefault(); if (!open) renderSugg(); else if (n) { active = (active + 1) % n; markActive(); } }
+  else if (ev.key === 'ArrowUp') { ev.preventDefault(); if (open && n) { active = active <= 0 ? n - 1 : active - 1; markActive(); } }
+  else if (ev.key === 'Enter') { if (open && n) { ev.preventDefault(); choose(active >= 0 ? active : 0); } }
+  else if (ev.key === 'Escape') { if (open) openPop(false); else { inp.value = ''; $('#qclear').hidden = true; if (chooseMine) endChooseMine(); } }
+  else if (ev.key === 'Tab') openPop(false);
+});
+$('#combo').addEventListener('focusout', (ev) => { if (!$('#combo').contains(ev.relatedTarget)) setTimeout(() => { if (document.activeElement !== inp) openPop(false); }, 0); });
+$('#qclear').addEventListener('click', () => { inp.value = ''; renderSugg(); inp.focus(); });
+function info(text, url) {
+  const box = $('#infoTxt'); box.textContent = text;
+  if (url) { box.append(' '); box.append(Object.assign(document.createElement('a'), {href: url, textContent: url.replace('https://', '')})); }
+  $('#info').hidden = false; say(text);
+}
+$('#infoX').addEventListener('click', () => { $('#info').hidden = true; if (chooseMine) endChooseMine(); inp.focus(); });
+function startChooseMine() { chooseMine = true; inp.placeholder = 'Napište svou obec'; info('Vyberte svou obec z návrhů.'); inp.focus(); }
+function endChooseMine() { chooseMine = false; inp.placeholder = 'Najít město nebo okres'; $('#info').hidden = true; }
+$('#mineChange').addEventListener('click', startChooseMine);
+$('#mineForget').addEventListener('click', () => { const t = BY_Z.get(mineZ); setMine(null); say(`${t ? t.name : 'Obec'} zapomenuta.`); inp.focus(); });
+
+// otevření města (v aplikaci navigace na /<slug>)
+function openTown(t) {
+  let extra = '';
+  if (!mineZ) { setMine(t); extra = ` · ${t.name} si pamatujeme jako Moje obec`; }
+  toast(`Otevřela by se stránka /${t.slug} (mimo prototyp)${extra}`);
+  say(`Otevírám ${t.name}.${extra ? ' Uloženo jako Moje obec.' : ''}`);
+}
+document.addEventListener('click', (ev) => {
+  const a = ev.target.closest('a.row');
+  if (!a) return;
+  ev.preventDefault();
+  openTown(BY_Z.get(a.dataset.z));
+});
+
+// stav, oznámení
+let toastTimer = 0;
+function toast(text) { const el = $('#toast'); el.textContent = text; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 3500); }
+function say(text) { const el = $('#live'); el.textContent = ''; setTimeout(() => { el.textContent = text; }, 30); }
+function paintPill() {
+  const p = $('#pill');
+  if (SIM.mode === 'pre') { p.className = 'pill'; p.textContent = 'PŘED SČÍTÁNÍM'; }
+  else if (!navigator.onLine) { p.className = 'pill'; p.textContent = 'OFFLINE'; }
+  else { p.className = 'pill live'; p.textContent = 'ŽIVĚ'; }
+  $('#heroLine').textContent = SIM.mode === 'pre'
+    ? 'Hlasování končí v sobotu ve 14:00. Výsledky 79 měst, kde Piráti kandidují.'
+    : 'Každé město má vlastní čas dat ČSÚ. Obnovujeme jen to, co máte na obrazovce.';
+}
+for (const ev of ['pointerdown', 'keydown', 'wheel', 'touchstart']) addEventListener(ev, () => { interacted = true; devPaint(); }, {once: true, capture: true, passive: true});
+addEventListener('online', paintPill); addEventListener('offline', paintPill);
+for (const c of document.querySelectorAll('.chip[data-view]')) c.addEventListener('click', () => setView(c.dataset.view));
+$('#onlyDone').addEventListener('click', toggleOnlyDone);
+
+// ---------- vývojářský panel (?dev=1) ----------
+let cls = 0;
+try { new PerformanceObserver((l) => { for (const e of l.getEntries()) if (!e.hadRecentInput) cls += e.value; devPaint(); }).observe({type: 'layout-shift', buffered: true}); } catch { /* starší prohlížeč */ }
+let devEl = null;
+function devPaint() {
+  if (!devEl) return;
+  const mounted = [...st].filter(([, s]) => s.reasons.size).map(([id]) => id);
+  devEl.querySelector('#dvCountS').textContent = `shardy ${fetchCount}`;
+  devEl.querySelector('#dvCount').textContent = `shardů načteno: ${fetchCount} (první načtení: ${firstLoad}${interacted ? '' : ', zatím bez interakce'})`;
+  devEl.querySelector('#dvMounted').textContent = `obnovované: ${mounted.join(', ') || '—'}`;
+  devEl.querySelector('#dvMisc').textContent = `CLS ${cls.toFixed(3)} · šířka ${innerWidth}px · scrollWidth ${document.documentElement.scrollWidth}px`;
+}
+function setMode(m) {
+  SIM.mode = m; SIM.t0 = Date.now();
+  paintPill();
+  for (const [id, s] of st) if (s.reasons.size || s.data) load(id);
+}
+if (DEV) {
+  devEl = document.createElement('details');
+  devEl.className = 'dev'; devEl.open = innerWidth >= 768;
+  devEl.innerHTML = '<summary>dev · <span id="dvCountS"></span></summary><div class="dev-in">'
+    + '<div class="big" id="dvCount"></div><div id="dvMounted"></div><div id="dvMisc"></div>'
+    + '<fieldset><legend>stav dat</legend>'
+    + [['pre', 'před sčítáním'], ['counting', 'sčítá se (náhodný postup)'], ['final', 'konec (vyhlášeno)'], ['fail', 'shard selhal: ']].map(([v, l]) =>
+      `<label><input type="radio" name="dvm" value="${v}"${v === SIM.mode ? ' checked' : ''}>${l}${v === 'fail' ? '<select id="dvReg">' + REGIONS.map((r) => `<option value="${r.code}"${r.code === 81 ? ' selected' : ''}>${r.name}</option>`).join('') + '</select>' : ''}</label>`).join('')
+    + '</fieldset>'
+    + '<label><input type="checkbox" id="dvFast"> rychlé obnovování (10 s)</label>'
+    + '<label><input type="checkbox" id="dvLow"> Uničov: nízká jistota (skrýt)</label>'
+    + '<button type="button" id="dvNow">obnovit připojené teď</button><button type="button" id="dvMine">smazat Moje obec</button><button type="button" id="dvMin">sbalit panel</button>'
+    + '</div>';
+  document.body.appendChild(devEl);
+  devEl.querySelectorAll('input[name=dvm]').forEach((r) => r.addEventListener('change', () => setMode(r.value)));
+  devEl.querySelector('#dvReg').addEventListener('change', (e) => { SIM.failRegion = Number(e.target.value); if (SIM.mode === 'fail') setMode('fail'); });
+  devEl.querySelector('#dvFast').addEventListener('change', (e) => { SIM.fast = e.target.checked; for (const [id, s] of st) if (s.reasons.size) schedule(id); });
+  devEl.querySelector('#dvLow').addEventListener('change', (e) => {
+    const u = TOWNS.find((t) => t.name === 'Uničov');
+    if (e.target.checked) lowConf.add(u.z); else lowConf.delete(u.z);
+    for (const a of rowEls.get(u.z)) a.hidden = e.target.checked;
+    $('#allCount').textContent = TOWNS.filter(shown).length;
+    paintRegion(u.kraj); renderMine();
+  });
+  devEl.querySelector('#dvNow').addEventListener('click', () => { for (const [id, s] of st) if (s.reasons.size) load(id); });
+  devEl.querySelector('#dvMine').addEventListener('click', () => setMine(null));
+  devEl.querySelector('#dvMin').addEventListener('click', () => { devEl.open = false; });
+  setInterval(devPaint, 1000);
+}
+window.__proto = {get fetchCount() { return fetchCount; }, get firstLoad() { return firstLoad; }, get cls() { return cls; }, fetchLog,
+  mounted: () => [...st].filter(([, s]) => s.reasons.size).map(([id]) => id), search: (q) => search(q, 6).items.map((o) => o.e.name), norm, setMode};
+
+// start
+paintPill();
+renderMine();
+renderFeatured();
+renderRegions();
+devPaint();
+})();
+</script>
+</body>
+</html>
