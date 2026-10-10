@@ -1,0 +1,89 @@
+kraj	town	council_code	match	okres	pop_POCOBYV	seats_MANDATY	type	list_numbers(OSTRANA/POR_STR_HL)	coalition_or_list_name | partners	pirate_member_cands_on_other_lists	in_owner_list	ge10k	senate_seat	okres_seat
+Central Bohemia	Benešov	529303	unique	CZ0201 Benešov	17025	27	b	OST571/POR3(b)	Piráti s podporou lidovců pro Benešov | partners: KDU-ČSL, Nezávislý kandidát	0	Y	Y		Y
+Central Bohemia	Brandýs nad Labem–Stará Boleslav	538094	unique	CZ0209 Praha-východ	20926	21	b	OST541/POR5(b)	Piráti a Nezávislí | partners: Nezávislý kandidát	0	Y	Y		
+Central Bohemia	Čelákovice	538132	unique	CZ0209 Praha-východ	12507	21	b	OST1577/POR3(b)	SPOLEČNĚ pro Čelákovice | partners: KDU-ČSL, TOP 09	0	Y	Y		
+Central Bohemia	Kladno	532053	unique	CZ0203 Kladno	69728	33	b	OST1696/POR8(b)	KLADEŇÁCI | partners: KDU-ČSL, Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ, Strana zelených	0	Y	Y	Y	Y
+Central Bohemia	Kolín	533165	unique	CZ0204 Kolín	33392	27	a	OST720/POR6(a)	Česká pirátská strana [standalone]	0	Y	Y	Y	Y
+Central Bohemia	Kralupy nad Vltavou	534951	unique	CZ0206 Mělník	19138	21	d(none)			0	Y	Y		
+Central Bohemia	Kutná Hora	533955	unique	CZ0205 Kutná Hora	21787	27	b	OST1833/POR2(b)	LIPISTAN - LIDOVCI, PIRÁTI, STAROSTOVÉ, NEZÁVISLÍ | partners: KDU-ČSL, Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y		Y
+Central Bohemia	Mělník	534676	unique	CZ0206 Mělník	20301	21	d(none)			1	Y	Y		Y
+Central Bohemia	Mladá Boleslav	535419	unique	CZ0207 Mladá Boleslav	47874	33	b	OST1370/POR4(b)	Šance pro Mladou Boleslav | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených	0	Y	Y		Y
+Central Bohemia	Neratovice	535087	unique	CZ0206 Mělník	16279	21	d(none)			0	Y	Y		
+Central Bohemia	Příbram	539911	unique	CZ020B Příbram	32917	25	b	OST529/POR1(b)	Příbram zdola - sdružení Pirátů, Zelených a nezávislých kandidátů | partners: Nezávislý kandidát, Strana zelených	0	Y	Y	Y	Y
+Central Bohemia	Říčany	538728	unique	CZ0209 Praha-východ	17314	21	b	OST529/POR4(b)	Piráti se Zelení a nestranní | partners: Nezávislý kandidát, Strana zelených	0	Y	Y		
+Central Bohemia	Roztoky	539627	ambiguous->largest_pop	CZ020A Praha-západ	9147	21	d(none)			0	Y	borderline		
+Central Bohemia	Slaný	532819	unique	CZ0203 Kladno	17247	27	d(none)			2	Y	Y		
+Central Bohemia	Vlašim	530883	unique	CZ0201 Benešov	11329	21	b	OST541/POR6(b)	Piráti pro Vlašim | partners: Nezávislý kandidát	0	Y	Y		
+South Bohemia	České Budějovice	544256	unique	CZ0311 České Budějovice	97128	45	b	OST1066/POR6(b)	Piráti a Budějčáci s podporou Zelených | partners: Strana zelených	0	Y	Y		Y
+South Bohemia	Jindřichův Hradec	545881	unique	CZ0313 Jindřichův Hradec	20369	27	b	OST541/POR1(b)	Společně s Piráty | partners: Nezávislý kandidát	0	Y	Y		Y
+South Bohemia	Písek	549240	unique	CZ0314 Písek	31002	27	a	OST720/POR6(a)	Česká pirátská strana [standalone]	0	Y	Y		Y
+South Bohemia	Prachatice	550094	unique	CZ0315 Prachatice	11036	21	b	OST562/POR7(b)	Živé Prachatice | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ, Strana zelených	0	Y	Y		Y
+South Bohemia	Tábor	552046	unique	CZ0317 Tábor	34339	27	b	OST529/POR7(b)	Živý Tábor | partners: Nezávislý kandidát, Strana zelených	0	Y	Y		Y
+Plzeň Region	Domažlice	553425	unique	CZ0321 Domažlice	10973	21	a	OST720/POR5(a)	Česká pirátská strana [standalone]	0	Y	Y		Y
+Plzeň Region	Plzeň	554791	unique	CZ0323 Plzeň-město	187863	47	a	OST720/POR11(a)	Česká pirátská strana [standalone]	0	Y	Y		
+Plzeň Region	Rokycany	559717	unique	CZ0326 Rokycany	14248	21	b	OST541/POR1(b)	Naše Rokycany | partners: Nezávislý kandidát	0	Y	Y		Y
+Plzeň Region	Sušice	557153	unique	CZ0322 Klatovy	10689	21	a	OST720/POR4(a)	Česká pirátská strana [standalone]	0	Y	Y		
+Karlovy Vary Region	Cheb	554481	unique	CZ0411 Cheb	32892	29	b	OST1523/POR6(b)	Koalice pro Cheb | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených, TOP 09	0	Y	Y	Y	Y
+Karlovy Vary Region	Karlovy Vary	554961	unique	CZ0412 Karlovy Vary	48788	35	b	OST1961/POR4(b)	VARY+ | partners: KDU-ČSL, Karlovarská občanská alternativa, TOP 09	0	Y	Y		Y
+Karlovy Vary Region	Mariánské Lázně	554642	unique	CZ0411 Cheb	13921	21	b	OST541/POR9(b)	Za lepší Mariánské Lázně | partners: Nezávislý kandidát	0	Y	Y		
+Karlovy Vary Region	Ostrov	555428	unique	CZ0412 Karlovy Vary	15615	21	d(none)			1	Y	Y		
+Karlovy Vary Region	Sokolov	560286	unique	CZ0413 Sokolov	21908	27	d(none)			4	Y	Y		Y
+Ústí nad Labem Region	Bílina	567451	unique	CZ0426 Teplice	14401	29	b	OST1331/POR10(b)	MOJE BÍLINA s podporou Pirátů | partners: Nezávislý kandidát, TOP 09	0	Y	Y		
+Ústí nad Labem Region	Děčín	562335	unique	CZ0421 Děčín	46003	27	b	OST1930/POR2(b)	HLAS DĚČÍNA (Piráti Děčín + Hlas regionů) | partners: Hnutí Hlas regionů	0	Y	Y	Y	Y
+Ústí nad Labem Region	Chomutov	562971	unique	CZ0422 Chomutov	46560	35	b	OST1825/POR5(b)	JsmePRO! Chomutov | partners: JsmePRO!, KDU-ČSL, Nezávislý kandidát, Strana zelených, TOP 09	0	Y	Y		Y
+Ústí nad Labem Region	Jirkov	563099	unique	CZ0422 Chomutov	19067	25	d(none)			1	Y	Y		
+Ústí nad Labem Region	Kadaň	563102	unique	CZ0422 Chomutov	18088	27	b	OST541/POR3(b)	Spojení pro změnu | partners: Nezávislý kandidát	0	Y	Y		
+Ústí nad Labem Region	Krupka	567639	unique	CZ0426 Teplice	12731	21	d(none)			1	Y	Y		
+Ústí nad Labem Region	Litoměřice	564567	unique	CZ0423 Litoměřice	22627	27	d(none)			1	Y	Y		Y
+Ústí nad Labem Region	Litvínov	567256	unique	CZ0425 Most	22258	23	b	OST529/POR2(b)	Litvínov DO TOHO! | partners: Nezávislý kandidát, Strana zelených	0	Y	Y		
+Ústí nad Labem Region	Louny	565971	unique	CZ0424 Louny	18061	29	b	OST529/POR5(b)	LOUNY SPOLEČNĚ: Piráti, Zelení, nezávislí | partners: Nezávislý kandidát, Strana zelených	0	Y	Y	Y	Y
+Ústí nad Labem Region	Most	567027	unique	CZ0425 Most	63160	45	b	OST1894/POR6(b)	Piráti, Zelení a Starostové | partners: STAROSTOVÉ A NEZÁVISLÍ, Strana zelených	0	Y	Y		Y
+Ústí nad Labem Region	Roudnice nad Labem	565555	unique	CZ0423 Litoměřice	12561	21	b	OST541/POR6(b)	Tým Roudnice | partners: Nezávislý kandidát	0	Y	Y		
+Ústí nad Labem Region	Teplice	567442	unique	CZ0426 Teplice	50856	27	b	OST1370/POR9(b)	Volba pro Teplice | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených	0	Y	Y		Y
+Ústí nad Labem Region	Ústí nad Labem	554804	unique	CZ0427 Ústí nad Labem	90035	37	b	OST1933/POR5(b)	JEDNO ÚSTÍ | partners: Naše Česko, Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ, Strana zelených, TOP 09, ÚSTECKÉ FÓRUM OBČANŮ	0	Y	Y		Y
+Ústí nad Labem Region	Varnsdorf	562882	unique	CZ0421 Děčín	14645	21	b	OST1483/POR6(b)	NÁŠ VARNSDORF | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y		
+Ústí nad Labem Region	Žatec	566985	unique	CZ0424 Louny	18984	21	b	OST541/POR5(b)	Piráti a nezávislí pro Žatec | partners: Nezávislý kandidát	0	Y	Y		
+Liberec Region	Česká Lípa	561380	unique	CZ0511 Česká Lípa	36364	25	b	OST1066/POR8(b)	Piráti a Zelení | partners: Strana zelených	0	Y	Y	Y	Y
+Liberec Region	Jablonec nad Nisou	563510	unique	CZ0512 Jablonec nad Nisou	46206	30	b	OST541/POR4(b)	Piráti a nezávislí | partners: Nezávislý kandidát	0	Y	Y		Y
+Liberec Region	Jičín	572659	unique_nationwide(region_label_mismatch)	CZ0522 Jičín	16052	21	b	OST541/POR9(b)	JIČÍN SRDCEM s podporou Pirátů | partners: Nezávislý kandidát	0	Y	Y		Y
+Liberec Region	Liberec	563889	unique	CZ0513 Liberec	108214	39	b	OST1066/POR6(b)	Liberec otevřený lidem a Piráti | partners: Strana zelených	0	Y	Y		Y
+Liberec Region	Turnov	577626	unique	CZ0514 Semily	14607	27	a	OST720/POR2(a)	Česká pirátská strana [standalone]	0	Y	Y		
+Hradec Králové Region	Dvůr Králové nad Labem	579203	unique	CZ0525 Trutnov	15316	21	b	OST1370/POR1(b)	Klíč ke Dvoru | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených	0	Y	Y		
+Hradec Králové Region	Hradec Králové	569810	unique	CZ0521 Hradec Králové	93534	37	b	OST1350/POR4(b)	PIRÁTI a STAROSTOVÉ | partners: STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y	Y	Y
+Hradec Králové Region	Jaroměř	574121	unique	CZ0523 Náchod	12487	21	b	OST529/POR6(b)	Nová vlna pro Jaroměř | partners: Nezávislý kandidát, Strana zelených	0	Y	Y		
+Hradec Králové Region	Náchod	573868	unique	CZ0523 Náchod	19649	27	b	OST1523/POR5(b)	SOUSEDÉ za lepší Náchod | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených, TOP 09	0	Y	Y		Y
+Hradec Králové Region	Rychnov nad Kněžnou	576069	unique	CZ0524 Rychnov nad Kněžnou	11693	21	b	OST1483/POR3(b)	PROSTOR 516 01 s podporou Pirátů a Starostů | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y	Y	Y
+Hradec Králové Region	Trutnov	579025	unique	CZ0525 Trutnov	29337	33	d(none)			1	Y	Y	Y	Y
+Pardubice Region	Česká Třebová	580031	unique	CZ0534 Ústí nad Orlicí	14982	23	b	OST1331/POR2(b)	Stateční & Piráti | partners: Nezávislý kandidát, TOP 09	0	Y	Y		
+Pardubice Region	Chrudim	571164	unique	CZ0531 Chrudim	23562	27	b	OST541/POR7(b)	Lidi z Chrudimi - Piráti a nezávislí | partners: Nezávislý kandidát	0	Y	Y		Y
+Pardubice Region	Pardubice	555134	unique	CZ0532 Pardubice	92713	39	b	OST1897/POR3(b)	Progresivní Pardubice (Piráti a TOP 09 s podporou Zelených a nezávislých osobností) | partners: TOP 09	0	Y	Y		Y
+Vysočina Region	Havlíčkův Brod	568414	unique	CZ0631 Havlíčkův Brod	23368	25	a	OST720/POR7(a)	Česká pirátská strana [standalone]	0	Y	Y		Y
+Vysočina Region	Humpolec	547999	unique	CZ0633 Pelhřimov	11487	21	a	OST720/POR6(a)	Česká pirátská strana [standalone]	0	Y	Y		
+Vysočina Region	Jihlava	586846	unique	CZ0632 Jihlava	53686	37	b	OST529/POR1(b)	Piráti a Fórum Jihlava s podporou Zelených | partners: Nezávislý kandidát, Strana zelených	0	Y	Y		Y
+Vysočina Region	Nové Město na Moravě	596230	unique	CZ0635 Žďár nad Sázavou	9716	23	b	OST541/POR5(b)	Piráti a nezávislí | partners: Nezávislý kandidát	0	Y	borderline		
+Vysočina Region	Pelhřimov	547492	unique	CZ0633 Pelhřimov	16233	21	a	OST720/POR7(a)	Česká pirátská strana [standalone]	0	Y	Y	Y	Y
+Vysočina Region	Třebíč	590266	unique	CZ0634 Třebíč	34476	27	b	OST529/POR7(b)	Piráti - Břehy - Zelení | partners: Nezávislý kandidát, Strana zelených	0	Y	Y		Y
+South Moravia	Blansko	581283	unique	CZ0641 Blansko	19900	25	a	OST720/POR1(a)	Česká pirátská strana [standalone]	0	Y	Y		Y
+South Moravia	Brno	582786	unique	CZ0642 Brno-město	404296	55	b	OST1870/POR15(b)	Piráti a Fakt Brno TU! | partners: Fakt Brno, GEN, Hnutí Idealisté	0	Y	Y		
+South Moravia	Břeclav	584291	unique	CZ0644 Břeclav	24583	27	b	OST1483/POR1(b)	MLADÍ A NEKLIDNÍ BŘECLAV | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y		Y
+South Moravia	Znojmo	593711	unique	CZ0647 Znojmo	33989	31	b	OST541/POR7(b)	ZNOJMO JSI TY! | partners: Nezávislý kandidát	0	Y	Y	Y	Y
+Olomouc Region	Olomouc	500496	unique	CZ0712 Olomouc	105297	45	b	OST1369/POR9(b)	MILUJEME OLOMOUC - Piráti, TOP 09, Zelení | partners: Strana zelených, TOP 09	0	Y	Y		Y
+Olomouc Region	Prostějov	589250	unique	CZ0713 Prostějov	43236	35	b	OST541/POR1(b)	Prostějov 2:0 | partners: Nezávislý kandidát	0	Y	Y		Y
+Olomouc Region	Přerov	511382	unique	CZ0714 Přerov	40492	35	b	OST1483/POR2(b)	Změna pro Přerov | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y	Y	Y
+Olomouc Region	Uničov	505587	unique	CZ0712 Olomouc	11060	21	b	OST541/POR6(b)	Česká pirátská strana | partners: Nezávislý kandidát	0	Y	Y		
+Moravian-Silesian Region	Frýdek-Místek	598003	unique	CZ0802 Frýdek-Místek	53164	43	a	OST720/POR4(a)	Česká pirátská strana [standalone]	0	Y	Y	Y	Y
+Moravian-Silesian Region	Havířov	555088	unique	CZ0803 Karviná	67998	43	d(none)			0	Y	Y		
+Moravian-Silesian Region	Hlučín	507016	unique	CZ0805 Opava	13245	21	b	OST541/POR7(b)	Hlučíňáci | partners: Nezávislý kandidát	0	Y	Y		
+Moravian-Silesian Region	Karviná	598917	unique	CZ0803 Karviná	48684	41	b	OST1912/POR4(b)	Srdcem pro Karvinou - koalice STAN, ODS, PIRÁTI a TOP 09 | partners: Občanská demokratická strana, STAROSTOVÉ A NEZÁVISLÍ, TOP 09	0	Y	Y	Y	Y
+Moravian-Silesian Region	Kopřivnice	599565	unique	CZ0804 Nový Jičín	21245	21	b	OST1802/POR4(b)	Pro Zdraví a Piráti | partners: Zdraví Sport Vzdělání	0	Y	Y		
+Moravian-Silesian Region	Nový Jičín	599191	unique	CZ0804 Nový Jičín	22740	29	b	OST1351/POR5(b)	Zelení/Piráti/TOP 09/STAN | partners: STAROSTOVÉ A NEZÁVISLÍ, Strana zelených, TOP 09	0	Y	Y		Y
+Moravian-Silesian Region	Opava	505927	unique	CZ0805 Opava	54881	39	b	OST1331/POR7(b)	VIZE PRO OPAVU | partners: Nezávislý kandidát, TOP 09	0	Y	Y		Y
+Moravian-Silesian Region	Orlová	599069	unique	CZ0803 Karviná	27383	31	b	OST1821/POR9(b)	Sousedi Orlová | partners: Nezávislý kandidát, Občanská demokratická strana	0	Y	Y		
+Moravian-Silesian Region	Ostrava	554821	unique	CZ0806 Ostrava-město	280853	55	a	OST720/POR12(a)	Česká pirátská strana [standalone]	0	Y	Y		
+Zlín Region	Holešov	588458	unique	CZ0721 Kroměříž	11544	23	b	OST1331/POR2(b)	AKCE Holešovských Občanů | partners: Nezávislý kandidát, TOP 09	0	Y	Y		
+Zlín Region	Kroměříž	588296	unique	CZ0721 Kroměříž	27781	27	b	OST541/POR7(b)	První volba pro Kroměříž a místní části | partners: Nezávislý kandidát	0	Y	Y		Y
+Zlín Region	Otrokovice	585599	unique	CZ0724 Zlín	17239	23	b	OST541/POR1(b)	Občané OE s podporou Pirátů | partners: Nezávislý kandidát	0	Y	Y		
+Zlín Region	Rožnov pod Radhoštěm	544841	unique	CZ0723 Vsetín	15916	21	b	OST541/POR4(b)	Zdravý Rožnov s podporou Pirátů | partners: Nezávislý kandidát	0	Y	Y		
+Zlín Region	Uherské Hradiště	592005	unique	CZ0722 Uherské Hradiště	24852	27	b	OST541/POR2(b)	TOŽ HRADIŠTĚ s podporou Pirátů | partners: Nezávislý kandidát	0	Y	Y	Y	Y
+Zlín Region	Uherský Brod	592731	unique	CZ0722 Uherské Hradiště	16280	27	b	OST541/POR3(b)	Mladí Broďani - zlepsimebrod.cz | partners: Nezávislý kandidát	0	Y	Y		
+Zlín Region	Zlín	585068	unique	CZ0724 Zlín	74917	41	b	OST1949/POR5(b)	ZLÍN SRDCEM a Piráti | partners: Nezávislý kandidát, ZLÍN SRDCEM	0	Y	Y	Y	Y

@@ -1,0 +1,88 @@
+band	kraj	town	pop_POCOBYV	council_code	okres	type	list_numbers	coalition_or_list | partners	pirate_member_cands_on_other_lists	on_owner_list	senate_seat_flag	okres_seat_flag	pirate_2022_result
+>=10000	Jihomoravský kraj	Brno	404296	582786	CZ0642 Brno-město	b	OST1870/POR15(b)	Piráti a Fakt Brno TU! | partners: Fakt Brno, GEN, Hnutí Idealisté	0	Y			
+>=10000	Moravskoslezský kraj	Ostrava	280853	554821	CZ0806 Ostrava-město	a	OST720/POR12(a)	Česká pirátská strana [standalone]	0	Y			
+>=10000	Plzeňský kraj	Plzeň	187863	554791	CZ0323 Plzeň-město	a	OST720/POR11(a)	Česká pirátská strana [standalone]	0	Y			
+>=10000	Liberecký kraj	Liberec	108214	563889	CZ0513 Liberec	b	OST1066/POR6(b)	Liberec otevřený lidem a Piráti | partners: Strana zelených	0	Y		Y	
+>=10000	Olomoucký kraj	Olomouc	105297	500496	CZ0712 Olomouc	b	OST1369/POR9(b)	MILUJEME OLOMOUC - Piráti, TOP 09, Zelení | partners: Strana zelených, TOP 09	0	Y		Y	
+>=10000	Jihočeský kraj	České Budějovice	97128	544256	CZ0311 České Budějovice	b	OST1066/POR6(b)	Piráti a Budějčáci s podporou Zelených | partners: Strana zelených	0	Y		Y	
+>=10000	Královéhradecký kraj	Hradec Králové	93534	569810	CZ0521 Hradec Králové	b	OST1350/POR4(b)	PIRÁTI a STAROSTOVÉ | partners: STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y	Y	
+>=10000	Pardubický kraj	Pardubice	92713	555134	CZ0532 Pardubice	b	OST1897/POR3(b)	Progresivní Pardubice (Piráti a TOP 09 s podporou Zelených a nezávislých osobností) | partners: TOP 09	0	Y		Y	
+>=10000	Ústecký kraj	Ústí nad Labem	90035	554804	CZ0427 Ústí nad Labem	b	OST1933/POR5(b)	JEDNO ÚSTÍ | partners: Naše Česko, Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ, Strana zelených, TOP 09, ÚSTECKÉ FÓRUM OBČANŮ	0	Y		Y	
+>=10000	Zlínský kraj	Zlín	74917	585068	CZ0724 Zlín	b	OST1949/POR5(b)	ZLÍN SRDCEM a Piráti | partners: Nezávislý kandidát, ZLÍN SRDCEM	0	Y	Y	Y	
+>=10000	Středočeský kraj	Kladno	69728	532053	CZ0203 Kladno	b	OST1696/POR8(b)	KLADEŇÁCI | partners: KDU-ČSL, Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ, Strana zelených	0	Y	Y	Y	
+>=10000	Ústecký kraj	Most	63160	567027	CZ0425 Most	b	OST1894/POR6(b)	Piráti, Zelení a Starostové | partners: STAROSTOVÉ A NEZÁVISLÍ, Strana zelených	0	Y		Y	
+>=10000	Moravskoslezský kraj	Opava	54881	505927	CZ0805 Opava	b	OST1331/POR7(b)	VIZE PRO OPAVU | partners: Nezávislý kandidát, TOP 09	0	Y		Y	
+>=10000	Kraj Vysočina	Jihlava	53686	586846	CZ0632 Jihlava	b	OST529/POR1(b)	Piráti a Fórum Jihlava s podporou Zelených | partners: Nezávislý kandidát, Strana zelených	0	Y		Y	
+>=10000	Moravskoslezský kraj	Frýdek-Místek	53164	598003	CZ0802 Frýdek-Místek	a	OST720/POR4(a)	Česká pirátská strana [standalone]	0	Y	Y	Y	
+>=10000	Ústecký kraj	Teplice	50856	567442	CZ0426 Teplice	b	OST1370/POR9(b)	Volba pro Teplice | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených	0	Y		Y	
+>=10000	Karlovarský kraj	Karlovy Vary	48788	554961	CZ0412 Karlovy Vary	b	OST1961/POR4(b)	VARY+ | partners: KDU-ČSL, Karlovarská občanská alternativa, TOP 09	0	Y		Y	
+>=10000	Moravskoslezský kraj	Karviná	48684	598917	CZ0803 Karviná	b	OST1912/POR4(b)	Srdcem pro Karvinou - koalice STAN, ODS, PIRÁTI a TOP 09 | partners: Občanská demokratická strana, STAROSTOVÉ A NEZÁVISLÍ, TOP 09	0	Y	Y	Y	
+>=10000	Středočeský kraj	Mladá Boleslav	47874	535419	CZ0207 Mladá Boleslav	b	OST1370/POR4(b)	Šance pro Mladou Boleslav | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených	0	Y		Y	
+>=10000	Ústecký kraj	Chomutov	46560	562971	CZ0422 Chomutov	b	OST1825/POR5(b)	JsmePRO! Chomutov | partners: JsmePRO!, KDU-ČSL, Nezávislý kandidát, Strana zelených, TOP 09	0	Y		Y	
+>=10000	Liberecký kraj	Jablonec nad Nisou	46206	563510	CZ0512 Jablonec nad Nisou	b	OST541/POR4(b)	Piráti a nezávislí | partners: Nezávislý kandidát	0	Y		Y	
+>=10000	Ústecký kraj	Děčín	46003	562335	CZ0421 Děčín	b	OST1930/POR2(b)	HLAS DĚČÍNA (Piráti Děčín + Hlas regionů) | partners: Hnutí Hlas regionů	0	Y	Y	Y	
+>=10000	Olomoucký kraj	Prostějov	43236	589250	CZ0713 Prostějov	b	OST541/POR1(b)	Prostějov 2:0 | partners: Nezávislý kandidát	0	Y		Y	
+>=10000	Olomoucký kraj	Přerov	40492	511382	CZ0714 Přerov	b	OST1483/POR2(b)	Změna pro Přerov | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y	Y	
+>=10000	Liberecký kraj	Česká Lípa	36364	561380	CZ0511 Česká Lípa	b	OST1066/POR8(b)	Piráti a Zelení | partners: Strana zelených	0	Y	Y	Y	
+>=10000	Kraj Vysočina	Třebíč	34476	590266	CZ0634 Třebíč	b	OST529/POR7(b)	Piráti - Břehy - Zelení | partners: Nezávislý kandidát, Strana zelených	0	Y		Y	
+>=10000	Jihočeský kraj	Tábor	34339	552046	CZ0317 Tábor	b	OST529/POR7(b)	Živý Tábor | partners: Nezávislý kandidát, Strana zelených	0	Y		Y	
+>=10000	Jihomoravský kraj	Znojmo	33989	593711	CZ0647 Znojmo	b	OST541/POR7(b)	ZNOJMO JSI TY! | partners: Nezávislý kandidát	0	Y	Y	Y	
+>=10000	Středočeský kraj	Kolín	33392	533165	CZ0204 Kolín	a	OST720/POR6(a)	Česká pirátská strana [standalone]	0	Y	Y	Y	
+>=10000	Středočeský kraj	Příbram	32917	539911	CZ020B Příbram	b	OST529/POR1(b)	Příbram zdola - sdružení Pirátů, Zelených a nezávislých kandidátů | partners: Nezávislý kandidát, Strana zelených	0	Y	Y	Y	
+>=10000	Karlovarský kraj	Cheb	32892	554481	CZ0411 Cheb	b	OST1523/POR6(b)	Koalice pro Cheb | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených, TOP 09	0	Y	Y	Y	
+>=10000	Jihočeský kraj	Písek	31002	549240	CZ0314 Písek	a	OST720/POR6(a)	Česká pirátská strana [standalone]	0	Y		Y	
+>=10000	Zlínský kraj	Kroměříž	27781	588296	CZ0721 Kroměříž	b	OST541/POR7(b)	První volba pro Kroměříž a místní části | partners: Nezávislý kandidát	0	Y		Y	
+>=10000	Moravskoslezský kraj	Orlová	27383	599069	CZ0803 Karviná	b	OST1821/POR9(b)	Sousedi Orlová | partners: Nezávislý kandidát, Občanská demokratická strana	0	Y			
+>=10000	Zlínský kraj	Uherské Hradiště	24852	592005	CZ0722 Uherské Hradiště	b	OST541/POR2(b)	TOŽ HRADIŠTĚ s podporou Pirátů | partners: Nezávislý kandidát	0	Y	Y	Y	
+>=10000	Jihomoravský kraj	Břeclav	24583	584291	CZ0644 Břeclav	b	OST1483/POR1(b)	MLADÍ A NEKLIDNÍ BŘECLAV | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y		Y	
+>=10000	Pardubický kraj	Chrudim	23562	571164	CZ0531 Chrudim	b	OST541/POR7(b)	Lidi z Chrudimi - Piráti a nezávislí | partners: Nezávislý kandidát	0	Y		Y	
+>=10000	Kraj Vysočina	Havlíčkův Brod	23368	568414	CZ0631 Havlíčkův Brod	a	OST720/POR7(a)	Česká pirátská strana [standalone]	0	Y		Y	
+>=10000	Plzeňský kraj	Klatovy	22921	555771	CZ0322 Klatovy	b	OST571/POR4(b)	KLATOVY21 | partners: KDU-ČSL, Nezávislý kandidát	0	N		Y	
+>=10000	Moravskoslezský kraj	Český Těšín	22870	598933	CZ0803 Karviná	b	OST541/POR2(b)	TĚŠÍN 2.0 | partners: Nezávislý kandidát	0	N			
+>=10000	Moravskoslezský kraj	Nový Jičín	22740	599191	CZ0804 Nový Jičín	b	OST1351/POR5(b)	Zelení/Piráti/TOP 09/STAN | partners: STAROSTOVÉ A NEZÁVISLÍ, Strana zelených, TOP 09	0	Y		Y	
+>=10000	Ústecký kraj	Litvínov	22258	567256	CZ0425 Most	b	OST529/POR2(b)	Litvínov DO TOHO! | partners: Nezávislý kandidát, Strana zelených	0	Y			
+>=10000	Středočeský kraj	Kutná Hora	21787	533955	CZ0205 Kutná Hora	b	OST1833/POR2(b)	LIPISTAN - LIDOVCI, PIRÁTI, STAROSTOVÉ, NEZÁVISLÍ | partners: KDU-ČSL, Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y		Y	
+>=10000	Moravskoslezský kraj	Kopřivnice	21245	599565	CZ0804 Nový Jičín	b	OST1802/POR4(b)	Pro Zdraví a Piráti | partners: Zdraví Sport Vzdělání	0	Y			
+>=10000	Středočeský kraj	Brandýs nad Labem-Stará Boleslav	20926	538094	CZ0209 Praha-východ	b	OST541/POR5(b)	Piráti a Nezávislí | partners: Nezávislý kandidát	0	Y			
+>=10000	Jihočeský kraj	Jindřichův Hradec	20369	545881	CZ0313 Jindřichův Hradec	b	OST541/POR1(b)	Společně s Piráty | partners: Nezávislý kandidát	0	Y		Y	
+>=10000	Jihomoravský kraj	Blansko	19900	581283	CZ0641 Blansko	a	OST720/POR1(a)	Česká pirátská strana [standalone]	0	Y		Y	
+>=10000	Královéhradecký kraj	Náchod	19649	573868	CZ0523 Náchod	b	OST1523/POR5(b)	SOUSEDÉ za lepší Náchod | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených, TOP 09	0	Y		Y	
+>=10000	Ústecký kraj	Žatec	18984	566985	CZ0424 Louny	b	OST541/POR5(b)	Piráti a nezávislí pro Žatec | partners: Nezávislý kandidát	0	Y			
+>=10000	Ústecký kraj	Kadaň	18088	563102	CZ0422 Chomutov	b	OST541/POR3(b)	Spojení pro změnu | partners: Nezávislý kandidát	0	Y			
+>=10000	Ústecký kraj	Louny	18061	565971	CZ0424 Louny	b	OST529/POR5(b)	LOUNY SPOLEČNĚ: Piráti, Zelení, nezávislí | partners: Nezávislý kandidát, Strana zelených	0	Y	Y	Y	
+>=10000	Středočeský kraj	Říčany	17314	538728	CZ0209 Praha-východ	b	OST529/POR4(b)	Piráti se Zelení a nestranní | partners: Nezávislý kandidát, Strana zelených	0	Y			
+>=10000	Zlínský kraj	Otrokovice	17239	585599	CZ0724 Zlín	b	OST541/POR1(b)	Občané OE s podporou Pirátů | partners: Nezávislý kandidát	0	Y			
+>=10000	Středočeský kraj	Benešov	17025	529303	CZ0201 Benešov	b	OST571/POR3(b)	Piráti s podporou lidovců pro Benešov | partners: KDU-ČSL, Nezávislý kandidát	0	Y		Y	
+>=10000	Zlínský kraj	Uherský Brod	16280	592731	CZ0722 Uherské Hradiště	b	OST541/POR3(b)	Mladí Broďani - zlepsimebrod.cz | partners: Nezávislý kandidát	0	Y			
+>=10000	Kraj Vysočina	Pelhřimov	16233	547492	CZ0633 Pelhřimov	a	OST720/POR7(a)	Česká pirátská strana [standalone]	0	Y	Y	Y	
+>=10000	Královéhradecký kraj	Jičín	16052	572659	CZ0522 Jičín	b	OST541/POR9(b)	JIČÍN SRDCEM s podporou Pirátů | partners: Nezávislý kandidát	0	Y		Y	
+>=10000	Zlínský kraj	Rožnov pod Radhoštěm	15916	544841	CZ0723 Vsetín	b	OST541/POR4(b)	Zdravý Rožnov s podporou Pirátů | partners: Nezávislý kandidát	0	Y			
+>=10000	Královéhradecký kraj	Dvůr Králové nad Labem	15316	579203	CZ0525 Trutnov	b	OST1370/POR1(b)	Klíč ke Dvoru | partners: KDU-ČSL, Nezávislý kandidát, Strana zelených	0	Y			
+>=10000	Pardubický kraj	Česká Třebová	14982	580031	CZ0534 Ústí nad Orlicí	b	OST1331/POR2(b)	Stateční & Piráti | partners: Nezávislý kandidát, TOP 09	0	Y			
+>=10000	Ústecký kraj	Varnsdorf	14645	562882	CZ0421 Děčín	b	OST1483/POR6(b)	NÁŠ VARNSDORF | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y			
+>=10000	Liberecký kraj	Turnov	14607	577626	CZ0514 Semily	a	OST720/POR2(a)	Česká pirátská strana [standalone]	0	Y			
+>=10000	Ústecký kraj	Bílina	14401	567451	CZ0426 Teplice	b	OST1331/POR10(b)	MOJE BÍLINA s podporou Pirátů | partners: Nezávislý kandidát, TOP 09	0	Y			
+>=10000	Plzeňský kraj	Rokycany	14248	559717	CZ0326 Rokycany	b	OST541/POR1(b)	Naše Rokycany | partners: Nezávislý kandidát	0	Y		Y	
+>=10000	Karlovarský kraj	Mariánské Lázně	13921	554642	CZ0411 Cheb	b	OST541/POR9(b)	Za lepší Mariánské Lázně | partners: Nezávislý kandidát	0	Y			
+>=10000	Moravskoslezský kraj	Hlučín	13245	507016	CZ0805 Opava	b	OST541/POR7(b)	Hlučíňáci | partners: Nezávislý kandidát	0	Y			
+>=10000	Ústecký kraj	Roudnice nad Labem	12561	565555	CZ0423 Litoměřice	b	OST541/POR6(b)	Tým Roudnice | partners: Nezávislý kandidát	0	Y			
+>=10000	Středočeský kraj	Čelákovice	12507	538132	CZ0209 Praha-východ	b	OST1577/POR3(b)	SPOLEČNĚ pro Čelákovice | partners: KDU-ČSL, TOP 09	0	Y			
+>=10000	Královéhradecký kraj	Jaroměř	12487	574121	CZ0523 Náchod	b	OST529/POR6(b)	Nová vlna pro Jaroměř | partners: Nezávislý kandidát, Strana zelených	0	Y			
+>=10000	Královéhradecký kraj	Rychnov nad Kněžnou	11693	576069	CZ0524 Rychnov nad Kněžnou	b	OST1483/POR3(b)	PROSTOR 516 01 s podporou Pirátů a Starostů | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ	0	Y	Y	Y	
+>=10000	Zlínský kraj	Holešov	11544	588458	CZ0721 Kroměříž	b	OST1331/POR2(b)	AKCE Holešovských Občanů | partners: Nezávislý kandidát, TOP 09	0	Y			
+>=10000	Kraj Vysočina	Humpolec	11487	547999	CZ0633 Pelhřimov	a	OST720/POR6(a)	Česká pirátská strana [standalone]	0	Y			
+>=10000	Středočeský kraj	Vlašim	11329	530883	CZ0201 Benešov	b	OST541/POR6(b)	Piráti pro Vlašim | partners: Nezávislý kandidát	0	Y			
+>=10000	Olomoucký kraj	Uničov	11060	505587	CZ0712 Olomouc	b	OST541/POR6(b)	Česká pirátská strana | partners: Nezávislý kandidát	0	Y			
+>=10000	Jihočeský kraj	Prachatice	11036	550094	CZ0315 Prachatice	b	OST562/POR7(b)	Živé Prachatice | partners: Nezávislý kandidát, STAROSTOVÉ A NEZÁVISLÍ, Strana zelených	0	Y		Y	
+>=10000	Plzeňský kraj	Domažlice	10973	553425	CZ0321 Domažlice	a	OST720/POR5(a)	Česká pirátská strana [standalone]	0	Y		Y	
+>=10000	Plzeňský kraj	Sušice	10689	557153	CZ0322 Klatovy	a	OST720/POR4(a)	Česká pirátská strana [standalone]	0	Y			
+>=10000	Jihomoravský kraj	Veselí nad Moravou	10574	586722	CZ0645 Hodonín	b	OST541/POR2(b)	ZA NAŠE VESELÍ | partners: Nezávislý kandidát	0	N			
+borderline 7000-9999	Kraj Vysočina	Nové Město na Moravě	9716	596230	CZ0635 Žďár nad Sázavou	b	OST541/POR5(b)	Piráti a nezávislí | partners: Nezávislý kandidát	0	Y			
+borderline 7000-9999	Jihomoravský kraj	Tišnov	9270	584002	CZ0643 Brno-venkov	b	OST541/POR7(b)	SPOLKY pro TIŠNOV | partners: Nezávislý kandidát	0	N			
+borderline 7000-9999	Středočeský kraj	Hořovice	8245	531189	CZ0202 Beroun	b	OST552/POR5(b)	Hořovičtí s podporou Pirátů | partners: Liberálně ekologická strana, Nezávislý kandidát	0	N			
+borderline 7000-9999	Jihomoravský kraj	Šlapanice	7940	583952	CZ0643 Brno-venkov	b	OST541/POR6(b)	Piráti Šlapanice & friends | partners: Nezávislý kandidát	0	N			
+borderline 7000-9999	Moravskoslezský kraj	Rychvald	7823	599107	CZ0803 Karviná	b	OST1820/POR2(b)	„ Opozice 26 ” | partners: Občanská demokratická strana, TOP 09	0	N			
+borderline 7000-9999	Středočeský kraj	Černošice	7781	539139	CZ020A Praha-západ	b	OST541/POR2(b)	Futurista s podporou Pirátů | partners: Nezávislý kandidát	1	N			
+borderline 7000-9999	Jihomoravský kraj	Mikulov	7552	584649	CZ0644 Břeclav	b	OST541/POR2(b)	Piráti Mikulov | partners: Nezávislý kandidát	0	N			
+borderline 7000-9999	Jihomoravský kraj	Slavkov u Brna	7294	593583	CZ0646 Vyškov	b	OST541/POR6(b)	Vize pro Slavkov | partners: Nezávislý kandidát	0	N			
+borderline 7000-9999	Kraj Vysočina	Moravské Budějovice	7079	591181	CZ0634 Třebíč	b	OST1896/POR1(b)	Za lepší Budějovice | partners: Občanská demokratická strana	0	N			
