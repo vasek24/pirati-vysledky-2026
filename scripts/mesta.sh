@@ -18,6 +18,7 @@ usage() { echo "usage: bash scripts/mesta.sh {build|data|registry|check-prague|d
 build() {
   npx vite build -c vite.mesta.config.js
   node scripts/mesta-build-check.mjs
+  node scripts/mesta-data-check.mjs
   cp cloudflare/_headers .cache/dist-mesta/_headers
 }
 

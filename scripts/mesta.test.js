@@ -60,7 +60,7 @@ describe('mesta.sh build', () => {
     it('builds, runs the build check, then copies _headers', () => {
         const r = run(['build']);
         expect(r.status).toBe(0);
-        expect(calls()).toEqual([`${path.basename(repo)}: npx vite build -c vite.mesta.config.js`, 'node scripts/mesta-build-check.mjs']);
+        expect(calls()).toEqual([`${path.basename(repo)}: npx vite build -c vite.mesta.config.js`, 'node scripts/mesta-build-check.mjs', 'node scripts/mesta-data-check.mjs']);
         expect(readFileSync(path.join(repo, '.cache/dist-mesta/_headers'), 'utf8')).toBe('/* X-Test: 1\n');
     });
 
@@ -102,17 +102,17 @@ describe('mesta.sh deploy-*', () => {
     it('deploy-staging: build, name check, record deployments, deploy --env staging (from cloudflare/)', () => {
         const r = run(['deploy-staging']);
         expect(r.status).toBe(0);
-        expect(calls().slice(2)).toEqual([
+        expect(calls().slice(3)).toEqual([
             'cloudflare: npx wrangler deployments list -c wrangler.mesta.jsonc --env staging',
             'cloudflare: npx wrangler deploy -c wrangler.mesta.jsonc --env staging',
         ]);
-        expect(calls().slice(0, 2)[1]).toBe('node scripts/mesta-build-check.mjs');
+        expect(calls().slice(0, 3).slice(1)).toEqual(['node scripts/mesta-build-check.mjs', 'node scripts/mesta-data-check.mjs']);
     });
 
     it('deploy-prod passes an empty --env= (no "multiple environments" warning) and never --env staging', () => {
         const r = run(['deploy-prod']);
         expect(r.status).toBe(0);
-        expect(calls().slice(2)).toEqual([
+        expect(calls().slice(3)).toEqual([
             'cloudflare: npx wrangler deployments list -c wrangler.mesta.jsonc --env=',
             'cloudflare: npx wrangler deploy -c wrangler.mesta.jsonc --env=',
         ]);
