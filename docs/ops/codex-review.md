@@ -10,16 +10,23 @@ Opus kontroluje adverzárně, Codex jen jako vázaný druhý čtenář.
 Review se vyplatí jen tam, kde druhý čtenář může najít vadu, kterou ty nenajdeš: riziková,
 spletitá nebo nejistá práce (sdílený stav, časování, cache, nasazení). Pravidla:
 
-1. **Jedno kolo na spec + plán**, **jedno kolo na celý diff**. Žádné „pro jistotu".
-2. Další kolo jen s výslovným ano od operátora (`CODEX_ROUND_APPROVED=1` jako prefix příkazu).
+1. **Jedno kolo na spec + plán**, **jedno kolo na celý diff**. Žádné „pro jistotu". Rozpočet
+   se počítá **zvlášť pro každý `--scope`** (`spec`, `plan`, `code`) v jednom `--out-dir`:
+   dokončený review plánu neblokuje review diffu.
+2. Další kolo téhož scope jen s výslovným ano od operátora (`CODEX_ROUND_APPROVED=1` jako prefix
+   příkazu; u ideace `CODEX_IDEATE_ROUND_APPROVED=1`).
 3. `--focus` je povinný: pojmenuj rizikovou část. Nelze-li ji pojmenovat, review není potřeba.
 4. Opravy nálezů jsou běžná práce, ne důvod ke druhému kolu.
+5. U produktu mesta (mesta.dg12.cz) se Codex použije jen na specifika jednotlivých měst
+   (generátor atribuce Pirátů + kontrolní tabulka + registr extract), ne na celý diff ani na spec/plán.
 
 ## The loop, and when to stop
 Review -> oprava nálezů CRITICAL/HIGH -> zapsat do `docs/superpowers/reviews/` -> hotovo.
 Pokud operátor schválí další kolo, předej už vyřízené nálezy přes `--settled <soubor>`
 (opraveno / zamítnuto s důvodem), jinak je reviewer znovu nahlásí. Skript sám odmítne druhé
-dokončené kolo ve stejném `--out-dir`, dokud není `CODEX_ROUND_APPROVED=1`.
+dokončené kolo **stejného scope** ve stejném `--out-dir`, dokud není `CODEX_ROUND_APPROVED=1`
+(`codex-ideate.sh` má vlastní proměnnou `CODEX_IDEATE_ROUND_APPROVED=1`). Dry-run, zkrácený běh
+(exit 6) a běh s pohnutým stromem (exit 5) rozpočet nespotřebují.
 
 ## Model (known gotcha)
 Výchozí model v `~/.codex/config.toml` (`gpt-6-luna`) **odmítá náš ChatGPT login**
@@ -31,7 +38,15 @@ cokoli udělá. `tools/lib/codex-model.sh` proto při každém běhu vybere nejn
 
 1. `CODEX_REVIEW_MODEL` / `CODEX_IDEATE_MODEL` (explicitní, vyhrává vždy),
 2. nejnovější model řady `CODEX_MODEL_LINE`,
-3. nic -> Codex použije `config.toml` (a pravděpodobně selže, viz výše).
+3. `CODEX_FALLBACK_MODEL` (výchozí prázdné; jediná naše úprava proti zradlo originálu, bez seznamu povolených modelů),
+4. nic -> Codex použije `config.toml` (a pravděpodobně selže, viz výše).
+
+Resolver při každém běhu (bez explicitního override) zavolá `codex debug models` — jedno
+navíc volání Codexu, nejvýš 30 s; Codex si při něm sám může obnovit `~/.codex/models_cache.json`.
+Naše skripty do `~/.codex` nikdy nezapisují.
+
+**Odmítnutý model:** skončí-li běh s exit 6 a v `*.stream.log` v out-dir je „not supported",
+Codex model odmítl. Spusť znovu s `CODEX_REVIEW_MODEL=gpt-5.6-sol`; neúspěšný běh kolo nespotřebuje.
 
 Pokud automaticky vybraný model selže, vynuť jiný, např. nejsilnější z cache:
 `CODEX_REVIEW_MODEL=gpt-5.6-sol tools/codex-review.sh ...`. Hloubku úvahy řídí
@@ -62,7 +77,9 @@ CODEX_IDEATE_MODEL=gpt-5.6-sol tools/codex-ideate.sh --problem problem.md \
   --decision "<jedno rozhodnutí v jedné větě>" [--spec <soubor>] [--settled <soubor>]
 ```
 Další volby: `--settled`, `--round`, `--timeout <s>` (výchozí 1800), `--out-dir`. Výstup a prompt
-končí v `$TMPDIR/codex-review-<repo>-<větev>/`.
+končí v `$TMPDIR/codex-review-<repo>-<větev>/` (ideace: `codex-ideate-<repo>-<větev>`; bez `TMPDIR` se použije `/tmp`).
+`--paths "<pathspec ...>"` se dělí na mezery a předá gitu doslova (glob typu `src/*.js` expanduje git,
+ne shell); cesty s mezerou nejsou podporované.
 
 ## Exit codes
 `codex-review.sh`: `0` čisto (0 CRITICAL, 0 HIGH v rozsahu) | `1` zbývají blokující nálezy |
@@ -87,5 +104,6 @@ soubory v `docs/superpowers/reviews/` se nepřepisují.
 
 ## Testy
 `tools/__tests__/codex-model.test.js` (součást `npm test`) testuje výběr modelu pomocí falešného
-`codex` v `PATH`; Codex k tomu nemusí být nainstalovaný. Skripty ověř `bash -n tools/*.sh`
+`codex` v `PATH`; Codex k tomu nemusí být nainstalovaný. Test `tools/__tests__/codex-review.test.js` ověřuje rozpočet kol po scope a `--paths` v dočasném git repu (jen `--dry-run`).
+Skripty ověř `bash -n tools/*.sh`
 (a `shellcheck`, je-li k dispozici).

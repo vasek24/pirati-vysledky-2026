@@ -116,7 +116,7 @@ Architektura ([`cloudflare/`](cloudflare/), spec v `docs/superpowers/specs/`):
 1. Worker obsluhuje statiku (`dist/`) a `/api/*`.
 2. Každý feed (zastupitelstvo, `prehled`) má vlastní Durable Object, který drží stav a slučuje souběžné dotazy.
 3. Refresher stahuje ČSÚ podmíněně (ETag), validuje odpověď a při nesmyslu ponechá poslední dobrou (last-good).
-4. Odpovědi jdou přes edge cache (`x-cache: HIT`) s poslední záchrannou kopií, když zdroj i DO selžou.
+4. Odpovědi jdou přes edge cache (`x-cache: HIT`) s poslední záchrannou kopií, když DO selže, vrátí 5xx nebo neodpoví do 13 s.
 5. Cron každou minutu zahřívá 12 prvotřídních feedů (11 zastupitelstev + přehled).
 6. Server přidá `x-server-now` a `nextRefreshAt`; klient podle nich plánuje další dotaz.
 7. Klientský scheduler opravuje rozdíl hodin (clock-skew) a rozptyluje záložky 0–25 s.
@@ -189,7 +189,7 @@ a z každého pošle stav sčítání, hlasy a mandáty stran (oficiální, nebo
 odhad) a výsledek Pirátů — celá odpověď má ~15 KB (~3–4 KB komprimovaně).
 
 ```
-prohlížeče ──(dle plánu serveru)──▶ CDN Vercelu ──(~2×/min/zastupitelstvo)──▶ api/volby.js ──(ETag, 304)──▶ volby.gov.cz
+prohlížeče ──(~1×/min)──▶ CDN Vercelu ──(~2×/min/zastupitelstvo)──▶ api/volby.js ──(ETag, 304)──▶ volby.gov.cz
      │                        └─────────(~2×/min)──────────────────▶ api/prehled.js ─(58 souborů)─┘   ▲
      └──────────────── záloha, když naše API 2× po sobě selže (CORS povolen) ───────────────────────┘
 ```

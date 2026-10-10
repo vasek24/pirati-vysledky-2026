@@ -3,7 +3,7 @@
 Odloženo při tvorbě záložní kopie (zdroj: SDD ledger `progress.md`, položky „minor (deferred)",
 „follow-up", rulings s náklady). Deduplikováno; `soubor:řádek` je podle stavu v době review a
 může se posunout. Priority: **P1** = může zabolet ve volební noci, **P2** = vyleštění,
-**P3** = nice to have. Tag v závorce = původ (Task/Phase).
+**P3** = nice to have. Čísla jsou stabilní ID (po přeřazení mezi prioritami se nemění). Tag v závorce = původ (Task/Phase).
 
 ## P1 — může zabolet ve volební noci
 1. **Ověřit na skutečných sečtených datech (po ~15:00)** — `scripts/compare-original.mjs`, logy
@@ -13,13 +13,8 @@ může se posunout. Priority: **P1** = může zabolet ve volební noci, **P2** =
 3. **Rezerva cold startu**: RPC timeout 13 s vs. build 12 s — téměř žádná rezerva. (T9)
 4. **Nedokončený `put` do DO storage**: nekonečně čekající zápisy se hromadí; po ~60 s selhání
    rehydratace stavět v paměti bez `put`. (T8 `cloudflare/refresh.js`)
-5. **Trvale `complete:false` přehled** — po N minutách to vzdát a zalogovat `error`;
-   logovat, když sloučený hash == good hash a všechny rady byly zkopírovány (zmizelý signál `older` na
-   úrovni přehledu). Ověřit, že to T8 skutečně pokrývá. (T6/T8)
 6. **`fetchId` čten až po čekání na okrsky** (`src/volby/feed.js:330-333`): zachytit hned po
    `Promise.all`; `invalidate()` neruší běžící fetch; chybí `build()` test s `precinctFiles`. (T7)
-7. **`validate.js` VOLATILE neobsahuje `firstSeenAt`** → změna jen v `firstSeenAt` může vypadat jako
-   změna obsahu; chybí test karantény pro stejné `generated`. Ověřit a doplnit. (P2-C)
 8. **Nasazení přes GitHub Actions nebylo nikdy spuštěno naostro**: první běh `deploy.yml` dát jako
    `target=staging`; `CLOUDFLARE_API_TOKEN` musí být repo secret; do té doby nasazovat ručně
    podle runbooku. `environment.url` hrana. (T12)
@@ -27,8 +22,11 @@ může se posunout. Priority: **P1** = může zabolet ve volební noci, **P2** =
    `run()` nebo nasazení mimo špičku (už v runbooku; hlídat při každé změně). (T11)
 
 ## P2 — vyleštění
-10. `UpdateManager.jsx:124` `setInterval(tryReload)` musí znovu ověřit `shouldAutoReload` (S6) —
-    pokryto R7 v T10, zkontrolovat; test je jen regex nad zdrojem. (T2/T10)
+5. **Trvale `complete:false` přehled** — po N minutách to vzdát a zalogovat `error`: z velké části pokryto
+   logováním `INCOMPLETE_ERROR_MS` (`cloudflare/refresh.js:257-261`). Zbývá: logovat, když sloučený hash == good hash
+   a všechny rady byly zkopírovány (zmizelý signál `older` na úrovni přehledu). (T6/T8)
+7. **`validate.js` VOLATILE neobsahuje `firstSeenAt`** → změna jen v `firstSeenAt` může vypadat jako
+   změna obsahu; chybí test karantény pro stejné `generated`. Ověřit a doplnit. (P2-C)
 11. Chybí hook-level test napojení `clampTimeout`/`nextSkew` v `src/hooks/useLiveResults.js`
     (ochrana proti těsné smyčce); `lastDelayRef` míchá hodiny; `task-10-report` concern 4 zastaralý. (T10)
 12. `cloudflare/worker.js:12-13` hlavička nezmiňuje `x-cache: UNAVAILABLE`; odpověď 405 obchází
@@ -57,6 +55,8 @@ může se posunout. Priority: **P1** = může zabolet ve volební noci, **P2** =
 24. Úklid scratch větve `ci/main-check` (mazání větví vyžaduje souhlas vlastníka). (completion check)
 
 ## Už vyřešeno (není v backlogu)
+`UpdateManager.jsx`: `tryReload` znovu ověřuje `shouldAutoReload` (`src/components/UpdateManager.jsx:121`;
+`setInterval` na :125) — R7/T10 (zbývá jen to, že test je regex nad zdrojem, viz položka o testech T10).
 Zastaralý komentář `wrangler.jsonc`, staging Analytics dataset, `ci.yml` `test -d dist/assets &&`,
 deploy bez stagingu (T1 -> T5/T12); mrtvý span `direct` na `Landing.jsx:358` (R6/T3);
 `LAST_RESORT_TTL` 1200 s (R10); zákaz druhého kola Codexu (R12).
