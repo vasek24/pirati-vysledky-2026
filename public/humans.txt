@@ -1,0 +1,9 @@
+/* MAINTAINER OF THIS COPY */
+Name: Václav Vislous
+Role: manages this fork and its modifications
+Phone: +420 777 954 389 (tel:+420777954389)
+
+/* ABOUT */
+This site is a backup mirror (fork) of the election results tracker
+jsemfast/pirati-vysledky-2026. Václav Vislous manages this fork and its
+modifications. Data source: ČSÚ (volby.gov.cz).

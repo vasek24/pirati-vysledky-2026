@@ -147,7 +147,7 @@ async function api(request, env, ctx, url) {
         const stub = env.FEED.get(env.FEED.idFromName(path.slice(5)), { locationHint: 'weur' });
         out = await stub.run(name, path);
     } catch (error) {
-        // klient po 502 přepne na přímé čtení z volby.gov.cz
+        // klient po 502 nechá poslední snapshot a znovu zkouší náš server
         out = {
             status: 502,
             headers: { 'content-type': JSON_TYPE, 'cache-control': 'no-store' },

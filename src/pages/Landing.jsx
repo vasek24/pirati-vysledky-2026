@@ -355,7 +355,6 @@ function Hero({ snapshot, live, lists }) {
                 <div className="mt-3 flex items-center gap-3 text-[11px] text-white/40 tabular-nums">
                     {phase !== 'pre' && dataTime && <span>ČSÚ {fmtTime(dataTime)}</span>}
                     {live.lastSuccess && <span>kontrola {fmtShortTime(live.lastSuccess)}</span>}
-                    {live.source === 'direct' && <span>přímo z ČSÚ (jen MČ s Piráty)</span>}
                 </div>
             </div>
             {live.error && (live.stale || live.status === 'error') && (
@@ -491,7 +490,7 @@ export default function Landing() {
                     <div>
                         <h2 className="font-display text-2xl tracking-wide text-black">Odkud jsou data</h2>
                         <p className="mt-1">
-                            Přímo z ČSÚ (volby.gov.cz) — stejné soubory, ze kterých čte oficiální výsledková aplikace.
+                            Z ČSÚ (volby.gov.cz) přes náš server — stejné soubory, ze kterých čte oficiální výsledková aplikace.
                             Loga stran a část fotek kandidátů z programydovoleb.cz.
                         </p>
                     </div>
@@ -514,6 +513,10 @@ export default function Landing() {
                     <span>Verze {APP_VERSION} · data ČSÚ (volby.gov.cz)</span>
                     <button onClick={openChangelog} className="py-2 -my-2 font-semibold text-black hover:underline">Co je nové</button>
                 </footer>
+                <p className="mt-3 text-[11px] leading-relaxed text-neutral-400/80">
+                    Záložní kopie originálu jsemfast/pirati-vysledky-2026 · správce kopie: Václav Vislous ·{' '}
+                    <a href="tel:+420777954389" className="underline">777 954 389</a>
+                </p>
             </main>
         </div>
     );

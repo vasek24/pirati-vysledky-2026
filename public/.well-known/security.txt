@@ -1,0 +1,5 @@
+Contact: tel:+420777954389
+Expires: 2027-10-10T00:00:00Z
+Preferred-Languages: cs, en
+# Václav Vislous spravuje tuto kopii a její úpravy.
+# Václav Vislous manages this fork and its modifications.

@@ -82,7 +82,7 @@ export const CHANGELOG = [
         date: '2026-10-06',
         title: 'Živé výsledky voleb 2026',
         items: [
-            { type: 'new', text: 'Průběžné výsledky Prahy 3, 6, 11 a Magistrátu přímo z volby.gov.cz, samy se obnovují každou minutu' },
+            { type: 'new', text: 'Průběžné výsledky Prahy 3, 6, 11 a Magistrátu z volby.gov.cz přes náš server, samy se obnovují každou minutu' },
             { type: 'new', text: 'Odhad mandátů podle zákona (5% klauzule, d\'Hondt, preferenční hlasy) a půlkruh zastupitelstva' },
             { type: 'new', text: 'Mapa okrsků, zvolení zastupitelé, koalice a přehled okrsků v pořadí, jak je komise posílají' },
             { type: 'new', text: 'Demo sčítání na vyzkoušení (menu → Demo sčítání)' },

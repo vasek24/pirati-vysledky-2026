@@ -418,6 +418,10 @@ export default function CouncilApp({ council }) {
             <div className="text-[11px] text-neutral-500 px-1 pb-2 leading-relaxed">
                 Zdroj: ČSÚ, volby.gov.cz. Mandáty a zvolení jsou do vyhlášení ČSÚ odhad podle zákona (5% klauzule,
                 d'Hondt, 10% preferenční hranice) — výpočet ověřený na výsledcích 2022. Loga a část fotek: programydovoleb.cz.
+                <div className="mt-1 text-neutral-400">
+                    Záložní kopie originálu jsemfast/pirati-vysledky-2026 · správce kopie: Václav Vislous ·{' '}
+                    <a href="tel:+420777954389" className="underline">777 954 389</a>
+                </div>
             </div>
         </div>
     );
