@@ -15,4 +15,10 @@ describe('Zpět v překryvných oknech a po nasazení', () => {
         expect(read('./main.jsx')).toContain('<ReloadOnStale>')
         expect(read('./components/ReloadOnStale.jsx')).toContain('window.location.reload()')
     })
+    it('hlavička zastupitelstva má viditelné odkazy zpět (ne jen v menu)', () => {
+        const code = read('./components/ElectionHeader.jsx')
+        expect(code).toContain('aria-label="Zpět"')
+        expect(code).toContain('← Přehled')
+        expect(code).toContain('href="https://volby.dg12.cz"')
+    })
 })
