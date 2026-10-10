@@ -5,7 +5,7 @@
 // Registrové údaje (jména, tituly, povolání, názvy na lístku) se zobrazují
 // doslova tak, jak je publikuje ČSÚ, a tento soubor se jich netýká.
 
-export const HOME_URL = 'https://volby.pirati.cz'
+export const HOME_URL = 'https://volby.dg12.cz'
 export const SOURCE_URL = 'https://volby.gov.cz/app/senat/20261009/cs/home'
 export const CONTACT_TEL = '+420777954389'
 
@@ -119,8 +119,8 @@ export const T = {
   whyOut: (tieFirst, gap) => `${tieFirst ? 'Ztráta na 1. místo (shoda): ' : 'Ztráta na 2. místo: '}${gap}.`,
 
   // karta
-  backHome: '← volby.pirati.cz',
-  backHomeTitle: 'Zpět na volby.pirati.cz',
+  backHome: '← volby.dg12.cz',
+  backHomeTitle: 'Zpět na volby.dg12.cz',
   jumpLabel: 'Přejít na část stránky', // mobilní lišta odkazů pod hlavičkou
   jumpCandidacies: 'Kandidatury',
   jumpDistricts: 'Obvody',
