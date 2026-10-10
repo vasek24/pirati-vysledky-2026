@@ -134,12 +134,21 @@ function arrangementOf(council) {
     return { badge: '', badgeKind: 'other', listName: council.name };
 }
 
+// Druhý, tlumený řádek: výsledek v KV 2022 (data z baseline2022.generated.json).
+// undefined = žádná data (řádek se vynechá), null = bez srovnatelného výsledku
+export function baselineText(entry) {
+    if (entry === undefined) return '';
+    if (entry === null) return 'v roce 2022 bez srovnatelného výsledku';
+    const seats = entry.seats === null || entry.seats === undefined ? '' : ` · ${entry.seats} mand.`;
+    return entry.label ? `v roce 2022 ${entry.label} ${fmtPct(entry.pct)}${seats}` : `2022: ${fmtPct(entry.pct)}${seats}`;
+}
+
 export const isCounted = (s) => !!s && s.total > 0 && s.counted >= s.total;
 
 // Hodnoty řádku. status/stale pocházejí z bestSource. `now` = čas serveru.
-export function rowView(council, summary, now, { status = 'idle', stale = false } = {}) {
+export function rowView(council, summary, now, { status = 'idle', stale = false, baseline } = {}) {
     const head = arrangementOf(council);
-    const view = { ...head, piratePct: null, val: '', seatsOfficial: null, seats: '', txt: '', time: null, timeLabel: '', bar: 0, stale: false, state: 'loading' };
+    const view = { ...head, base: baselineText(baseline), piratePct: null, val: '', seatsOfficial: null, seats: '', txt: '', time: null, timeLabel: '', bar: 0, stale: false, state: 'loading' };
     if (!summary) {
         const failed = status === 'error';
         return finish({ ...view, state: failed ? 'error' : 'loading', val: failed ? '?' : '', txt: failed ? 'data se nepodařilo načíst' : 'načítám…' });
@@ -175,7 +184,7 @@ function pirateValue(council, summary) {
 
 // klíč pro React.memo: řádek se překreslí jen při změně toho, co ukazuje
 function finish(v) {
-    return { ...v, viewKey: [v.state, v.val, v.seats, v.txt, v.time, v.stale ? 1 : 0, v.bar.toFixed(3)].join('|') };
+    return { ...v, viewKey: [v.state, v.val, v.seats, v.txt, v.time, v.stale ? 1 : 0, v.bar.toFixed(3), v.base].join('|') };
 }
 
 // ---------------------------------------------------------------------------

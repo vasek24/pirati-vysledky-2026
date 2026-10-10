@@ -7,6 +7,7 @@ export default function IndexHeader({ townCount, now, online }) {
     return (
         <header className="mi-hero">
             <div className="mi-hero-in">
+                <a className="mi-back" href="https://volby.dg12.cz">← Všechny volby 2026</a>
                 <div className="mi-hero-top">
                     <img src="/brand/logo-full-white.svg" alt="Česká pirátská strana" height="26" style={{ height: 26, width: 'auto' }} />
                     <span className={pill[0]}>{pill[1]}</span>

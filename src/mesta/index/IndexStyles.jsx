@@ -11,7 +11,8 @@ const CSS = String.raw`
 html:has(.mi-root){scroll-padding-top:128px;-webkit-text-size-adjust:100%}
 /* hlavička */
 .mi-hero{background:#000;color:#fff}
-.mi-hero-in{max-width:1240px;margin:0 auto;padding:12px 16px 14px}
+.mi-hero-in{max-width:1240px;margin:0 auto;padding:0 16px 14px}
+.mi-back{display:flex;align-items:center;min-height:44px;font-size:13px;font-weight:500;color:rgba(255,255,255,.85);text-decoration:underline;text-underline-offset:3px}
 .mi-hero-top{display:flex;align-items:center;gap:12px;min-height:32px}
 .mi-hero-top svg{height:26px;width:auto;display:block}
 .mi-pill{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font:700 11px/1 var(--sans);letter-spacing:.06em;padding:6px 8px;border-radius:6px;background:rgba(255,255,255,.16);color:#fff;white-space:nowrap}
@@ -55,21 +56,22 @@ html:has(.mi-root){scroll-padding-top:128px;-webkit-text-size-adjust:100%}
 .mi-sec-h small{font:500 13px var(--sans);color:var(--mute);text-transform:none;letter-spacing:0}
 .mi-list{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
 /* řádek města */
-.mi-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 84px;grid-template-rows:26px 17px 16px;column-gap:10px;align-content:center;height:72px;padding:0 14px;text-decoration:none;color:inherit;background:var(--card)}
+.mi-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 84px;grid-template-rows:24px 15px 14px 15px;column-gap:10px;align-content:center;height:72px;padding:0 14px;text-decoration:none;color:inherit;background:var(--card)}
 .mi-row+.mi-row{border-top:1px solid var(--line)}
 .mi-row[hidden]{display:none}
 .mi-row:hover{background:#fafaf7}
 .mi-row:active{background:#fff6d1}
 .mi-row:focus-visible{outline:3px solid #000;outline-offset:-3px;box-shadow:inset 0 0 0 3px var(--y)}
-.mi-r-name{font:400 23px/26px var(--disp);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mi-r-val{font:400 24px/26px var(--disp);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.mi-r-meta{font-size:12px;line-height:17px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mi-r-seats{font-size:12px;line-height:17px;text-align:right;color:var(--mute);white-space:nowrap}
-.mi-r-prog{display:flex;align-items:center;min-width:0;font-size:11.5px;line-height:16px;color:var(--mute);white-space:nowrap}
+.mi-r-name{font:400 23px/24px var(--disp);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi-r-val{font:400 24px/24px var(--disp);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.mi-r-meta{font-size:12px;line-height:15px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mi-r-seats{font-size:12px;line-height:15px;text-align:right;color:var(--mute);white-space:nowrap}
+.mi-r-prog{display:flex;align-items:center;min-width:0;font-size:11.5px;line-height:14px;color:var(--mute);white-space:nowrap}
 .mi-r-txt{overflow:hidden;text-overflow:ellipsis}
 .mi-bar{flex:0 0 48px;height:4px;border-radius:2px;background:#e6e6e1;overflow:hidden;margin-right:8px}
 .mi-bar i{display:block;height:100%;width:0;background:var(--y)}
-.mi-r-time{font-size:11.5px;line-height:16px;text-align:right;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mi-r-base{grid-column:1/-1;font-size:11px;line-height:15px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+.mi-r-time{font-size:11.5px;line-height:14px;text-align:right;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .mi-badge{display:inline-block;font:700 10px/1 var(--sans);letter-spacing:.05em;text-transform:uppercase;padding:3px 5px;border-radius:4px;margin-right:6px;vertical-align:1px;font-style:normal}
 .mi-b-party{background:#000;color:var(--y)}.mi-b-coalition{background:#ffe680;color:#000}.mi-b-association,.mi-b-other{background:#e6e6e1;color:#222}
 .mi-is-fin .mi-r-seats{color:var(--ink);font-weight:700}
