@@ -1,0 +1,23 @@
+# Cloudflare Workers Assets headers for senat.dg12.cz (static files only).
+# /api/senat and /healthz are answered by the Worker (cloudflare-senat/src/worker.js), not by this file.
+# Do not set Cache-Control under /*: Cloudflare joins same-name headers from all matching rules with a comma.
+# CSP = what index.html + the bundle load: own scripts, Google Fonts CSS + font files, own API (fetch).
+# After a build: node cloudflare-senat/scripts/qa-gates.mjs (gate headers-csp re-checks CSP against dist/index.html).
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: DENY
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+/
+  Cache-Control: no-cache
+/index.html
+  Cache-Control: no-cache
+/.well-known/*
+  Cache-Control: public, max-age=3600
+/humans.txt
+  Cache-Control: public, max-age=3600
+/kontakt.txt
+  Cache-Control: public, max-age=3600

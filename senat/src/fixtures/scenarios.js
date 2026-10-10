@@ -21,7 +21,7 @@ function setRound(o, r, z, votes, st = {}) {
   for (const c of o.candidates) {
     if (r === 2 && !(c.no in votes)) continue
     c[vk] = votes[c.no] ?? 0
-    c[pk] = valid ? Math.round((10000 * c[vk]) / valid) / 100 : 0
+    c[pk] = valid ? Math.floor((10000 * c[vk]) / valid) / 100 : 0
     c[sk] = st[c.no] ?? null
   }
 }
@@ -74,6 +74,19 @@ export function runoff() {
   return finish(s, 'counting', 2)
 }
 
+// Mezi koly: 1. kolo skončilo, 2. kolo ještě nezačalo. Server do zavření místností 2. kola žádná data
+// 2. kola neposílá, takže snapshot má round 1, phase idle a obvody míří do 2. kola (state 'runoff').
+export function betweenRounds() {
+  const s = counting()
+  const flags = (win) => Object.fromEntries([1, 2, 3, 4, 5, 6].map((n) => [n, win.includes(n) ? '2.KOLO' : 'NEZVOLEN']))
+  for (const [n, win] of [[30, [2, 6]], [18, [1, 5]]]) {
+    const o = obvod(s, n)
+    const votes = n === 30 ? { 1: 700, 2: 3600, 3: 500, 4: 1000, 5: 2200, 6: 2000 } : { 1: 2500, 2: 2000, 3: 300, 4: 200, 5: 2300, 6: 600 }
+    setRound(o, 1, o.rounds[1].okrskyCelkem, votes, flags(win))
+  }
+  return { ...derive(s), phase: 'idle', round: 1 }
+}
+
 // 2. kolo v obvodu 30, kde navíc kandidatura č. 1 (Piráti, 4 221 hlasů v 1. kole) do 2. kola nepostoupila
 export function runoffEliminatedPirate() {
   const s = runoff()
@@ -81,6 +94,15 @@ export function runoffEliminatedPirate() {
   k.candidates.find((c) => c.no === 1).pirate = 'ticket'
   setRound(k, 1, 150, { 1: 4221, 2: 5200, 3: 500, 4: 1000, 5: 2200, 6: 4800 }, { 2: '2.KOLO', 6: '2.KOLO', 1: 'NEZVOLEN', 3: 'NEZVOLEN', 4: 'NEZVOLEN', 5: 'NEZVOLEN' })
   return finish(s, 'counting', 2)
+}
+
+// Kopie snapshotu s přepsanými hlasy kola `r` obvodu `n` (`celkem` = počet okrsků obvodu), znovu odvozená
+export function withVotes(s, n, r, z, votes, st = {}, celkem) {
+  const x = structuredClone(s)
+  const o = obvod(x, n)
+  if (celkem) for (const k of [1, 2]) if (o.rounds[k]) o.rounds[k].okrskyCelkem = celkem
+  setRound(o, r, z, votes, st)
+  return finish(x, s.phase, s.round)
 }
 
 // Jen vybrané pole se v testu zbaví registrových textů (jména, strany, povolání, obvody)

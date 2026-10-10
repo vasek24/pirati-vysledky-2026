@@ -8,8 +8,6 @@ export const POLLS_CLOSE = {
 // Obě kola končí v sobotu ve 14:00 (text „v sobotu … ve 14:00“ je v T.closesBefore)
 export const CLOSE_DATE = { 1: '10. 10.', 2: '17. 10.' }
 
-const roundKey = (round) => (round === 2 ? 2 : 1)
-
 // „43 min“, „1 h 5 min“, „6 d 22 h“ (nikdy „0 min“)
 export function remaining(ms) {
   const min = Math.floor(ms / 60000)
@@ -21,10 +19,26 @@ export function remaining(ms) {
   return `${Math.max(1, m)} min`
 }
 
-// null = místnosti už zavřené (nebo neznámý čas), jinak { date, left }
-export function closingModel(round, serverNow) {
+// Čeká se ještě na 2. kolo? Server do zavření místností 2. kola žádná data 2. kola neposílá
+// (snapshot.round zůstává 1 celý týden), takže se soudí podle stavu 1. kola: je obvod, který míří
+// do 2. kola (nebo shoda hlasů) podle oficiálních příznaků ČSÚ — dokud nic takového není, neodpočítáváme.
+function runoffExpected(snapshot) {
+  if (!snapshot) return false
+  const sum = snapshot.summary
+  if (sum && (sum.runoff ?? 0) + (sum.ties ?? 0) > 0) return true
+  if ((snapshot.obvody ?? []).some((o) => o.state === 'runoff' || o.state === 'runoff-counting')) return true
+  // nic nerozhodnuté neznamená 2. kolo: odpočet se ukáže až když ČSÚ oficiálně pošle postup do 2. kola
+  return false
+}
+
+// null = nic neodpočítáváme, jinak { round, date, left }:
+//  - před zavřením místností 1. kola odpočet do 1. kola,
+//  - mezi koly odpočet do zavření 2. kola, pokud se 2. kolo čeká (viz runoffExpected),
+//  - po 17. 10. ve 14:00 nic (zůstává jen řádek čerstvosti).
+export function closingModel(snapshot, serverNow) {
   if (!Number.isFinite(serverNow)) return null
-  const k = roundKey(round)
-  const ms = POLLS_CLOSE[k] - serverNow
-  return ms > 0 ? { date: CLOSE_DATE[k], left: remaining(ms) } : null
+  const round = serverNow < POLLS_CLOSE[1] ? 1 : runoffExpected(snapshot) ? 2 : null
+  if (round == null) return null
+  const ms = POLLS_CLOSE[round] - serverNow
+  return ms > 0 ? { round, date: CLOSE_DATE[round], left: remaining(ms) } : null
 }

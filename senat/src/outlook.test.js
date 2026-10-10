@@ -44,7 +44,7 @@ describe('outlookView', () => {
   test('mandate / out behind a majority (counted, Z = C → "Sečteno")', () => {
     const a = cand(1, { outlook: 'mandate', pct1: 52.34 })
     const b = cand(2, { outlook: 'out', gap: 1200, rank: 2, status: 'second' })
-    expect(view(100, [a, b], 0)).toEqual({ cls: 'leading', chip: 'Sečteno: mandát', why: 'Má 52,3 % sečtených hlasů, tedy nad 50 %: 2. kolo by odpadlo.' })
+    expect(view(100, [a, b], 0)).toEqual({ cls: 'leading', chip: 'Sečteno: mandát', why: 'Má 52,34 % sečtených hlasů, tedy nad 50 %: 2. kolo by odpadlo.' })
     expect(view(100, [a, b], 1)).toEqual({ cls: 'behind', chip: 'Sečteno: bez postupu', why: 'Jiná kandidatura má nad 50 % sečtených hlasů.' })
   })
 
@@ -52,7 +52,7 @@ describe('outlookView', () => {
     const lead = cand(1, { outlook: 'advance', gap: 3602, pct1: 36.04 })
     const second = cand(2, { outlook: 'advance', gap: 1, rank: 2, status: 'second' })
     const out = cand(3, { outlook: 'out', gap: 2, rank: 3, status: 'behind' })
-    expect(view(60, [lead, second, out], 0)).toEqual({ cls: 'second', chip: 'Předběžně: postup do 2. kola', why: 'Vede s 36,0 %, pod 50 %: do 2. kola jdou dvě kandidatury s nejvíce hlasy. Náskok 3 602 hlasy.' })
+    expect(view(60, [lead, second, out], 0)).toEqual({ cls: 'second', chip: 'Předběžně: postup do 2. kola', why: 'Vede s 36,04 %, pod 50 %: do 2. kola jdou dvě kandidatury s nejvíce hlasy. Náskok 3 602 hlasy.' })
     expect(view(60, [lead, second, out], 1).why).toBe('Nikdo nemá přes 50 %. Ztráta na 1. místo: 1 hlas.')
     expect(view(60, [lead, second, out], 2)).toMatchObject({ cls: 'behind', chip: 'Předběžně: bez postupu', why: 'Ztráta na 2. místo: 2 hlasy.' })
     // tie for first

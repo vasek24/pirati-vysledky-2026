@@ -1,10 +1,10 @@
 import { T, STATE } from '../text.js'
-import { currentRound, progressOf } from '../view.js'
+import { currentRound, progressOf, progressText } from '../view.js'
 
 // Popisek vybraného obvodu (viditelný jen na mobilu, kde buňky ukazují jen číslo)
 function Caption({ o }) {
   const counting = o.state === 'counting' || o.state === 'runoff-counting'
-  const pct = counting ? Math.round(progressOf(o.rounds[currentRound(o)])) : null
+  const pct = counting ? progressText(o.rounds[currentRound(o)]) : null
   return <p className="snt-cap" aria-live="polite">{T.cellCaption(o.n, o.name, STATE[o.state], pct, o.hasPirate)}</p>
 }
 

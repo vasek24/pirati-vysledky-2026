@@ -4,7 +4,7 @@
    Pásek 27 obvodů je hlavní orientace, pak 18 karet kandidatur a jeden rozbalitelný detail obvodu. */
 :root{
   color-scheme:light;
-  --page:#f3f3f1; --card:#ffffff; --ink:#171717; --ink-2:#525252; --ink-3:#6b6b6b; --line:#e5e5e5; --track:#efefed; --faint:#a3a3a3;
+  --page:#f3f3f1; --card:#ffffff; --ink:#171717; --ink-2:#525252; --ink-3:#6b6b6b; --line:#e5e5e5; --track:#efefed; --faint:#a3a3a3; /* jen dekorace (prázdné díly pruhů); text nikdy: 2,5:1 na bílé */
   --black:#000000; --yellow:#fec900; --yellow-soft:#fff6d1;
   --ok:#17673a; --ok-bg:#d9efe0; --adv:#1b4f9c; --adv-bg:#dbe7f8; --warn:#8a5a00; --warn-bg:#f8e8c4; --out:#5c636a; --out-bg:#e4e6e1;
   --f-display:"Bebas Neue","Roboto Condensed","Arial Narrow",Arial,sans-serif;
@@ -54,12 +54,12 @@ section{padding-block:28px}
 .snt-tile b{display:block;font:400 44px/1 var(--f-display);letter-spacing:.02em}
 .snt-tile b small{font:400 14px var(--f-body);letter-spacing:0;color:var(--ink-3)}
 .snt-tile span{display:block;font-size:13px;line-height:1.35;color:var(--ink-3);margin-top:6px}
-.snt-tile.snt-zero b{color:var(--faint)}
+.snt-tile.snt-zero b{color:var(--ink-3)}
 .snt-tile.snt-main{background:var(--black);border-color:rgba(255,255,255,.1);color:#fff}
 .snt-tile.snt-main .snt-tl{font:700 12px/1.2 var(--f-cond);letter-spacing:.08em;text-transform:uppercase;color:var(--yellow);margin-bottom:8px}
 .snt-tile.snt-main b{font-size:60px}
 .snt-tile.snt-main b small{color:rgba(255,255,255,.6)}
-.snt-tile.snt-main.snt-zero b{color:rgba(255,255,255,.4)}
+.snt-tile.snt-main.snt-zero b{color:rgba(255,255,255,.65)}
 .snt-tile.snt-main span{color:rgba(255,255,255,.65)}
 /* pásek obvodů */
 .snt-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px}
@@ -101,7 +101,7 @@ section{padding-block:28px}
 .snt-big span.snt-num{order:-1;font:400 52px/1 var(--f-display);letter-spacing:.02em;color:var(--black);white-space:nowrap}
 .snt-big b{font:700 15px/1 var(--f-cond);color:var(--ink-2)}
 .snt-big .snt-rk{margin-left:auto;background:var(--black);color:var(--yellow);border-radius:12px;padding:6px 12px;font:700 13px/1.2 var(--f-cond);letter-spacing:.04em;white-space:nowrap}
-.snt-unranked span.snt-num{color:var(--faint)}
+.snt-unranked span.snt-num{color:var(--ink-3)}
 .snt-unranked .snt-rk{background:var(--track);color:var(--ink-3)}
 .snt-bar{height:6px;border-radius:99px;background:var(--track);overflow:hidden}
 .snt-bar>i{display:block;height:100%;border-radius:99px;background:var(--ink)}
@@ -126,7 +126,7 @@ section{padding-block:28px}
 .snt-row{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:6px 14px;padding:14px 18px;border-bottom:1px solid var(--line);align-items:start}
 .snt-row:last-child{border-bottom:0}
 .snt-row.snt-pir{background:var(--yellow-soft);box-shadow:inset 4px 0 0 var(--yellow)}
-.snt-rk2{font:400 28px/1 var(--f-display);letter-spacing:.02em;color:var(--faint)}
+.snt-rk2{font:400 28px/1 var(--f-display);letter-spacing:.02em;color:var(--ink-3)}
 .snt-nm{font:700 16px/1.3 var(--f-body);overflow-wrap:anywhere}
 .snt-nm .snt-bn{display:inline-grid;place-items:center;width:22px;height:22px;border:1.5px solid var(--ink-3);border-radius:50%;font:700 12px var(--f-cond);margin-right:8px;vertical-align:1px;color:var(--ink-2)}
 .snt-pt{font-size:14px;color:var(--ink-2)}

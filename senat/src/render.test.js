@@ -9,7 +9,7 @@ import Banner from './components/Banner.jsx'
 import { readFileSync } from 'node:fs'
 import { CHIP, HOME_URL, REL, STATE, T } from './text.js'
 import { POLLS_CLOSE } from './closing.js'
-import { counting, finalR2, runoff, runoffEliminatedPirate, waiting } from './fixtures/scenarios.js'
+import { betweenRounds, counting, finalR2, runoff, runoffEliminatedPirate, waiting, withVotes } from './fixtures/scenarios.js'
 import { nf, pc } from './format.js'
 import { derive } from '../../cloudflare-senat/src/derive.js'
 import { currentRound } from './view.js'
@@ -65,10 +65,62 @@ describe('render', () => {
     const s = patch(counting(), 30, 2, { outlook: 'advance', gap: 1400 })
     const out = html(s, 30).replace(/\s/g, ' ')
     expect(out).toContain('snt-chip snt-second">Předběžně: postup do 2. kola<')
-    expect(out).toContain('Vede s 36,0 %, pod 50 %: do 2. kola jdou dvě kandidatury s nejvíce hlasy. Náskok 1 400 hlasů.')
+    expect(out).toContain('Vede s 36,00 %, pod 50 %: do 2. kola jdou dvě kandidatury s nejvíce hlasy. Náskok 1 400 hlasů.')
     expect(out).toContain('class="snt-rk">1. místo<')
     // card + detail row both carry the reason line
     expect(out.match(/class="snt-why"/g).length).toBeGreaterThanOrEqual(2)
+  })
+
+  // ČSÚ procenta ořezává: 49,96 se nikdy nesmí ukázat jako „50,0 %“ (karta, věta důvodu, detail)
+  test('share 49.96 % is shown as 49,96 %, never as 50,0 % (cards, reason line, detail)', () => {
+    const s = withVotes(counting(), 30, 1, 150, { 2: 4996, 6: 3000, 3: 2004 }, {}, 200)
+    const sucharda = s.obvody.find((o) => o.n === 30).candidates.find((c) => c.no === 2)
+    expect(sucharda.pct1).toBe(49.96)
+    expect(sucharda.outlook).toBe('advance')
+    const out = sp(html(s, 30))
+    expect(out).not.toMatch(/50,0 %/)
+    expect(out).not.toMatch(/50,00 %/)
+    expect(out).toContain('<span class="snt-num">49,96 %</span>') // card
+    expect(out).toContain('Vede s 49,96 %, pod 50 %: do 2. kola jdou dvě kandidatury') // reason line reads consistently
+    expect(out).toContain('<span>49,96 %</span>') // detail row
+    expect(out).toContain('30,00 %') // 3000 / 10000
+    expect(out).toContain('20,04 %')
+  })
+
+  test('the Pirate card of a race at 50.04 % shows 50,04 % and the majority note, not "50,0 %"', () => {
+    const s = withVotes(counting(), 30, 1, 200, { 2: 5004, 6: 3000, 3: 1996 }, {}, 200)
+    const out = sp(html(s, 30))
+    expect(out).toContain('<span class="snt-num">50,04 %</span>')
+    expect(out).not.toMatch(/50,0 %/)
+  })
+
+  test('round 2 finalists at 49.96 / 50.04 are told apart (no pair of "50,0 %")', () => {
+    const s = withVotes(runoff(), 30, 2, 50, { 2: 4996, 6: 5004 })
+    const o = s.obvody.find((x) => x.n === 30)
+    expect(o.candidates.find((c) => c.no === 2).pct2).toBe(49.96)
+    expect(o.candidates.find((c) => c.no === 6).pct2).toBe(50.04)
+    const out = sp(html(s, 30))
+    expect(out).toContain('<span class="snt-num">49,96 %</span>') // the Pirate finalist's card
+    expect(out).toContain('<span>49,96 %') // detail rows of both finalists
+    expect(out).toContain('<span>50,04 %')
+    expect(out).not.toMatch(/50,0 %/)
+  })
+
+  // 199 z 200 okrsků nesmí ukázat „100 %“ (karta, popisek pásu, hlavička detailu)
+  test('precinct progress rounds down: 199 of 200 is 99 %, never 100 %', () => {
+    const votes = { 2: 4000, 6: 3000, 3: 3000 }
+    for (const [z, shown] of [[199, 99], [1, 0], [200, 100], [0, 0]]) {
+      const s = withVotes(counting(), 30, 1, z, votes, {}, 200)
+      const out = sp(html(s, 30))
+      expect(out, `${z}`).toContain(`1. kolo: sečteno ${z} z 200 okrsků (${shown} %)`) // detail header
+      expect(out, `${z}`).toContain(`sečteno ${z} z 200 okrsků (${shown} %)`) // card
+      if (z > 0 && z < 200) {
+        expect(out, `${z}`).not.toContain(`sečteno ${z} z 200 okrsků (100 %)`)
+        expect(out, `${z}`).toMatch(new RegExp(`30 · .+ · sčítá se ${shown} %`)) // strip caption
+      }
+    }
+    // the 100 % case really is z === c
+    expect(sp(html(withVotes(counting(), 30, 1, 200, votes, {}, 200), 30))).toContain('(100 %)')
   })
 
   test('waiting cards show "bez pořadí" and no extra reason line when outlook is null', () => {
@@ -266,13 +318,21 @@ describe('render', () => {
     expect(head(w, POLLS_CLOSE[1] - (5 * 60 + 12) * 60000)).toContain('<b class="snt-left">5 h 12 min</b>')
     // the freshness line stays under it
     expect(before).toContain(`<p class="snt-fresh">${T.csuFrom('8. 10. 16:40:15')}`)
-    // after the close: only the freshness line
-    expect(head(w, POLLS_CLOSE[1] + 1000)).not.toContain('snt-closes')
-    // round 2 counts down to 17. 10. (even right after round 1 closed)
-    const r = runoff()
-    expect(r.round).toBe(2)
-    expect(head(r, POLLS_CLOSE[1] + 3600_000)).toContain('v sobotu 17. 10. ve 14:00 — za <b class="snt-left">6 d 23 h</b>')
-    expect(head(r, POLLS_CLOSE[2] + 1)).not.toContain('snt-closes')
+    // after the round-1 close the round-1 countdown is gone (see below for the round-2 one)
+    expect(head(w, POLLS_CLOSE[1] + 1000)).not.toContain('Volební místnosti se zavírají')
+    // between the rounds: REAL server shape (round 1, phase idle, obvody in state runoff)
+    const b = betweenRounds()
+    expect(b.round).toBe(1)
+    expect(b.phase).toBe('idle')
+    expect(head(b, POLLS_CLOSE[1] + 3600_000)).toContain('<p class="snt-closes">Druhé kolo: volební místnosti se zavírají v sobotu 17. 10. ve 14:00 — za <b class="snt-left">6 d 23 h</b></p>')
+    expect(head(b, POLLS_CLOSE[1] + 3600_000)).toContain('snt-fresh') // the freshness line stays under it
+    expect(head(b, POLLS_CLOSE[2] - 90 * 60000)).toContain('<b class="snt-left">1 h 30 min</b>')
+    // nothing decided yet (no official runoff flag): NO round-2 countdown, it would suggest a runoff exists
+    expect(head(w, POLLS_CLOSE[1] + 3600_000)).not.toContain('Druhé kolo: volební místnosti')
+    // after the round-2 close only the freshness line
+    expect(head(b, POLLS_CLOSE[2] + 1)).not.toContain('snt-closes')
+    // a decided final has no countdown
+    expect(head(finalR2(), POLLS_CLOSE[1] + 3600_000)).not.toContain('snt-closes')
     // no snapshot yet: round 1 countdown
     expect(renderToStaticMarkup(h(Header, { snapshot: null, serverNow: POLLS_CLOSE[1] - 60000, nextAt: null }))).toContain('<b class="snt-left">1 min</b>')
   })

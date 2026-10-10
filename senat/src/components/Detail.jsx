@@ -1,6 +1,6 @@
 import { T, STATE } from '../text.js'
 import { fullName, nf, pc } from '../format.js'
-import { currentRound, isCounted, isOutOfRunoff, pctOf, progressOf, rankOf, roundOf, sortRows, votesOf } from '../view.js'
+import { currentRound, isCounted, isOutOfRunoff, pctOf, progressText, rankOf, roundOf, sortRows, votesOf } from '../view.js'
 import { Chip, Relation, Why } from './Chip.jsx'
 
 function Row({ o, c }) {
@@ -37,8 +37,8 @@ function Row({ o, c }) {
       </div>
       <div className="snt-v snt-num">
         <b>{has ? nf(v) : '0'}</b>
-        <span>{has && counted ? pc(pct, 2) : '0,00 %'}{round === 2 ? T.inRound2 : out ? T.inRound1 : ''}</span>
-        {round === 2 && c.votes1 != null && <span className="snt-r2">{T.round1Votes(nf(c.votes1), pc(c.pct1, 2))}</span>}
+        <span>{has && counted ? pc(pct) : pc(0)}{round === 2 ? T.inRound2 : out ? T.inRound1 : ''}</span>
+        {round === 2 && c.votes1 != null && <span className="snt-r2">{T.round1Votes(nf(c.votes1), pc(c.pct1))}</span>}
         {out && <span className="snt-r2">{T.round2None}</span>}
       </div>
       <div className="snt-bar snt-rbar" aria-hidden="true">
@@ -53,7 +53,7 @@ export default function Detail({ snapshot, selected, onSelect }) {
   if (!o) return null
   const r1 = o.rounds[1]
   const r2 = o.rounds[2]
-  const prog = (r) => pc(progressOf(r), 0)
+  const prog = (r) => `${progressText(r)} %`
   return (
     <div className="snt-detail">
       <div className="snt-dhead">

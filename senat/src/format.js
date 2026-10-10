@@ -6,8 +6,16 @@ const dayKey = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Prague' })
 
 export const nf = (n) => nfmt.format(n)
 
-export const pc = (x, d = 1) =>
-  `${(x ?? 0).toLocaleString('cs-CZ', { minimumFractionDigits: d, maximumFractionDigits: d })} %`
+// Jediný formátovač podílů a procent: ČSÚ procenta ořezává (nezaokrouhluje), takže 49,96 se nikdy
+// nesmí ukázat jako „50,0 %“. Hodnotu ze serveru bereme tak, jak je (2 desetinná místa); delší
+// (dopočtenou) hodnotu ořízneme, nikdy nezaokrouhlíme nahoru. Epsilon chrání před 4,35*100 = 434,999….
+export function truncTo(x, d) {
+  const k = 10 ** d
+  return Math.floor((x ?? 0) * k + 1e-7) / k
+}
+
+export const pc = (x, d = 2) =>
+  `${truncTo(x, d).toLocaleString('cs-CZ', { minimumFractionDigits: d, maximumFractionDigits: d })} %`
 
 // Titul před jménem a za jménem tak, jak je v registru (např. „Ing. Jan Novák, CSc.“)
 export const fullName = (c) => {

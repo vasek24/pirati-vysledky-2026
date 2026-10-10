@@ -54,6 +54,7 @@ export const T = {
   nextCheck: (mmss) => `další kontrola za ${mmss}`,
   // odpočet do zavření místností (jako na praha.dg12.cz) — doplněno; číslo se v hlavičce zvýrazní, proto dvě části
   closesBefore: (date) => `Volební místnosti se zavírají v sobotu ${date} ve 14:00 — za `,
+  closesBeforeR2: (date) => `Druhé kolo: volební místnosti se zavírají v sobotu ${date} ve 14:00 — za `, // doplněno (odpočet mezi koly)
   logoAlt: 'Česká pirátská strana', // doplněno
 
   // bannery — doplněno (v náhledu nejsou)

@@ -4,8 +4,8 @@ import { closingModel } from '../closing.js'
 
 export default function Header({ snapshot, serverNow, nextAt }) {
   const { pill, live, fresh } = snapshot ? headerModel({ snapshot, serverNow, nextAt }) : { pill: T.pillWaiting, live: false, fresh: '' }
-  // před zavřením místností aktuálního kola věta s odpočtem, po něm jen řádek čerstvosti
-  const closing = closingModel(snapshot?.round, serverNow)
+  // před zavřením místností věta s odpočtem (mezi koly do 2. kola), po 2. kole jen řádek čerstvosti
+  const closing = closingModel(snapshot, serverNow)
   return (
     <>
       <header className="snt-band">
@@ -23,7 +23,7 @@ export default function Header({ snapshot, serverNow, nextAt }) {
           </div>
           {closing && (
             <p className="snt-closes">
-              {T.closesBefore(closing.date)}
+              {closing.round === 2 ? T.closesBeforeR2(closing.date) : T.closesBefore(closing.date)}
               <b className="snt-left">{closing.left}</b>
             </p>
           )}

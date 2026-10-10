@@ -1,6 +1,6 @@
 import { T } from '../text.js'
 import { fullName, nf, pc } from '../format.js'
-import { isCounted, isOutOfRunoff, pctOf, pirateCards, progressOf, rankOf, roundOf, roundStats, votesOf } from '../view.js'
+import { isCounted, isOutOfRunoff, pctOf, pirateCards, progressText, rankOf, roundOf, roundStats, votesOf } from '../view.js'
 import { Chip, Relation, Why } from './Chip.jsx'
 
 function Card({ o, c, selected, onSelect }) {
@@ -10,7 +10,7 @@ function Card({ o, c, selected, onSelect }) {
   const show = v != null
   const counted = isCounted(o, c)
   const pct = show ? pctOf(o, c) : 0
-  const prog = Math.round(progressOf(r))
+  const prog = progressText(r)
   const rank = rankOf(o, c)
   const rankText = !(show && counted && rank) ? T.noRank : isOutOfRunoff(o, c) ? T.rankRound1(rank) : T.rank(rank)
   const roundPrefix = round === 2 ? T.roundTwoPrefix : isOutOfRunoff(o, c) ? T.roundOnePrefix : ''
@@ -32,7 +32,7 @@ function Card({ o, c, selected, onSelect }) {
       {c.ballotLabel && <div className="snt-lbl" title={c.ballotLabel}>{T.ballot(c.ballotLabel)}</div>}
       <div className={`snt-big${show && counted && rank ? '' : ' snt-unranked'}`}>
         <b className="snt-num">{show ? nf(v) : '0'}</b>
-        <span className="snt-num">{show && counted ? pc(pct) : '0,0 %'}</span>
+        <span className="snt-num">{show && counted ? pc(pct) : pc(0)}</span>
         <span className="snt-rk">{rankText}</span>
       </div>
       <div className="snt-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>

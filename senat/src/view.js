@@ -34,6 +34,9 @@ export function rankOf(o, c) {
 
 export const progressOf = (r) => (r && r.okrskyCelkem ? (100 * r.okrskyZprac) / r.okrskyCelkem : 0)
 
+// Pro text: celé procenty dolů, aby 199 z 200 nikdy neukázalo „100 %“ (100 jen při z === c)
+export const progressText = (r) => Math.floor(progressOf(r))
+
 // Řádky detailu: finalisté 2. kola první (podle hlasů 2. kola), pak ostatní podle hlasů 1. kola;
 // při shodě podle čísla na lístku
 export const sortRows = (o) =>
