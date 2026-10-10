@@ -35,5 +35,8 @@ export default {
         563889: tiny('Liberec', 6, 'LOL+Piráti'), // Liberec otevřený lidem a Piráti
         555134: tiny('Pardubice', 3, 'Piráti+TOP'), // Prog. Pard. (Piráti, TOP, ...)
         585068: tiny('Zlín', 5, 'Zlín srdcem'), // ZLÍN SRDCEM a Piráti
+        // Majitel (2026-10-10): „show both“ — města 7 000–9 999 obyv. zařazená podle výsledku 2022 jsou odemčena.
+        584649: { name: 'Mikulov', reviewed: true },
+        599107: { name: 'Rychvald', reviewed: true },
     },
 };

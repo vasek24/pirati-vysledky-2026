@@ -74,7 +74,7 @@ describe('committed tiny labels of the map towns', () => {
     const councils = buildCouncils(towns, specifics, overrides);
 
     it('every override names the registry town and an existing list of that town; Pirate list gets a short label', () => {
-        for (const [zastup, o] of Object.entries(overrides.towns)) {
+        for (const [zastup, o] of Object.entries(overrides.towns).filter(([, x]) => x.lists)) {
             const t = towns.find((x) => String(x.zastup) === zastup);
             expect(t, zastup).toBeTruthy();
             expect(o.name).toBe(t.name);
@@ -86,13 +86,16 @@ describe('committed tiny labels of the map towns', () => {
             // je to kandidátka Pirátů města
             expect(Object.keys(o.lists)).toEqual([String(specifics.find((s) => String(s.zastup) === zastup).list.id)]);
         }
-        expect(Object.keys(overrides.towns)).toHaveLength(10);
+        expect(Object.values(overrides.towns).filter((o) => o.lists)).toHaveLength(10);
     });
 
-    it('overrides do not touch reviewed/confidence (towns stay shown as before)', () => {
-        for (const o of Object.values(overrides.towns)) {
+    it('label overrides do not touch reviewed/confidence; only the owner-released 7-10k towns carry reviewed', () => {
+        for (const o of Object.values(overrides.towns).filter((x) => x.lists)) {
             expect(Object.keys(o).sort()).toEqual(['lists', 'name']);
         }
+        const released = Object.entries(overrides.towns).filter(([, o]) => !o.lists);
+        expect(released.map(([z, o]) => [z, o.name, o.reviewed])).toEqual([['584649', 'Mikulov', true], ['599107', 'Rychvald', true]]);
         expect(councils.filter((c) => c.map && c.shown)).toHaveLength(12);
+        expect(councils.filter((c) => c.shown)).toHaveLength(81);
     });
 });

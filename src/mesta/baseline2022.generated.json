@@ -284,7 +284,11 @@
   "seats": 5,
   "label": "MLADÍ A NEKLIDNÍ BŘECLAV"
  },
- "584649": null,
+ "584649": {
+  "pct": 8.35,
+  "seats": 2,
+  "label": null
+ },
  "585068": {
   "pct": 6.47,
   "seats": 3,
@@ -361,7 +365,11 @@
   "seats": 1,
   "label": "Česká pirátská strana + SPOLU"
  },
- "599107": null,
+ "599107": {
+  "pct": 19.22,
+  "seats": 3,
+  "label": "„PRO RYCHVALD“ + Občanská demokratická strana"
+ },
  "599191": {
   "pct": 16.26,
   "seats": 5,
