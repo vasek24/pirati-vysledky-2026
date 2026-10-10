@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef } from 'react';
 import { activeCouncil, colorOnDark, partyMeta } from '../volby/council';
 import { baselineShare, precinctShare, precinctWinner } from '../volby/compute';
 import { MAP_MODES, getMapMode, mapModesFor } from '../volby/mapModes';
+import { useScaleSource } from '../volby/mapScale';
 import { textOn, UNCOUNTED_FILL } from '../volby/colors';
 import { fmtInt, fmtPct, fmtShortTime } from '../volby/format';
 import { Card, Delta, SectionTitle } from './ui';
@@ -58,7 +59,8 @@ export function PrecinctStrip({ geoJson, snapshot, freshIds, selectedId, onSelec
 }
 
 export function MapControls({ modeId, onMode, partyId, onParty, parties, compact = false }) {
-    const mode = getMapMode(modeId, { partyId });
+    const okrsky = useScaleSource();
+    const mode = getMapMode(modeId, { partyId, okrsky });
     // Mobil: režimy jsou vodorovně posuvný pruh — aktivní režim (i ten
     // zapnutý zvenku, např. klepnutím na stranu v Přehledu) posunout do záběru
     const rowRef = useRef(null);
