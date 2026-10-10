@@ -1,0 +1,118 @@
+[
+  {
+    "zastup": 554791,
+    "type": "a",
+    "confidence": "high",
+    "list": {
+      "id": 11,
+      "name": "Česká pirátská strana",
+      "short": "Česká pirátská strana",
+      "short8": "Piráti",
+      "vstrana": 720,
+      "kind": "party",
+      "partners": [],
+      "independents": false
+    },
+    "members": [],
+    "others": [],
+    "flags": []
+  },
+  {
+    "zastup": 999001,
+    "type": "b",
+    "confidence": "low",
+    "list": {
+      "id": 3,
+      "name": "PIRÁTI A NEZÁVISLÍ",
+      "short": "PIRÁTI A NEZÁVISLÍ",
+      "short8": "Piráti+NK",
+      "vstrana": 541,
+      "kind": "association",
+      "partners": [],
+      "independents": true
+    },
+    "members": [
+      {
+        "list": 3,
+        "n": 2,
+        "name": "Jana Skrytá"
+      }
+    ],
+    "others": [],
+    "flags": [
+      "borderline-auto"
+    ]
+  },
+  {
+    "zastup": 560286,
+    "type": "c",
+    "confidence": "high",
+    "list": null,
+    "members": [],
+    "others": [
+      {
+        "list": 7,
+        "listName": "Sokolovské hnutí",
+        "n": 5,
+        "name": "Lukáš Zykán",
+        "nominatedBy": "STAN"
+      }
+    ],
+    "flags": []
+  },
+  {
+    "zastup": 563510,
+    "type": "b",
+    "confidence": "high",
+    "list": {
+      "id": 4,
+      "name": "Sdružení Piráti, NK",
+      "short": "Sdružení Piráti, NK",
+      "short8": "Piráti+NK",
+      "vstrana": 541,
+      "kind": "association",
+      "partners": [],
+      "independents": true
+    },
+    "members": [
+      {
+        "list": 4,
+        "n": 1,
+        "name": "Jan Jabloňský"
+      }
+    ],
+    "others": [],
+    "flags": [
+      "named-cps-but-association"
+    ]
+  },
+  {
+    "zastup": 569810,
+    "type": "b",
+    "confidence": "high",
+    "list": {
+      "id": 4,
+      "name": "PIRÁTI a STAROSTOVÉ",
+      "short": "PIRÁTI a STAROSTOVÉ",
+      "short8": "STAN+Piráti",
+      "vstrana": 1350,
+      "kind": "coalition",
+      "partners": [
+        {
+          "code": 166,
+          "short": "STAN"
+        }
+      ],
+      "independents": false
+    },
+    "members": [
+      {
+        "list": 4,
+        "n": 2,
+        "name": "Eva Králová"
+      }
+    ],
+    "others": [],
+    "flags": []
+  }
+]
