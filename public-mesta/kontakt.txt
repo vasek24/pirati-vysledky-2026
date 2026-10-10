@@ -1,0 +1,8 @@
+Kontakt na správce
+
+Václav Vislous spravuje tyto volební přehledy (praha.dg12.cz, mesta.dg12.cz, senat.dg12.cz) a úpravy kódu jsemfast/pirati-vysledky-2026.
+Telefon: +420 777 954 389 (tel:+420777954389)
+
+Data pocházejí z ČSÚ (volby.gov.cz).
+
+English: Václav Vislous manages these election trackers and this fork's modifications.
