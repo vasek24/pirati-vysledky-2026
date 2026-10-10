@@ -53,18 +53,18 @@ Pozor: kód obce a `name` musí sedět s registrem, jinak generátor skončí ch
 
 | Zařazení | Počet |
 |---|---|
-| zařazeno automaticky | 78 |
+| zařazeno automaticky | 75 |
 | zařazeno podle úsudku | 3 |
 | ručně vynuceno | 0 |
-| **zveřejněno celkem** | **81** |
+| **zveřejněno celkem** | **78** |
 | z toho skryto (nízká jistota, čeká na vaše potvrzení) | 2 |
 | hraniční, nezařazeno (nezveřejněno) | 6 |
-| zamítnuto z vašeho seznamu | 12 |
+| zamítnuto z vašeho seznamu | 15 |
 
 | Typ kandidatury (zveřejněná města) | Počet |
 |---|---|
 | typ a | 12 |
-| typ b | 69 |
+| typ b | 66 |
 | typ c | 0 |
 | typ d | 0 |
 
@@ -126,7 +126,7 @@ Město splňuje pravidla (aspoň 10 000 obyvatel, Piráti na kandidátce), i kdy
 | **Veselí nad Moravou** | 586722 | 10 574 | b | č. 2 ZA NAŠE VESELÍ |
 | **Český Těšín** | 598933 | 22 870 | b | č. 2 TĚŠÍN 2.0 |
 
-### 6. Města z vašeho seznamu, která jsme zamítli (12)
+### 6. Města z vašeho seznamu, která jsme zamítli (15)
 
 **Otázka: souhlasíte?** Pokud některé chcete mít přesto, použijte `include: true` (příklad 3). Typ c/d se pak zobrazí s vysvětlením „Piráti tu nekandidují“ / „jen na cizích kandidátkách“.
 
@@ -142,20 +142,19 @@ Město splňuje pravidla (aspoň 10 000 obyvatel, Piráti na kandidátce), i kdy
 | **Jirkov** | 563099 | 19 067 | typ c: Piráti tu jsou jen na kandidátkách jiných stran; 19 067 obyvatel |
 | **Krupka** | 567639 | 12 731 | typ c: Piráti tu jsou jen na kandidátkách jiných stran; 12 731 obyvatel |
 | **Litoměřice** | 564567 | 22 627 | typ c: Piráti tu jsou jen na kandidátkách jiných stran; 22 627 obyvatel |
+| **Dvůr Králové nad Labem** | 579203 | 15 316 | Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) |
+| **Náchod** | 573868 | 19 649 | Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) |
 | **Trutnov** | 579025 | 29 337 | typ c: Piráti tu jsou jen na kandidátkách jiných stran; 29 337 obyvatel |
+| **Holešov** | 588458 | 11 544 | Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) |
 | **Havířov** | 555088 | 67 998 | typ d: Piráti tu nekandidují (podle registru ČSÚ); 67 998 obyvatel |
 
 Mimo soubor vašeho seznamu, zmíněno vámi: **Litovel** – typ d: Piráti tu nekandidují (podle registru ČSÚ); 9 448 obyvatel; Litovel je senátní obvod 66 (volby 2026); případná pirátská vazba patří do Senátu, ne do tohoto produktu; není na vašem seznamu, uvedli jste ho jako příklad.
 
 ### 7. Zobrazit nominované nečleny?
 
-V těchto městech je kandidátka označená jako pirátská (koalice nebo sdružení s Piráty), ale **z Pirátů jsou na ní jen lidé, které Piráti navrhli, ale nejsou členy**. Sama kandidátka je přesto stále označená jako pirátská. Dnes se na webu jako „kandidáti Pirátů“ zobrazují jen **členové**, takže u těchto měst nebude uveden nikdo. **Otázka: Zobrazit nominované nečleny?** (Obecně: ve všech zveřejněných městech je 522 nominovaných nečlenů v 54 městech.)
+V těchto městech je kandidátka označená jako pirátská (koalice nebo sdružení s Piráty), ale **z Pirátů jsou na ní jen lidé, které Piráti navrhli, ale nejsou členy**. Sama kandidátka je přesto stále označená jako pirátská. Dnes se na webu jako „kandidáti Pirátů“ zobrazují jen **členové**, takže u těchto měst nebude uveden nikdo. **Otázka: Zobrazit nominované nečleny?** (Obecně: ve všech zveřejněných městech je 517 nominovaných nečlenů v 51 městech.)
 
-| Město | Kód obce | Kandidátka | Nominovaných nečlenů | Členů Pirátů |
-|---|---|---|---|---|
-| **Dvůr Králové nad Labem** | 579203 | č. 1 Klíč ke Dvoru | 2 | 0 |
-| **Náchod** | 573868 | č. 5 SOUSEDÉ za lepší Náchod | 2 | 0 |
-| **Holešov** | 588458 | č. 2 AKCE Holešovských Občanů | 1 | 0 |
+_Žádné město._
 
 ### 8. Zveřejněná města, u kterých se zdroje rozcházejí (skrytá)
 
@@ -172,7 +171,7 @@ _U žádného zveřejněného města se zdroje nerozcházejí._ Otevřená zůst
 - ČSÚ senátní obvody 2026 (obvody.json): https://volby.gov.cz/appdata/senat/20261009/navig/obvody.json (čas souboru v cache 2026-10-10T10:42:00.280Z, sha256 `777b8c7eafea008c…`)
 - ČSÚ Počet obyvatel v obcích k 1. 1. 2025 (13007225_data.zip): https://csu.gov.cz/docs/107508/31d73e49-141b-ecbc-3bcc-4089cac638c3/13007225_data.zip?version=1.1 (čas souboru v cache 2026-10-10T10:52:37.735Z, sha256 `2cef401562d24036…`)
 - Počty obyvatel k 1. 1. 2025 (kontrola pásma): načteno z tabulky ČSÚ
-- Kontrola jmenným seznamem kandidátů (jmsez): 81 měst
+- Kontrola jmenným seznamem kandidátů (jmsez): 78 měst
 
 ## Tabulka všech měst
 
@@ -219,11 +218,9 @@ Nejdřív zveřejněná města (podle kraje a abecedy), na konci města z vašeh
 | Liberecký kraj | Jablonec nad Nisou | zařazeno automaticky | – | 46 206 / 46 209 | b | 4 | Piráti a nezávislí | sdružení | NK | 10 (Jaroslav Šída, Kateřina Žáková, Veronika Drápalíková, +7) · nominovaných nečlenů: 5 | – | 563510 / 5102 / 541 / 080,720 | – | vysoká |
 | Liberecký kraj | Liberec | zařazeno automaticky | – | 108 214 / 108 090 | b | 6 | Liberec otevřený lidem a Piráti | koalice | Zelení | 12 (Jan Hruška, Jiřina Macháčková, Petr Slanina, +9) · nominovaných nečlenů: 3 | – | 563889 / 5103 / 1066 / 005,720 | – | vysoká |
 | Liberecký kraj | Turnov | zařazeno automaticky | – | 14 607 / 14 577 | a | 2 | Česká pirátská strana | strana | – | 3 (Vratislav Slavík, Daniel Havlík, František Poslušný) · nominovaných nečlenů: 24 | – | 577626 / 5104 / 720 / 720 | – | vysoká |
-| Královéhradecký kraj | Dvůr Králové nad Labem | zařazeno automaticky | – | 15 316 / 15 322 | b | 1 | Klíč ke Dvoru | sdružení | KDU-ČSL, Zelení, NK | 0 (nominovaných nečlenů: 2) | – | 579203 / 5205 / 1370 / 001,005,080,720 | na pirátské kandidátce není žádný člen Pirátů | vysoká |
 | Královéhradecký kraj | Hradec Králové | zařazeno automaticky | – | 93 534 / 94 311 | b | 4 | PIRÁTI a STAROSTOVÉ | koalice | STAN | 11 (Kamil Kubica, Aleš Dohnal, Vít Luštinec, +8) · nominovaných nečlenů: 8 | – | 569810 / 5201 / 1350 / 166,720 | – | vysoká |
 | Královéhradecký kraj | Jaroměř | zařazeno automaticky | – | 12 487 / 12 483 | b | 6 | Nová vlna pro Jaroměř | sdružení | Zelení, NK | 1 (Marek Picek) | – | 574121 / 5203 / 529 / 005,080,720 | – | vysoká |
 | Královéhradecký kraj | Jičín | zařazeno automaticky | – | 16 052 / 16 101 | b | 9 | JIČÍN SRDCEM s podporou Pirátů | sdružení | NK | 1 (Jan Ent) | – | 572659 / 5202 / 541 / 080,720 | kraj se liší od vašeho seznamu | vysoká |
-| Královéhradecký kraj | Náchod | zařazeno automaticky | – | 19 649 / 19 827 | b | 5 | SOUSEDÉ za lepší Náchod | sdružení | KDU-ČSL, Zelení, TOP 09, NK | 0 (nominovaných nečlenů: 2) | – | 573868 / 5203 / 1523 / 001,005,080,720,721 | na pirátské kandidátce není žádný člen Pirátů | vysoká |
 | Královéhradecký kraj | Rychnov nad Kněžnou | zařazeno automaticky | – | 11 693 / 11 420 | b | 3 | PROSTOR 516 01 s podporou Pirátů a Starostů | sdružení | STAN, NK | 1 (Věra Králová) | – | 576069 / 5204 / 1483 / 080,166,720 | – | vysoká |
 | Pardubický kraj | Česká Třebová | zařazeno automaticky | – | 14 982 / 15 010 | b | 2 | Stateční & Piráti | sdružení | TOP 09, NK | 4 (Jiří Ducháček, Martin Saifrt, Martin Herman, +1) | – | 580031 / 5304 / 1331 / 080,720,721 | – | vysoká |
 | Pardubický kraj | Chrudim | zařazeno automaticky | – | 23 562 / 23 564 | b | 7 | Lidi z Chrudimi - Piráti a nezávislí | sdružení | NK | 7 (Daniel Lebduška, Ivo Diblík, Jiří Blažek, +4) · nominovaných nečlenů: 19 | – | 571164 / 5301 / 541 / 080,720 | – | vysoká |
@@ -244,7 +241,6 @@ Nejdřív zveřejněná města (podle kraje a abecedy), na konci města z vašeh
 | Olomoucký kraj | Prostějov | zařazeno automaticky | – | 43 236 / 43 408 | b | 1 | Prostějov 2:0 | sdružení | NK | 11 (Jan Mochťák, Adéla Čečmanová, Petr Lysek, +8) | – | 589250 / 7103 / 541 / 080,720 | – | vysoká |
 | Olomoucký kraj | Přerov | zařazeno automaticky | – | 40 492 / 40 906 | b | 2 | Změna pro Přerov | sdružení | STAN, NK | 12 (Petr Dostalík, Jaroslav Krejčí, David Hošek, +9) · nominovaných nečlenů: 5 | – | 511382 / 7104 / 1483 / 080,166,720 | – | vysoká |
 | Olomoucký kraj | Uničov | zařazeno automaticky | – | 11 060 / 11 237 | b | 6 | Česká pirátská strana | sdružení | NK | 3 (Hana Koppová, Tomáš Fabrik, Jan Motal) · nominovaných nečlenů: 2 | – | 505587 / 7102 / 541 / 080,720 | jmenuje se „Česká pirátská strana“, ale je to sdružení | vysoká |
-| Zlínský kraj | Holešov | zařazeno automaticky | – | 11 544 / 11 616 | b | 2 | AKCE Holešovských Občanů | sdružení | TOP 09, NK | 0 (nominovaných nečlenů: 1) | – | 588458 / 7201 / 1331 / 080,720,721 | na pirátské kandidátce není žádný člen Pirátů | vysoká |
 | Zlínský kraj | Kroměříž | zařazeno automaticky | – | 27 781 / 27 917 | b | 7 | První volba pro Kroměříž a místní části | sdružení | NK | 4 (Hana Ančincová, Jana Knapková, Marcela Válková, +1) · nominovaných nečlenů: 4 | – | 588296 / 7201 / 541 / 080,720 | – | vysoká |
 | Zlínský kraj | Otrokovice | zařazeno automaticky | – | 17 239 / 17 401 | b | 1 | Občané OE s podporou Pirátů | sdružení | NK | 4 (Petr Ťopek, Pavel Beznoska, Michal Bartík, +1) | – | 585599 / 7204 / 541 / 080,720 | – | vysoká |
 | Zlínský kraj | Rožnov pod Radhoštěm | zařazeno automaticky | – | 15 916 / 16 063 | b | 4 | Zdravý Rožnov s podporou Pirátů | sdružení | NK | 2 (Libor Adámek, Marie Babincová) | – | 544841 / 7203 / 541 / 080,720 | – | vysoká |
@@ -271,5 +267,8 @@ Nejdřív zveřejněná města (podle kraje a abecedy), na konci města z vašeh
 | Ústecký kraj | Jirkov | vyřazeno: typ c: Piráti tu jsou jen na kandidátkách jiných stran; 19 067 obyvatel | – | 19 067 / 19 240 | c | – | – | – | – | 0 | 1: Milan Buresch (č. 8/8, navrhl NK) | 563099 / 4202 | – | – |
 | Ústecký kraj | Krupka | vyřazeno: typ c: Piráti tu jsou jen na kandidátkách jiných stran; 12 731 obyvatel | – | 12 731 / 12 793 | c | – | – | – | – | 0 | 1: Petr Duda (č. 7/7, navrhl NK) | 567639 / 4206 | – | – |
 | Ústecký kraj | Litoměřice | vyřazeno: typ c: Piráti tu jsou jen na kandidátkách jiných stran; 22 627 obyvatel | – | 22 627 / 22 767 | c | – | – | – | – | 0 | 1: Jiří Rotter (č. 9/20, navrhl SEN 21) | 564567 / 4203 | – | – |
+| Královéhradecký kraj | Dvůr Králové nad Labem | vyřazeno: Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) | – | 15 316 / 15 322 | b | 1 | Klíč ke Dvoru | sdružení | KDU-ČSL, Zelení, NK | 0 (nominovaných nečlenů: 2) | – | 579203 / 5205 / 1370 / 001,005,080,720 | na pirátské kandidátce není žádný člen Pirátů | – |
+| Královéhradecký kraj | Náchod | vyřazeno: Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) | – | 19 649 / 19 827 | b | 5 | SOUSEDÉ za lepší Náchod | sdružení | KDU-ČSL, Zelení, TOP 09, NK | 0 (nominovaných nečlenů: 2) | – | 573868 / 5203 / 1523 / 001,005,080,720,721 | na pirátské kandidátce není žádný člen Pirátů | – |
 | Královéhradecký kraj | Trutnov | vyřazeno: typ c: Piráti tu jsou jen na kandidátkách jiných stran; 29 337 obyvatel | – | 29 337 / 29 607 | c | – | – | – | – | 0 | 1: Pavel Volk (č. 3/5, navrhl NK) | 579025 / 5205 | – | – |
+| Zlínský kraj | Holešov | vyřazeno: Vyřazeno ručně: Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny) | – | 11 544 / 11 616 | b | 2 | AKCE Holešovských Občanů | sdružení | TOP 09, NK | 0 (nominovaných nečlenů: 1) | – | 588458 / 7201 / 1331 / 080,720,721 | na pirátské kandidátce není žádný člen Pirátů | – |
 | Moravskoslezský kraj | Havířov | vyřazeno: typ d: Piráti tu nekandidují (podle registru ČSÚ); 67 998 obyvatel | – | 67 998 / 68 674 | d | – | – | – | – | 0 | – | 555088 / 8103 | – | – |
