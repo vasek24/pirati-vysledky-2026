@@ -62,6 +62,15 @@ describe('real COUNCILS in search', () => {
 });
 
 describe('index page source', () => {
+    const read = (f) => readFileSync(new URL(f, import.meta.url), 'utf8');
+    it('links back to the front door volby.dg12.cz at the top and in the footer', () => {
+        expect(read('./index/IndexHeader.jsx')).toContain('href="https://volby.dg12.cz"');
+        expect(read('./index/IndexHeader.jsx')).toContain('← Všechny volby 2026');
+        expect(read('./index/IndexPage.jsx')).toContain('href="https://volby.dg12.cz"');
+    });
+    it('MestaIndex passes the 2022 baselines to the page', () => {
+        expect(read('./MestaIndex.jsx')).toContain('baseline2022.generated.json');
+    });
     it('footer says "Zdroj: ČSÚ (volby.gov.cz)", never the Prague marker wording (case-insensitive)', () => {
         const src = readFileSync(new URL('./index/IndexPage.jsx', import.meta.url), 'utf8');
         expect(src).toContain('Zdroj: ČSÚ (volby.gov.cz)');

@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POLLS_CLOSE as PRAGUE_POLLS_CLOSE } from '../councils.js';
 import * as model from './indexModel.js';
 import {
-    POLLS_CLOSE, activeShards, allProgress, buildRegions, bestSource, createShardPoller, doneSet, errorDelay, featuredShardIds, filterShardSummaries, flatOrder,
+    POLLS_CLOSE, activeShards, baselineText, allProgress, buildRegions, bestSource, createShardPoller, doneSet, errorDelay, featuredShardIds, filterShardSummaries, flatOrder,
     initialMounted, initialOpenRegions, isCounted, moreText, newlyCounted, pickSummary, regionHeader, rowView, shardSource,
 } from './indexModel.js';
 import { FIXTURE_ALL, FIXTURE_COUNCILS, FIXTURE_HIDDEN, FIXTURE_REGIONS, FIXTURE_SHARDS } from './index/devFixture.jsx';
@@ -138,6 +138,31 @@ describe('rowView', () => {
         const v = rowView(plzen, sum({ precincts: { counted: 1 } }), NOW);
         expect(Object.keys(v)).not.toContain('precincts');
         expect(Object.keys(v)).not.toContain('official');
+    });
+});
+
+describe('baselineText (KV 2022 line)', () => {
+    it('same list: "2022: 7,1 % · 4 mand."', () => {
+        expect(baselineText({ pct: 7.1, seats: 4, label: null })).toBe('2022: 7,1 % · 4 mand.');
+        expect(baselineText({ pct: 2.14, seats: 0, label: null })).toBe('2022: 2,1 % · 0 mand.');
+    });
+    it('a different 2022 list is named, the way the town page names its baseline', () => {
+        expect(baselineText({ pct: 7.06, seats: 3, label: 'Česká pirátská strana' })).toBe('v roce 2022 Česká pirátská strana 7,1 % · 3 mand.');
+    });
+    it('seats unknown → pct only; no comparable result → says so; no data → no line', () => {
+        expect(baselineText({ pct: 7.1, seats: null, label: null })).toBe('2022: 7,1 %');
+        expect(baselineText(null)).toBe('v roce 2022 bez srovnatelného výsledku');
+        expect(baselineText(undefined)).toBe('');
+    });
+    it('rowView carries it in every state, also while loading, and it is part of the memo key', () => {
+        const plzen = byName('Plzeň');
+        const base = { pct: 7.1, seats: 4, label: null };
+        expect(rowView(plzen, undefined, NOW, { baseline: base }).base).toBe('2022: 7,1 % · 4 mand.');
+        expect(rowView(plzen, sum(), NOW, { baseline: base }).base).toBe('2022: 7,1 % · 4 mand.');
+        expect(rowView(plzen, sum(), NOW, { baseline: base }).viewKey).not.toBe(rowView(plzen, sum(), NOW, { baseline: null }).viewKey);
+        expect(rowView(plzen, sum(), NOW).base).toBe('');
+        // the live value stays the primary number
+        expect(rowView(plzen, sum(), NOW, { baseline: base }).val).toBe('12,3 %');
     });
 });
 

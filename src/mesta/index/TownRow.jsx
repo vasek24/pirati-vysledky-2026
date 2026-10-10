@@ -23,6 +23,7 @@ function TownRow({ council, view, watchShard = null, onOpen }) {
                 <span className="mi-r-txt">{view.txt}</span>
             </span>
             <span className="mi-r-time"><span>{view.timeLabel}</span></span>
+            {view.base && <span className="mi-r-base">{view.base}</span>}
         </a>
     );
 }

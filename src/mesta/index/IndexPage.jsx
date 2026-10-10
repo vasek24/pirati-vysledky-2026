@@ -23,7 +23,7 @@ import { useMyTown } from './useMyTown.js';
 const NO_IDS = [];
 const wideNow = () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches;
 
-export default function IndexPage({ councils, hidden = NO_IDS, shards, regions, excluded = NO_IDS, aliases, version, fetchImpl }) {
+export default function IndexPage({ councils, hidden = NO_IDS, shards, regions, excluded = NO_IDS, aliases, baselines, version, fetchImpl }) {
     const myTown = useMyTown(councils);
     const [onlyDone, setOnlyDone] = useState(false);
     const model = useMemo(() => buildRegions(councils, shards, regions), [councils, shards, regions]);
@@ -33,14 +33,14 @@ export default function IndexPage({ councils, hidden = NO_IDS, shards, regions, 
     return (
         <ShardSubscriber shards={shards} version={version} fetchImpl={fetchImpl} featured={featuredIds} mineShard={mineShard} allIds={allIds}>
             <IndexBody
-                councils={councils} hidden={hidden} excluded={excluded} aliases={aliases} model={model}
+                councils={councils} hidden={hidden} excluded={excluded} aliases={aliases} baselines={baselines} model={model}
                 myTown={myTown} onlyDone={onlyDone} setOnlyDone={setOnlyDone}
             />
         </ShardSubscriber>
     );
 }
 
-function IndexBody({ councils, hidden, excluded, aliases, model, myTown, onlyDone, setOnlyDone }) {
+function IndexBody({ councils, hidden, excluded, aliases, baselines, model, myTown, onlyDone, setOnlyDone }) {
     const snapshot = useShardSnapshot();
     const online = useOnline();
     const now = useNow(30_000) + (snapshot.skew || 0);
@@ -72,10 +72,10 @@ function IndexBody({ councils, hidden, excluded, aliases, model, myTown, onlyDon
         for (const c of councils) {
             const src = bestSource(c, snapshot);
             if (src.summary) s[c.zastup] = src.summary;
-            v.set(c.zastup, rowView(c, src.summary, now, { status: src.status, stale: src.stale }));
+            v.set(c.zastup, rowView(c, src.summary, now, { status: src.status, stale: src.stale, baseline: baselines?.[c.zastup] }));
         }
         return { views: v, summaries: s };
-    }, [councils, snapshot, now]);
+    }, [councils, snapshot, now, baselines]);
     const viewOf = useCallback((c) => views.get(c.zastup), [views]);
 
     const say = useCallback((text) => {
@@ -233,6 +233,7 @@ function IndexBody({ councils, hidden, excluded, aliases, model, myTown, onlyDon
                             Zdroj: ČSÚ (volby.gov.cz), u každého města s jeho vlastním časem. Žádné součty ani odhady za kraje nebo republiku. Mandáty ukazujeme, až je ČSÚ vyhlásí.
                             {' '}Praha je na <a href="https://praha.dg12.cz">praha.dg12.cz</a>.
                         </p>
+                        <p><a href="https://volby.dg12.cz">← Všechny volby 2026 (volby.dg12.cz)</a></p>
                         <p>Správce: Václav Vislous · <a href="tel:+420777954389">777 954 389</a></p>
                     </footer>
                 </main>

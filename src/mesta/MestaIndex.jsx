@@ -4,6 +4,7 @@
 // index/IndexPage.jsx (bere data jako props, jde pustit s vývojovými daty).
 import { OVERVIEW_VERSION } from '../volby/overview.js';
 import aliases from './aliases.js';
+import BASELINES from './baseline2022.generated.json';
 import { ALL_COUNCILS, COUNCILS, REGIONS, SHARDS } from './councils.js';
 import EXCLUDED from './excluded.generated.json';
 import IndexPage from './index/IndexPage.jsx';
@@ -13,5 +14,5 @@ import IndexPage from './index/IndexPage.jsx';
 const HIDDEN = ALL_COUNCILS.filter((c) => !c.shown);
 
 export default function MestaIndex() {
-    return <IndexPage councils={COUNCILS} hidden={HIDDEN} shards={SHARDS} regions={REGIONS} excluded={EXCLUDED} aliases={aliases} version={OVERVIEW_VERSION} />;
+    return <IndexPage councils={COUNCILS} hidden={HIDDEN} shards={SHARDS} regions={REGIONS} excluded={EXCLUDED} aliases={aliases} baselines={BASELINES} version={OVERVIEW_VERSION} />;
 }
