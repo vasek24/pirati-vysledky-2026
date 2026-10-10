@@ -102,7 +102,7 @@ export function createOverviewFeed({
     // jak dlouho build() čeká na soubory, než vrátí přehled z toho, co má
     // (zbytek doběhne na pozadí a přibude příště) — 58 souborů po vlnách
     // s timeoutem by jinak přetáhlo maxDuration serverové funkce (30 s)
-    waitMs = 20000,
+    waitMs = 8000,
     headers = {},
 } = {}) {
     const getJson = createJsonCache({ fetchImpl, conditional, baseUrl, minIntervalMs, timeoutMs, headers });
@@ -121,7 +121,9 @@ export function createOverviewFeed({
         return pending.get(c.zastup);
     }
 
-    async function build() {
+    // Vnitřní build; `last` nemění. strict (pro build()): nic čerstvého = chyba
+    // i bez `last` — v paměti zůstalé souhrny nesmí vypadat jako úspěch.
+    async function buildSnapshot({ strict = false } = {}) {
         let updated = 0;
         let error = null;
         const jobs = councils.map((c) => refresh(c).then(
@@ -136,17 +138,32 @@ export function createOverviewFeed({
         if (!Object.keys(summaries).length) throw error || new Error('no-data');
         // Nic čerstvého → chyba, ať snapshot() vrátí poslední přehled jako
         // stale (ne stará data s novým fetchedAt a plnou dobou v CDN)
-        if (!updated && last) throw error || new Error('timeout');
-        last = {
+        if (!updated && (strict || last)) throw error || new Error('timeout');
+        return {
             ...composeOverview({ ...summaries }, { expected: councils.length }),
             missing: councils.length - updated,
         };
-        return last;
+    }
+
+    const resultPaths = councils.map((c) => pathsFor(c).results);
+
+    // Pro obnovu v Durable Objectu: hodí chybu při selhání, `last` nemění,
+    // výsledek nese fetchId (součet verzí souborů — roste jen novým HTTP 200)
+    async function build() {
+        const snap = await buildSnapshot({ strict: true });
+        return { ...snap, fetchId: String(resultPaths.reduce((sum, p) => sum + getJson.version(p), 0)) };
+    }
+
+    function invalidate() {
+        for (const p of resultPaths) getJson.invalidate(p);
     }
 
     async function snapshot() {
         if (!inflight) {
-            inflight = build().finally(() => {
+            inflight = buildSnapshot().then((snap) => {
+                last = snap;
+                return snap;
+            }).finally(() => {
                 inflight = null;
             });
         }
@@ -158,7 +175,7 @@ export function createOverviewFeed({
         }
     }
 
-    return { snapshot };
+    return { snapshot, build, invalidate };
 }
 
 // Demo přehledu (/?demo): každé zastupitelstvo se „sčítá" po svém (malé MČ
