@@ -1,5 +1,7 @@
-# Produkce = Cloudflare Workers (cloudflare/). Nasazuje se jen ručně:
+# Cloudflare Workers (cloudflare/). Nasazuje se jen ručně:
 # Actions → Deploy → Run workflow (žádný automatický deploy při pushi).
+# Výchozí cíl je staging; produkce jen když se vybere výslovně. Před oběma
+# běží lint, testy, build a kontrola, že bundle nevolá volby.gov.cz přímo.
 #
 # Secret repa: CLOUDFLARE_API_TOKEN (šablona „Edit Cloudflare Workers");
 # account_id je ve cloudflare/wrangler.jsonc (není tajné).
@@ -7,10 +9,18 @@ name: Deploy
 
 on:
   workflow_dispatch:
+    inputs:
+      target:
+        description: Kam nasadit (staging = zkouška, produkce až po kontrolách na stagingu)
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
 
 # Nasazení jedno po druhém, rozjeté se nepřerušuje
 concurrency:
-  group: production
+  group: deploy-${{ inputs.target }}
   cancel-in-progress: false
 
 permissions:
@@ -21,8 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:
-      name: production
-      url: ${{ vars.SMOKE_URL }}
+      name: ${{ inputs.target }}
+      url: ${{ inputs.target == 'production' && vars.SMOKE_URL || vars.SMOKE_URL_STAGING }}
     steps:
       - uses: actions/checkout@v4
 
@@ -42,18 +52,38 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # build (vite) + wrangler deploy; zpráva verze = commit
-      - name: Deploy
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Prohlížeč nesmí volat volby.gov.cz přímo (jen náš Worker)
+      - name: No direct ČSÚ URL in the bundle
+        run: "test -d dist/assets && ! grep -rl 'appdata/kv2026' dist/assets"
+
+      # build (vite) + wrangler deploy --env staging; zpráva verze = commit
+      - name: Deploy (staging)
+        if: ${{ inputs.target == 'staging' }}
+        working-directory: cloudflare
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npm run deploy -- --env staging --message "$GITHUB_SHA"
+
+      # Produkce jen na výslovnou volbu cíle
+      - name: Deploy (production)
+        if: ${{ inputs.target == 'production' }}
         working-directory: cloudflare
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npm run deploy -- --message "$GITHUB_SHA"
 
-      # Přeskočí se, dokud není nastavená proměnná repa SMOKE_URL
+      # Přeskočí se, dokud není nastavená proměnná repa SMOKE_URL (produkce)
+      # resp. SMOKE_URL_STAGING (staging)
       - name: Smoke test
-        if: ${{ vars.SMOKE_URL != '' }}
+        if: ${{ (inputs.target == 'production' && vars.SMOKE_URL != '') || (inputs.target == 'staging' && vars.SMOKE_URL_STAGING != '') }}
         env:
-          SMOKE_URL: ${{ vars.SMOKE_URL }}
+          SMOKE_URL: ${{ inputs.target == 'production' && vars.SMOKE_URL || vars.SMOKE_URL_STAGING }}
         run: |
           base="$SMOKE_URL"
           want=$(node -p "require('./dist/version.json').version")
