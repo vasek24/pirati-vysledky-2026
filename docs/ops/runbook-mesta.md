@@ -34,6 +34,12 @@ bash scripts/mesta.sh deploy-prod      # totéž pro produkci (prázdné --env=)
 - Logy: `npx wrangler tail pirati-mesta --format json` — každou minutu `warmup-ok` pro všech klíčů první třídy do 2 min po nasazení.
 - Ověření proti ČSÚ po začátku sčítání (spec §8): Brno, Plzeň, Hradec Králové, Jablonec nad Nisou, Klatovy + Moravskoslezský kraj (2 shardy): stejné `generated`, počet sečtených okrsků, účast, hlasy a % prvních 5 kandidátek a pirátské kandidátky. Rozdíl jen při jiném `generated`; za minutu zopakovat.
 
+## Mapa okrsků (12 největších měst)
+- Mapu a okrskové soubory ČSÚ mají jen zobrazená města s `featured` (`buildCouncils`: `map` = `precinctFiles`); ostatní jsou v lehkém režimu. Vypnutí jednoho města: `overrides.js` → `towns['<KODZASTUP>'] = { name, map: false }`, pak `bash scripts/mesta.sh build` a nasazení (Worker přestane stahovat okrskové soubory, stránka ukáže jen panely).
+- Hranice: `bash scripts/mesta.sh data --maps-only [slug…]` přegeneruje jen `public-mesta/data/<slug>/okrsky.geojson` z `.cache/84a3c42833510b20.geojson` (celostátní vrstva ČSÚ 2025) a registru z `.cache`; zaniklé polygony (podle rozsahů okrsků 2026 v registru) zahodí. Výstup uvádí zahozené polygony a okrsky bez polygonu.
+- Zátěž a chování Workeru za sčítání: `docs/analysis/mesta-maps-load.md`. Náhled bez sítě: `bash scripts/mesta.sh build && node tools/mesta-map-mock.mjs --port=4173`, pak `http://127.0.0.1:4173/brno` (`--counted=0.3 --pending=0.1 --geo=empty|missing`).
+- Podkladové dlaždice mapy jdou z externího hostitele `tiles.openfreemap.org` (beze změny proti Praze).
+
 ## Poznámky
 - Města první třídy (feedy zahřívané cronem) jsou 12 největších (`featured`); ostatní se obnovují jen když je někdo otevře (shard feedy po krajích, max. 8 měst).
 - ČSÚ `generated` je pražský čas bez zóny — vždy přes `parseCsuTime`.
