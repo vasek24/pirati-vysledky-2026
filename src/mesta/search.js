@@ -44,13 +44,20 @@ export function osa(a, b) {
 const INITIAL_STOP = new Set(['nad', 'pod', 'na', 'u', 'v']);
 export const VERIFY_NOTE = 'Způsob kandidatury Pirátů ještě ověřujeme';
 
-// Důvod, proč obec není v přehledu: text z excluded.generated.json, jinak podle `reason`
-const EXCLUDED_NOTES = {
-    'no-pirate-list': 'Piráti tu letos nemají vlastní ani koaliční kandidátku',
-    'other-lists-only': 'Piráti tu jsou jen na kandidátkách jiných stran — přehled je nezahrnuje',
-    'below-10k': 'Pod 10 000 obyvatel — přehled je zatím nezahrnuje',
-};
-const excludedNote = (e) => e.text || EXCLUDED_NOTES[e.reason] || 'Přehled tuto obec zatím nezahrnuje';
+// Důvod, proč obec není v přehledu: `text` z excluded.generated.json, jinak podle
+// `reason` ('no-pirate-list' | 'other-lists-only' | 'below-10k' | 'borderline-no-reason'
+// | 'override'; tolerantně i 'type d' / 'type c' / 'population N')
+const NO_LIST_NOTE = 'Piráti tu letos nemají vlastní ani koaliční kandidátku';
+const OTHER_LISTS_NOTE = 'Piráti tu jsou jen na kandidátkách jiných stran — přehled je nezahrnuje';
+const BELOW_NOTE = 'Pod 10 000 obyvatel — přehled je zatím nezahrnuje';
+export function excludedNote(e) {
+    if (e.text) return e.text;
+    const r = String(e.reason ?? '');
+    if (/no-pirate-list|type d/.test(r)) return NO_LIST_NOTE;
+    if (/other-lists-only|type c/.test(r)) return OTHER_LISTS_NOTE;
+    if (/below-10k|borderline|population/.test(r)) return BELOW_NOTE;
+    return 'Přehled tuto obec zatím nezahrnuje';
+}
 
 const words = (n) => ` ${n}`;
 

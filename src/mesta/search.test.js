@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import ALIASES from './aliases.js';
-import { buildIndex, buildSearchIndex, foldCz, norm, osa, praguePageUrl, search, searchTowns, stripPrep } from './search.js';
+import { buildIndex, buildSearchIndex, excludedNote, foldCz, norm, osa, praguePageUrl, search, searchTowns, stripPrep } from './search.js';
 import { FIXTURE_COUNCILS, FIXTURE_EXCLUDED, FIXTURE_HIDDEN } from './index/devFixture.jsx';
 
 const index = buildIndex(FIXTURE_COUNCILS, ALIASES, FIXTURE_EXCLUDED);
@@ -124,6 +124,36 @@ describe('search: result shape and rules', () => {
     it('published towns come before a not-covered entry of the same rank, then population', () => {
         // „Ostrov" (not covered) never outranks the published town "Ostrava" for the prefix "ostr"
         expect(names('ostr').slice(0, 2)).toEqual(['Ostrava', 'Ostrov']);
+    });
+});
+
+describe('excludedNote', () => {
+    it('prefers the generator text', () => {
+        expect(excludedNote({ reason: 'no-pirate-list', text: 'Piráti tu nekandidují (podle registru ČSÚ)' })).toBe('Piráti tu nekandidují (podle registru ČSÚ)');
+    });
+    it.each([
+        ['no-pirate-list', 'nemají vlastní ani koaliční'],
+        ['type d', 'nemají vlastní ani koaliční'],
+        ['other-lists-only', 'jen na kandidátkách jiných stran'],
+        ['type c', 'jen na kandidátkách jiných stran'],
+        ['below-10k', 'Pod 10 000 obyvatel'],
+        ['borderline-no-reason', 'Pod 10 000 obyvatel'],
+        ['population 5000', 'Pod 10 000 obyvatel'],
+        ['override', 'zatím nezahrnuje'],
+        [undefined, 'zatím nezahrnuje'],
+    ])('reason %j', (reason, part) => {
+        expect(excludedNote({ reason })).toContain(part);
+    });
+    it('an entry with the controller shape (kraj, population, no text) still answers', () => {
+        const idx = buildIndex(FIXTURE_COUNCILS, ALIASES, [{ zastup: 598925, name: 'Havířov', kraj: 8100, krajName: 'Moravskoslezský kraj', population: 69000, inclusion: 'excluded', reason: 'type d' }]);
+        // a locative of a town we do not cover still lands on it (as a typo, flagged "myslíte…")
+        const loc = search(idx, 'v Havířově', { limit: 6 });
+        expect(loc.items.map((i) => i.name)).toEqual(['Havířov']);
+        expect(loc.fuzzy).toBe(true);
+        expect(search(idx, 'havir', { limit: 6 }).items[0]).toMatchObject({ kind: 'other', name: 'Havířov', note: expect.stringContaining('nemají vlastní') });
+    });
+    it('a missing or empty excluded list is fine', () => {
+        expect(search(buildIndex(FIXTURE_COUNCILS, ALIASES), 'Havířov', { limit: 6 }).items).toEqual([]);
     });
 });
 
