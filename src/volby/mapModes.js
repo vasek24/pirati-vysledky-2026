@@ -15,6 +15,21 @@ export const MAP_MODES = [
 
 const SHARE_BREAKS = [5, 10, 15, 20, 25, 30, 35];
 
+// Průběžná škála podle skutečných hodnot: od nejnižšího po nejvyšší podíl mezi
+// dosud sečtenými okrsky, 8 stejně širokých stupňů. Dokud je dat málo nebo jsou
+// skoro stejná, platí pevná škála. Hodnoty zaokrouhlené na 0,1 p. b.
+export function adaptiveBreaks(values, { minCount = 4, minSpread = 2, steps = 8 } = {}) {
+    const v = values.filter((x) => Number.isFinite(x));
+    if (v.length < minCount) return null;
+    const lo = Math.min(...v);
+    const hi = Math.max(...v);
+    if (hi - lo < minSpread) return null;
+    const step = (hi - lo) / steps;
+    const breaks = Array.from({ length: steps - 1 }, (_, i) => Math.round((lo + step * (i + 1)) * 10) / 10);
+    return breaks.every((b, i) => i === 0 || b > breaks[i - 1]) ? breaks : null;
+}
+const czNum = (n) => String(n).replace('.', ',');
+
 // Režimy, které dávají smysl: bez Pirátů v zastupitelstvu není „Piráti"
 // ani „vs 2022", bez zadané současné koalice není „Koalice"
 export function mapModesFor(council) {
@@ -22,7 +37,7 @@ export function mapModesFor(council) {
         : m.id === 'coalition' ? !!council?.coalition : true));
 }
 
-export function getMapMode(modeId, { partyId, results2022 } = {}) {
+export function getMapMode(modeId, { partyId, results2022, okrsky } = {}) {
     const council = activeCouncil();
     const ours = council?.pirates;
     switch (modeId) {
@@ -71,9 +86,12 @@ export function getMapMode(modeId, { partyId, results2022 } = {}) {
         default: {
             const id = modeId === 'party' ? partyId : ours;
             // Piráti mají černou — choropleth pro ně v pirátské žluté škále
+            const dyn = okrsky ? adaptiveBreaks(Object.values(okrsky).map((o) => precinctShare(o, id))) : null;
+            const breaks = dyn || SHARE_BREAKS;
+            const opts = dyn ? { fmt: czNum } : {};
             const scale = partyMeta(id).pirates
-                ? sequentialScale(SHARE_BREAKS, null, { ramp: PIRATE_RAMP })
-                : sequentialScale(SHARE_BREAKS, partyMeta(id).color);
+                ? sequentialScale(breaks, null, { ramp: PIRATE_RAMP, ...opts })
+                : sequentialScale(breaks, partyMeta(id).color, opts);
             return {
                 value: (o) => precinctShare(o, id),
                 color: scale.color,
