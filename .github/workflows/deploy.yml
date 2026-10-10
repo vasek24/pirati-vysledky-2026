@@ -28,6 +28,8 @@ permissions:
 
 jobs:
   deploy:
+    # Produkce jen z main (větve mesta/* mají jiný strom; Tailwind by v něm skenoval cizí soubory)
+    if: ${{ inputs.target != 'production' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment:

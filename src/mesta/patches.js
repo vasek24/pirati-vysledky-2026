@@ -159,6 +159,12 @@ export const PATCHES = [
         from: '<span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} title="čeká na sečtení" />',
         to: '<span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} title="čeká na sečtení" />\n                    <span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-amber-700" style={{ backgroundColor: PENDING_FILL }} title="sečteno, hlasy se dotahují" />',
     },
+    // --- ElectionHeader: „Mezitím se můžeš podívat na původní web“ by u měst vedlo na pražský tracker
+    {
+        file: 'src/components/ElectionHeader.jsx',
+        from: '            <a href={ORIGINAL_SITE_URL} target="_blank" rel="noopener noreferrer" className={cls}>původní web</a>\n            {\' \'}nebo na{\' \'}\n',
+        to: '',
+    },
     // --- Councilors
     {
         file: 'src/components/Councilors.jsx',

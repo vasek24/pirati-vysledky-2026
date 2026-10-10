@@ -64,7 +64,7 @@ const source = (extra = {}) => ({
 const OWNER = 'Central Bohemia: Alfa · Gama · Delta\n';
 
 const run = (src, owner = OWNER, opts = {}) => {
-    const io = { write: vi.fn(), log: vi.fn(), err: vi.fn(), ...opts };
+    const io = { ovr: { reviewedAt: null, towns: {} }, write: vi.fn(), log: vi.fn(), err: vi.fn(), ...opts };
     return { code: execute(src, owner, io), io };
 };
 

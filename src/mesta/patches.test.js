@@ -15,16 +15,16 @@ const PRECINCTS = 'src/components/Precincts.jsx';
 const MAP_MODES = 'src/volby/mapModes.js';
 
 describe('patch list (spec §5)', () => {
-    it('has CouncilApp x10, ResultsMap x5, Precincts x10, mapModes x1, WelcomeGuide x2, ElectionHeader x1, Councilors x1', () => {
+    it('has CouncilApp x10, ResultsMap x5, Precincts x10, mapModes x1, WelcomeGuide x2, ElectionHeader x2, Councilors x1', () => {
         const per = (file) => PATCHES.filter((p) => p.file === file).length;
         expect(per(COUNCIL_APP)).toBe(10);
         expect(per(RESULTS_MAP)).toBe(5);
         expect(per(PRECINCTS)).toBe(10);
         expect(per(MAP_MODES)).toBe(1);
         expect(per(WELCOME)).toBe(2);
-        expect(per(HEADER)).toBe(1);
+        expect(per(HEADER)).toBe(2);
         expect(per(COUNCILORS)).toBe(1);
-        expect(PATCHES).toHaveLength(30);
+        expect(PATCHES).toHaveLength(31);
     });
 
     it('every anchor occurs exactly once in the real Prague file', () => {
