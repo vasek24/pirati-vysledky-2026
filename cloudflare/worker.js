@@ -20,6 +20,8 @@ import volby from '../api/volby.js';
 import prehled from '../api/prehled.js';
 import { createBugHandler } from '../api/bug.js';
 import { councilByZastup } from '../src/councils.js';
+import { FIRST_CLASS_KEYS } from './feedClasses.js';
+import { feedTarget, runWarmup } from './warmup.js';
 
 const HANDLERS = { volby, prehled };
 // stejné jako rewrite ve vercel.json
@@ -102,6 +104,14 @@ export class Feed extends DurableObject {
     }
 }
 
+// JEDINÝ vstup do Durable Objectu pro feedy (HTTP route i cron): klíč feedu =
+// kód zastupitelstva nebo 'prehled'. Feed nemá fetch(), volá se RPC run().
+function callFeed(env, key) {
+    const { name, path, doName } = feedTarget(key);
+    const stub = env.FEED.get(env.FEED.idFromName(doName), { locationHint: 'weur' });
+    return stub.run(name, path);
+}
+
 const sMaxAge = (cacheControl) => Number(/s-maxage=(\d+)/.exec(cacheControl || '')?.[1]) || 0;
 
 function reply(request, { status, headers, body }, cacheState) {
@@ -121,17 +131,18 @@ async function api(request, env, ctx, url) {
     const name = url.pathname === '/api/volby' ? 'volby' : 'prehled';
     // Normalizovaná cesta: klíč cache i jméno DO, ostatní parametry se
     // zahodí (náhodný ?x= nesmí obejít cache)
-    let path = '/api/prehled';
+    let key = 'prehled';
     if (name === 'volby') {
         const council = councilByZastup(url.searchParams.get('z'));
         // neznámé zastupitelstvo: 400 rovnou z handleru, DO se nezakládá
         if (!council) return reply(request, await runHandler('volby', url.pathname + url.search), 'BYPASS');
-        path = `/api/volby?z=${council.zastup}`;
+        key = String(council.zastup);
         track(env, request, name, council.slug);
     } else {
         track(env, request, name, '');
     }
 
+    const { path } = feedTarget(key);
     const cache = caches.default;
     const cacheKey = new Request(new URL(path, url.origin));
     const hit = await cache.match(cacheKey);
@@ -144,14 +155,15 @@ async function api(request, env, ctx, url) {
 
     let out;
     try {
-        const stub = env.FEED.get(env.FEED.idFromName(path.slice(5)), { locationHint: 'weur' });
-        out = await stub.run(name, path);
+        out = await callFeed(env, key);
     } catch (error) {
-        // klient po 502 nechá poslední snapshot a znovu zkouší náš server
+        // klient po 503 nechá poslední snapshot a znovu zkouší náš server;
+        // no-store, aby se chyba nikdy neusadila v cache
+        console.warn('feed-failed', key, error?.message || error);
         out = {
-            status: 502,
-            headers: { 'content-type': JSON_TYPE, 'cache-control': 'no-store' },
-            body: JSON.stringify({ error: String(error?.message || error) }),
+            status: 503,
+            headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
+            body: JSON.stringify({ error: 'unavailable' }),
         };
     }
 
@@ -221,5 +233,11 @@ export default {
         // Sem chodí jen dotazy, pro které neexistuje soubor v dist/
         if (APP_ROUTE.test(url.pathname)) return env.ASSETS.fetch(new Request(new URL('/', url), request));
         return new Response('Not found', { status: 404, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+    },
+
+    // Cron každou minutu: udržuje první třídu feedů (feedClasses.js) čerstvou
+    // bez diváků. Nikdy nevyhazuje — selhání jen zaloguje runWarmup.
+    async scheduled(controller, env) {
+        await runWarmup(FIRST_CLASS_KEYS, (key) => callFeed(env, key), { concurrency: 4, timeoutMs: 15000 });
     },
 };
