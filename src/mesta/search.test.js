@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import ALIASES from './aliases.js';
-import { buildIndex, buildSearchIndex, excludedNote, foldCz, norm, osa, praguePageUrl, search, searchTowns, stripPrep } from './search.js';
+import { DISTRICT_NOTE, MAX_QUERY, buildIndex, buildSearchIndex, excludedNote, foldCz, norm, osa, praguePageUrl, search, searchTowns, stripPrep } from './search.js';
 import { FIXTURE_COUNCILS, FIXTURE_EXCLUDED, FIXTURE_HIDDEN } from './index/devFixture.jsx';
 
 const index = buildIndex(FIXTURE_COUNCILS, ALIASES, FIXTURE_EXCLUDED);
@@ -124,6 +124,53 @@ describe('search: result shape and rules', () => {
     it('published towns come before a not-covered entry of the same rank, then population', () => {
         // „Ostrov" (not covered) never outranks the published town "Ostrava" for the prefix "ostr"
         expect(names('ostr').slice(0, 2)).toEqual(['Ostrava', 'Ostrov']);
+    });
+});
+
+describe('query length', () => {
+    it('is capped at 60 characters and a huge query answers fast', () => {
+        expect(MAX_QUERY).toBe(60);
+        const t = performance.now();
+        expect(search(index, 'x'.repeat(100_000), { limit: 6 }).items).toEqual([]);
+        expect(search(index, `${'plzen '.repeat(2000)}`, { limit: 6 }).items.length).toBeLessThanOrEqual(6);
+        expect(performance.now() - t).toBeLessThan(500);
+    });
+    it('the cap applies to the normalised text: the head of a long query still matches', () => {
+        expect(names('plzen ' + 'x'.repeat(100))).toEqual(['Plzeň']); // head = whole town name → district answer
+        expect(names('x'.repeat(61) + ' plzen')).toEqual([]);
+        expect(names('olomouc')).toEqual(['Olomouc', 'Uničov', 'Olomoucký kraj']);
+    });
+});
+
+describe('district dead-end', () => {
+    it.each([
+        ['Brno-střed', 'Brno'],
+        ['brno stred', 'Brno'],
+        ['Ostrava Poruba', 'Ostrava'],
+        ['Ostrava-Jih', 'Ostrava'],
+        ['Plzeň 3', 'Plzeň'],
+        ['v Brně-středu', 'Brno'],
+    ])('%j → the whole town %j with the note', (q, town) => {
+        const r = search(index, q, { limit: 6 });
+        expect(r.items).toHaveLength(1);
+        expect(r.items[0]).toMatchObject({ kind: 'town', name: town, sub: DISTRICT_NOTE, district: true });
+        expect(r.items[0].slug).toBeTruthy();
+    });
+    it('does not trigger when something was found, nor for unknown heads', () => {
+        expect(search(index, 'Brno', { limit: 6 }).items[0].district).toBeUndefined();
+        expect(names('Neexistující část')).toEqual([]);
+        expect(names('xyzabc Brno')).toEqual([]);
+    });
+});
+
+describe('kraj by its full name', () => {
+    it.each([
+        ['Jihomoravský kraj', 'Jihomoravský kraj'],
+        ['jihomoravsky kraj', 'Jihomoravský kraj'],
+        ['kraj vysocina', 'Kraj Vysočina'],
+        ['Kraj Vysočina', 'Kraj Vysočina'],
+    ])('%j → %j', (q, kraj) => {
+        expect(names(q)).toContain(kraj);
     });
 });
 

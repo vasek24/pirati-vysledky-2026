@@ -6,8 +6,9 @@ const CSS = String.raw`
 .mi-root{--y:#fec900;--bg:#f3f3f1;--ink:#171717;--mute:#5f5f5b;--line:#e2e2de;--card:#fff;--or:#b45309;--gr:#047857;--red:#dc2626;--sb:64px;
   --disp:"Bebas Neue","Bebas Neue Pro","Roboto Condensed","Arial Narrow","Liberation Sans Narrow",sans-serif-condensed,Impact,sans-serif;
   --sans:Roboto,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
-.mi-root :focus-visible{outline:3px solid var(--y);outline-offset:2px}
+.mi-root :focus-visible{outline:2px solid #000;outline-offset:3px;box-shadow:0 0 0 3px var(--y)}
 .mi-sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+html:has(.mi-root){scroll-padding-top:128px;-webkit-text-size-adjust:100%}
 /* hlavička */
 .mi-hero{background:#000;color:#fff}
 .mi-hero-in{max-width:1240px;margin:0 auto;padding:12px 16px 14px}
@@ -45,7 +46,7 @@ const CSS = String.raw`
 .mi-o-other .mi-o-name{color:#444;font-weight:600}
 .mi-pop-note{padding:12px 14px;font-size:13px;color:var(--mute);border-top:1px solid #f0f0ec}
 .mi-pop-note b{color:var(--ink)}
-.mi-info{margin-top:8px;background:#1d1d1b;color:#fff;border-radius:10px;padding:8px 8px 8px 12px;font-size:13px;display:flex;gap:8px;align-items:center}
+.mi-info{position:absolute;top:calc(100% - 4px);left:16px;right:16px;z-index:31;margin:0 auto;max-width:688px;background:#1d1d1b;color:#fff;border-radius:10px;padding:8px 8px 8px 12px;font-size:13px;display:flex;gap:8px;align-items:center}
 .mi-info a{color:var(--y)}
 .mi-info button{margin-left:auto;flex:0 0 44px;height:44px;border:0;background:none;color:#fff;font-size:20px;cursor:pointer;border-radius:8px}
 /* sekce */
@@ -59,7 +60,7 @@ const CSS = String.raw`
 .mi-row[hidden]{display:none}
 .mi-row:hover{background:#fafaf7}
 .mi-row:active{background:#fff6d1}
-.mi-row:focus-visible{outline-offset:-3px}
+.mi-row:focus-visible{outline:3px solid #000;outline-offset:-3px;box-shadow:inset 0 0 0 3px var(--y)}
 .mi-r-name{font:400 23px/26px var(--disp);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mi-r-val{font:400 24px/26px var(--disp);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .mi-r-meta{font-size:12px;line-height:17px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -121,6 +122,7 @@ const CSS = String.raw`
   .mi-layout{max-width:1240px;margin:0 auto;display:grid;grid-template-columns:320px minmax(0,1fr);gap:28px;padding:0 24px}
   .mi-side{display:block;position:sticky;top:0;align-self:start;max-height:100vh;overflow:auto;padding:16px 4px 24px 0}
   .mi-sbar{position:static;background:none;padding:0}
+  .mi-info{position:static;margin:8px 0 0;max-width:none}
   .mi-inp{border-color:#000}
   .mi-side>.mi-sec{padding:0}
   .mi-main{padding:0 0 48px;max-width:none;margin:0}
@@ -134,7 +136,6 @@ const CSS = String.raw`
   html:has(.mi-root){scroll-padding-top:72px}
 }
 
-html:has(.mi-root){scroll-padding-top:128px;-webkit-text-size-adjust:100%}
 .mi-root{min-height:100dvh;background:var(--bg);color:var(--ink);font:15px/1.35 var(--sans)}
 .mi-root a{color:inherit}
 .mi-root button{font:inherit;color:inherit}

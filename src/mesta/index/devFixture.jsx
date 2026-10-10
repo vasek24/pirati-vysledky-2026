@@ -1,9 +1,8 @@
 /* eslint-disable react-refresh/only-export-components -- data a pomocné funkce, žádná komponenta */
-// Vývojová a testovací data indexu: 79 skutečných měst (z prototypu návrhu,
-// docs/analysis/mesta-index-prototype) ve tvaru, který po sloučení dodá
-// src/mesta/councils.js (COUNCILS, ALL_COUNCILS, SHARDS, REGIONS). Čísla výsledků
-// jsou vymyšlená a patří jen do devHarness.jsx. Produkční build tenhle soubor
-// nenačítá (importují ho jen testy a devEntry.jsx).
+// Testovací data indexu: 79 skutečných měst (z prototypu návrhu,
+// docs/analysis/mesta-index-prototype) ve tvaru, který dodává src/mesta/councils.js
+// (COUNCILS, ALL_COUNCILS, SHARDS, REGIONS). Importují ji jen testy; produkční
+// build ji nenačítá. (Kontrola nad skutečnými daty: indexReal.test.js.)
 
 // [název, obyvatel, KODZASTUP, kraj (2 číslice), název kandidátky, druh a|k|d, č. kandidátky]
 const RAW = [

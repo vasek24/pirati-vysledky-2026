@@ -58,11 +58,19 @@ export function useRowRef(shardId) {
     return useCallback((el) => (el && shardId ? watch(el, shardId) : undefined), [watch, shardId]);
 }
 
-const subscribeQuery = (query) => (cb) => {
-    const mq = window.matchMedia(query);
-    mq.addEventListener('change', cb);
-    return () => mq.removeEventListener('change', cb);
-};
+// subscribe musí mít stabilní identitu, jinak se useSyncExternalStore při každém
+// renderu odhlásí a znovu přihlásí — jedna funkce na dotaz
+const subscribers = new Map();
+function subscribeQuery(query) {
+    if (!subscribers.has(query)) {
+        subscribers.set(query, (cb) => {
+            const mq = window.matchMedia(query);
+            mq.addEventListener('change', cb);
+            return () => mq.removeEventListener('change', cb);
+        });
+    }
+    return subscribers.get(query);
+}
 
 export function useMediaQuery(query) {
     return useSyncExternalStore(

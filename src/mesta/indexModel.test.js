@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POLLS_CLOSE as PRAGUE_POLLS_CLOSE } from '../councils.js';
 import * as model from './indexModel.js';
 import {
-    POLLS_CLOSE, activeShards, buildRegions, bestSource, createShardPoller, doneSet, errorDelay, featuredShardIds, filterShardSummaries, flatOrder,
-    initialMounted, isCounted, newlyCounted, pickSummary, regionHeader, rowView, shardSource,
+    POLLS_CLOSE, activeShards, allProgress, buildRegions, bestSource, createShardPoller, doneSet, errorDelay, featuredShardIds, filterShardSummaries, flatOrder,
+    initialMounted, initialOpenRegions, isCounted, moreText, newlyCounted, pickSummary, regionHeader, rowView, shardSource,
 } from './indexModel.js';
 import { FIXTURE_ALL, FIXTURE_COUNCILS, FIXTURE_HIDDEN, FIXTURE_REGIONS, FIXTURE_SHARDS } from './index/devFixture.jsx';
 
@@ -87,6 +87,10 @@ describe('rowView', () => {
     it('official and fully counted: seats and "konečné výsledky", state done', () => {
         const v = rowView(plzen, sum({ counted: 174, total: 174, official: true }), NOW);
         expect(v).toMatchObject({ state: 'done', seatsOfficial: 5, seats: '5 mandátů', txt: 'konečné výsledky', bar: 1 });
+    });
+    it('never shows 0 % once something is counted', () => {
+        expect(rowView(plzen, sum({ counted: 1, total: 300 }), NOW).txt).toBe('sečteno 1 % okrsků');
+        expect(rowView(plzen, sum({ counted: 299, total: 300 }), NOW).txt).toBe('sečteno 99 % okrsků');
     });
     it('all precincts counted but not declared', () => {
         const v = rowView(plzen, sum({ counted: 174, total: 174 }), NOW);
@@ -204,9 +208,44 @@ describe('buildRegions and regionHeader', () => {
     it('a server-side stale flag counts as stale as well', () => {
         expect(regionHeader(small, { shown, summaries: {}, shards: { '1-1': { status: 'ok', hasData: true, stale: true } } }).text).toBe('⚠ Data kraje jsou zastaralá — zkouším znovu');
     });
+    it('drops "zkouším znovu" when none of the failing shards is active', () => {
+        const failing = { shown, summaries: {}, shards: { '1-1': { status: 'error', hasData: true } } };
+        expect(regionHeader(small, { ...failing, active: new Set(['1-1']) }).text).toBe('⚠ Data kraje jsou zastaralá — zkouším znovu');
+        expect(regionHeader(small, { ...failing, active: new Set() })).toMatchObject({ text: '⚠ Data kraje jsou zastaralá', error: true });
+        const never = { shown, summaries: {}, shards: { '1-1': { status: 'error', hasData: false } }, active: new Set() };
+        expect(regionHeader(small, never).text).toBe('⚠ Data se nepodařilo načíst');
+    });
     it('hidden zastups of the region are not counted', () => {
         const withHidden = { ...small, zastups: [1, 2, 3, 99] };
         expect(regionHeader(withHidden, { shown, summaries: {}, shards: {} }).text).toBe('3 města');
+    });
+});
+
+describe('moreText', () => {
+    it('uses the plural "dalších" from 5', () => {
+        expect([1, 2, 4, 5, 12].map(moreText)).toEqual([
+            '+ 1 další — upřesněte hledání', '+ 2 další — upřesněte hledání', '+ 4 další — upřesněte hledání',
+            '+ 5 dalších — upřesněte hledání', '+ 12 dalších — upřesněte hledání',
+        ]);
+    });
+});
+
+describe('allProgress ("Jen sečtené" bar)', () => {
+    const regions = [{ shardIds: ['21-1', '21-2'] }, { shardIds: ['31-1'] }, { shardIds: ['32-1'] }];
+    const ok = { status: 'ok', hasData: true };
+    it('counts loaded shards while loading', () => {
+        expect(allProgress(regions, { '21-1': ok, '31-1': { status: 'loading', hasData: false } })).toMatchObject({ loaded: 1, total: 4, text: 'Načítám stav všech krajů: 1 z 4…' });
+    });
+    it('null text when everything is loaded', () => {
+        expect(allProgress(regions, { '21-1': ok, '21-2': ok, '31-1': ok, '32-1': ok }).text).toBeNull();
+    });
+    it('failed kraje take priority, counted per kraj, with Czech plural', () => {
+        const err = { status: 'error', hasData: false };
+        expect(allProgress(regions, { '21-1': err, '21-2': err, '31-1': ok, '32-1': ok }).text).toBe('⚠ 1 kraj se nepodařilo načíst — zkouším znovu');
+        expect(allProgress(regions, { '21-1': err, '31-1': err, '32-1': ok }).text).toBe('⚠ 2 kraje se nepodařilo načíst — zkouším znovu');
+        const many = [1, 2, 3, 4, 5].map((i) => ({ shardIds: [`${i}-1`] }));
+        const allErr = Object.fromEntries(many.map((r) => [r.shardIds[0], err]));
+        expect(allProgress(many, allErr).text).toBe('⚠ 5 krajů se nepodařilo načíst — zkouším znovu');
     });
 });
 
@@ -243,6 +282,22 @@ describe('activeShards / initialMounted', () => {
     });
 });
 
+describe('initialOpenRegions', () => {
+    const r = (kraj, n) => ({ kraj, shardIds: Array.from({ length: n }, (_, i) => `${kraj}-${i}`) });
+    it('opens kraje from the first while their shards stay within the budget (default 2)', () => {
+        expect(initialOpenRegions([r(1, 2), r(2, 1), r(3, 1)])).toEqual([1]);
+        expect(initialOpenRegions([r(1, 1), r(2, 1), r(3, 1)])).toEqual([1, 2]);
+        expect(initialOpenRegions([r(1, 3), r(2, 1)])).toEqual([]);
+        expect(initialOpenRegions([r(1, 1), r(2, 1)], 4)).toEqual([1, 2]);
+        expect(initialOpenRegions([])).toEqual([]);
+    });
+    it('with the real fixture the worst desktop first load is 2 featured + 2 region shards', () => {
+        const regions = buildRegions(FIXTURE_COUNCILS, FIXTURE_SHARDS, FIXTURE_REGIONS);
+        const open = initialOpenRegions(regions);
+        expect(regions.filter((x) => open.includes(x.kraj)).flatMap((x) => x.shardIds).length).toBeLessThanOrEqual(2);
+    });
+});
+
 describe('bestSource', () => {
     const plzen = byName('Plzeň'); // featured top-1, shard 32-1
     const state = (over) => ({ shards: {}, summaries: {}, ...over });
@@ -267,10 +322,11 @@ describe('bestSource', () => {
 });
 
 describe('errorDelay', () => {
-    it('retries after 15 s, then 30 s, then 60 s (±15 %)', () => {
+    it('centres on 15 s, 30 s, 60 s and spreads 0.5–1.5× so clients do not retry in one wave', () => {
         expect([1, 2, 3, 4, 9].map((n) => Math.round(errorDelay(n, 0.5) / 1000))).toEqual([15, 30, 60, 60, 60]);
-        expect(errorDelay(1, 0)).toBeCloseTo(15000 * 0.85);
-        expect(errorDelay(1, 1)).toBeCloseTo(15000 * 1.15);
+        expect(errorDelay(1, 0)).toBeCloseTo(7500);
+        expect(errorDelay(1, 1)).toBeCloseTo(22500);
+        expect(errorDelay(3, 0)).toBeCloseTo(30000);
     });
 });
 
@@ -552,12 +608,15 @@ describe('createShardPoller', () => {
         p.destroy();
     });
 
-    it('derives the client clock skew from x-server-now', async () => {
+    it('derives the client clock skew from x-server-now and stamps okAt with the same (server) clock', async () => {
         serverNow = () => Date.now() + 90_000;
         const p = make();
         p.setFeatured(['top-1']);
         await flush(10);
         expect(Math.round(p.getSnapshot().skew / 1000)).toBe(90);
+        const s = p.getSnapshot().shards['top-1'];
+        expect(Math.round((s.okAt - Date.now()) / 1000)).toBe(90);
+        expect(s.dueAt).toBeGreaterThan(s.okAt);
         p.destroy();
     });
 });

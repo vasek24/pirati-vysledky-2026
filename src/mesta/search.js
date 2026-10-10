@@ -10,6 +10,7 @@
 // pořadí: zobrazené město před obcí mimo přehled, pak víc obyvatel. Za města se
 // přidá jeden kraj, jehož slovo začíná dotazem (od 3 znaků).
 
+export const MAX_QUERY = 60;
 export const PRAGUE_URL = 'https://praha.dg12.cz';
 export const praguePageUrl = PRAGUE_URL;
 
@@ -129,7 +130,11 @@ function tierOf(e, q) {
     if (q.length >= 3 && e.n.includes(q)) return 5;
     if (q.length >= 4) {
         const max = q.length >= 7 ? 2 : 1;
-        for (const L of [q.length - 1, q.length, q.length + 1]) if (L > 0 && osa(q, e.n.slice(0, L)) <= max) return 6;
+        for (const L of [q.length - 1, q.length, q.length + 1]) {
+            const part = e.n.slice(0, L);
+            // vzdálenost je aspoň rozdíl délek — drahý výpočet jen pro možné shody
+            if (L > 0 && Math.abs(q.length - part.length) <= max && osa(q, part) <= max) return 6;
+        }
     }
     return 99;
 }
@@ -149,8 +154,24 @@ function toItem(e, tier) {
 }
 
 // → { items, total, fuzzy }; items ≤ limit včetně jednoho kraje na konci
+export const DISTRICT_NOTE = 'výsledky zastupitelstva celého města; městské části nesledujeme';
+
+// Nic nenalezeno a dotaz začíná celým názvem města („Brno-střed", „Ostrava Poruba"):
+// ukáže se to město s poznámkou, že sledujeme zastupitelstvo celého města
+function districtFallback(index, qs) {
+    for (const q of qs) {
+        const w = q.split(' ');
+        for (let k = w.length - 1; k >= 1; k--) {
+            const head = w.slice(0, k).join(' ');
+            const e = index.entries.find((x) => x.kind === 'town' && (x.n === head || x.aliases.includes(head)));
+            if (e) return { ...toItem(e, 0), sub: DISTRICT_NOTE, district: true };
+        }
+    }
+    return null;
+}
+
 export function search(index, input, { limit = 6 } = {}) {
-    const q0 = norm(input);
+    const q0 = norm(input).slice(0, MAX_QUERY).trim();
     if (!q0) return { items: [], total: 0, fuzzy: false };
     const qs = [q0];
     const q1 = stripPrep(q0);
@@ -165,9 +186,14 @@ export function search(index, input, { limit = 6 } = {}) {
     const best = hits.length ? hits[0].tier : 99;
     const pool = best < 6 ? hits.filter((h) => h.tier < 6) : hits;
     const kq = qs[qs.length - 1];
-    const kraj = kq.length >= 3 ? index.kraje.find((r) => r.words.some((w) => w.startsWith(kq))) : null;
+    const kraj = kq.length >= 3 ? index.kraje.find((r) => r.n.startsWith(kq) || r.words.some((w) => w.startsWith(kq))) : null;
     const items = pool.slice(0, limit - (kraj ? 1 : 0)).map((h) => toItem(h.e, h.tier));
     if (kraj) items.push({ kind: 'kraj', tier: 7, kraj: kraj.kraj, name: kraj.name, count: kraj.count });
+    // nic (nebo jen překlep) a dotaz začíná celým názvem města → to město s poznámkou
+    if (!items.length || best === 6) {
+        const d = districtFallback(index, qs);
+        if (d) return { items: [d], total: 1, fuzzy: false, district: true };
+    }
     return { items, total: pool.length + (kraj ? 1 : 0), fuzzy: best === 6 };
 }
 export const searchTowns = (index, query, limit = 6) => search(index, query, { limit });
