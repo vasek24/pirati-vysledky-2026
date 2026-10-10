@@ -20,6 +20,7 @@
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Feed"] }],
   "workers_dev": true,
+  "routes": [{ "pattern": "mesta.dg12.cz", "custom_domain": true }],
   "observability": { "enabled": true },
   // Warm-up první třídy feedů (mestaWiring.firstClassKeys) — jen produkce, ne staging
   "triggers": { "crons": ["* * * * *"] },
