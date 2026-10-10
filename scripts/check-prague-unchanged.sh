@@ -102,7 +102,7 @@ build_side() { # build_side <rev> <name> <record-file> <determinism 0|1>
         die "wrangler dry-run output is not deterministic (same tree, two runs) — the guard cannot be trusted" 2
       fi
     fi
-    echo "determinism ok (dist/ and worker output identical on a second run)"
+    if [[ $SKIP_WORKER == 1 ]]; then echo "determinism ok for dist/ (worker not checked)"; else echo "determinism ok (dist/ and worker output identical on a second run)"; fi
   fi
   { sed 's/^/dist /' "$tmp/$name.dist"; if [[ $SKIP_WORKER != 1 ]]; then sed 's/^/worker /' "$tmp/$name.worker"; fi; } >"$record"
 }
