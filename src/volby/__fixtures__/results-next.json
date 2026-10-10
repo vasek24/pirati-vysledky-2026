@@ -1,0 +1,12 @@
+{
+  "generovano": "2026-10-10T15:01:00",
+  "zvoleno": false,
+  "prehled": [5, 1, 4, 3, 75, 1400, 850, 60, 0, 850, 835, 98, 2800],
+  "vysledky": [
+    [1, "Alfa", 1700, 60.7, 5, 1700, 60.7],
+    [2, "Beta", 1100, 39.3, 5, 1100, 39.3]
+  ],
+  "plne_nazvy_stran": [[1, "Alfa pro obec"], [2, "Beta sdružení"]],
+  "hlasy": {},
+  "hranice": {}
+}
