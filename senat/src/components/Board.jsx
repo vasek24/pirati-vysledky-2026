@@ -5,8 +5,6 @@ import Guide from './Guide.jsx'
 import Strip from './Strip.jsx'
 import { OverviewTiles, PirateTiles } from './Tiles.jsx'
 
-const LEGEND_SW = { background: 'var(--hatch)' }
-
 // Obsah stránky nad hotovým snapshotem (čistě prezentační, bez hooků a času)
 export default function Board({ snapshot, selected, onSelect }) {
   const { summary } = snapshot
@@ -24,7 +22,7 @@ export default function Board({ snapshot, selected, onSelect }) {
           <span><i className="snt-sw snt-ok" />{T.legendElected}</span>
           <span><i className="snt-sw snt-ad" />{T.legendRunoff}</span>
           <span><i className="snt-sw snt-cn" />{T.legendCounted}</span>
-          <span><i className="snt-sw" style={LEGEND_SW} />{T.legendProgress}</span>
+          <span><i className="snt-sw snt-pg" />{T.legendProgress}</span>
           <span><i className="snt-sw snt-pi" />{T.legendPirate}</span>
         </div>
       </section>

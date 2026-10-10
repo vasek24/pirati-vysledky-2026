@@ -7,7 +7,8 @@ import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import Banner from './components/Banner.jsx'
 import { readFileSync } from 'node:fs'
-import { CHIP, REL, STATE, T } from './text.js'
+import { CHIP, HOME_URL, REL, STATE, T } from './text.js'
+import { POLLS_CLOSE } from './closing.js'
 import { counting, finalR2, runoff, runoffEliminatedPirate, waiting } from './fixtures/scenarios.js'
 import { nf, pc } from './format.js'
 import { derive } from '../../cloudflare-senat/src/derive.js'
@@ -243,6 +244,67 @@ describe('render', () => {
     const out = [counting(), runoff(), waiting(), finalR2()].map((x) => everyObvod(strip(x))).join('\n')
     for (const text of Object.values(CHIP)) expect(out, text).toContain(text)
     for (const text of Object.values(STATE)) expect(out, text).toContain(text)
+  })
+
+  const head = (s, serverNow) => renderToStaticMarkup(h(Header, { snapshot: s, serverNow, nextAt: null }))
+
+  test('header (Prague style): logo, back-link to the splitter, headline with the year, pill', () => {
+    const out = head(waiting(), POLLS_CLOSE[1] - 60000)
+    expect(out).toContain('<img class="snt-logo" src="/brand/logo-full-white.svg"')
+    expect(out).toContain(`alt="${T.logoAlt}"`)
+    expect(out).toContain(`href="${HOME_URL}"`)
+    expect(out).toContain(`<h1>${T.headlineName} <span class="snt-year">${T.headlineYear}</span></h1>`)
+    expect(out).toContain(`<span>${T.pillWaiting}</span>`)
+    expect(out).not.toContain('snt-dot') // the pulsing dot only belongs to the live pill
+    expect(head(counting(), counting().generatedMs + 14000)).toContain('snt-pill snt-live"><i class="snt-dot"></i>')
+  })
+
+  test('header: before the polls close of the CURRENT round it shows the countdown with a highlighted figure', () => {
+    const w = waiting()
+    const before = head(w, POLLS_CLOSE[1] - 43 * 60000)
+    expect(before).toContain('<p class="snt-closes">Volební místnosti se zavírají v sobotu 10. 10. ve 14:00 — za <b class="snt-left">43 min</b></p>')
+    expect(head(w, POLLS_CLOSE[1] - (5 * 60 + 12) * 60000)).toContain('<b class="snt-left">5 h 12 min</b>')
+    // the freshness line stays under it
+    expect(before).toContain(`<p class="snt-fresh">${T.csuFrom('8. 10. 16:40:15')}`)
+    // after the close: only the freshness line
+    expect(head(w, POLLS_CLOSE[1] + 1000)).not.toContain('snt-closes')
+    // round 2 counts down to 17. 10. (even right after round 1 closed)
+    const r = runoff()
+    expect(r.round).toBe(2)
+    expect(head(r, POLLS_CLOSE[1] + 3600_000)).toContain('v sobotu 17. 10. ve 14:00 — za <b class="snt-left">6 d 23 h</b>')
+    expect(head(r, POLLS_CLOSE[2] + 1)).not.toContain('snt-closes')
+    // no snapshot yet: round 1 countdown
+    expect(renderToStaticMarkup(h(Header, { snapshot: null, serverNow: POLLS_CLOSE[1] - 60000, nextAt: null }))).toContain('<b class="snt-left">1 min</b>')
+  })
+
+  test('hero tiles: the first tile of each block is the black card with a yellow label', () => {
+    const out = html(waiting(), 3)
+    expect(out.match(/class="snt-tile snt-main/g)).toHaveLength(2)
+    expect(out).toContain(`<div class="snt-tl">${T.tileLabelOverview}</div>`)
+    expect(out).toContain(`<div class="snt-tl">${T.tileLabelPirates}</div>`)
+  })
+
+  test('only snt- class names (the root Tailwind scans senat/ too)', () => {
+    const w = waiting()
+    const out = [html(w, 3), html(counting(), 30), html(runoff(), 30), renderToStaticMarkup(h(Footer)), renderToStaticMarkup(h(Banner, { notice: 'stale' }))].join('\n')
+    const names = new Set([...out.matchAll(/class="([^"]*)"/g)].flatMap((m) => m[1].split(/\s+/)).filter(Boolean))
+    expect(names.size).toBeGreaterThan(40)
+    expect([...names].filter((c) => !c.startsWith('snt-'))).toEqual([])
+  })
+
+  test('Prague look: fonts, light page, Pirate yellow, no dark-mode block', () => {
+    const css = readFileSync(new URL('./styles.css', import.meta.url), 'utf8')
+    const page = readFileSync(new URL('../index.html', import.meta.url), 'utf8')
+    expect(page).toContain('family=Bebas+Neue&family=Roboto+Condensed:wght@400;700&family=Roboto:wght@400;500;700')
+    expect(page).toContain('/brand/favicon.svg')
+    expect(page).not.toMatch(/Bricolage|Schibsted/)
+    expect(css).toMatch(/color-scheme:light/)
+    expect(css).not.toMatch(/prefers-color-scheme|data-theme/)
+    expect(css).toMatch(/--page:#f3f3f1/)
+    expect(css).toMatch(/--yellow:#fec900/)
+    expect(css).toMatch(/--f-display:"Bebas Neue"/)
+    expect(css).toMatch(/--f-cond:"Roboto Condensed"/)
+    for (const f of ['logo-full-white.svg', 'favicon.svg']) expect(readFileSync(new URL(`../public/brand/${f}`, import.meta.url), 'utf8')).toContain('<svg')
   })
 
   test('footer links to the public ČSÚ app and the maintainer phone, nothing else', () => {

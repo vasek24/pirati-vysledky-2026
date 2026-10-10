@@ -42,7 +42,7 @@ function Row({ o, c }) {
         {out && <span className="snt-r2">{T.round2None}</span>}
       </div>
       <div className="snt-bar snt-rbar" aria-hidden="true">
-        <i style={{ width: `${Math.min(100, pct)}%`, ...(c.pirate ? { background: 'var(--ink)' } : {}) }} />
+        <i style={{ width: `${Math.min(100, pct)}%` }} />
       </div>
     </div>
   )

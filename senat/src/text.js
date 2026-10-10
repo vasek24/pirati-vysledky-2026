@@ -38,6 +38,8 @@ export const STATE = {
 
 export const T = {
   pageTitle: 'Senát 2026 · Piráti',
+  headlineName: 'Senát', // hlavička: „SENÁT 2026“ (velká písmena a žluté 2026 řeší CSS)
+  headlineYear: '2026',
   subtitle: 'Volí se 27 ze 81 obvodů. 1. kolo 9.–10. října, případné 2. kolo 16.–17. října. Sledujeme 18 kandidatur, které Piráti podali nebo podporují.',
 
   // hlavička
@@ -50,6 +52,9 @@ export const T = {
   agoWaitingR2: 'sčítání 2. kola ještě nezačalo', // doplněno
   ago: (age) => `před ${age}`,
   nextCheck: (mmss) => `další kontrola za ${mmss}`,
+  // odpočet do zavření místností (jako na praha.dg12.cz) — doplněno; číslo se v hlavičce zvýrazní, proto dvě části
+  closesBefore: (date) => `Volební místnosti se zavírají v sobotu ${date} ve 14:00 — za `,
+  logoAlt: 'Česká pirátská strana', // doplněno
 
   // bannery — doplněno (v náhledu nejsou)
   bannerStale: 'ČSÚ se teď nepodařilo načíst čerstvá data. Zobrazujeme poslední platný stav.',
@@ -59,6 +64,8 @@ export const T = {
 
   // stav voleb
   eyebrowOverview: 'Stav voleb',
+  tileLabelOverview: 'Senátní obvody', // doplněno: žlutý štítek černé dlaždice
+  tileLabelPirates: 'Kandidatury Pirátů', // doplněno: žlutý štítek černé dlaždice
   tileDecided: 'obvodů rozhodnuto (mandát získán)',
   tileRunoff: 'obvodů jde do 2. kola nebo v něm rozhoduje',
   tileAwaiting: 'sečteno, čeká na potvrzení ČSÚ',

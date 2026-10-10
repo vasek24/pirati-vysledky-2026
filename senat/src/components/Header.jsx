@@ -1,26 +1,34 @@
 import { HOME_URL, T } from '../text.js'
 import { headerModel } from '../freshness.js'
+import { closingModel } from '../closing.js'
 
 export default function Header({ snapshot, serverNow, nextAt }) {
   const { pill, live, fresh } = snapshot ? headerModel({ snapshot, serverNow, nextAt }) : { pill: T.pillWaiting, live: false, fresh: '' }
+  // před zavřením místností aktuálního kola věta s odpočtem, po něm jen řádek čerstvosti
+  const closing = closingModel(snapshot?.round, serverNow)
   return (
     <>
       <header className="snt-band">
         <div className="snt-wrap">
-          <a className="snt-back" href={HOME_URL} title={T.backHomeTitle}>{T.backHome}</a>
-          <div className="snt-band-top">
-            <span className={`snt-pill${live ? ' snt-live' : ''}`}>
-              <i className="snt-dot" />
-              <span>{pill}</span>
-            </span>
-            <span>{fresh}</span>
+          <div className="snt-brand">
+            <img className="snt-logo" src="/brand/logo-full-white.svg" alt={T.logoAlt} width="144" height="40" />
+            <a className="snt-back" href={HOME_URL} title={T.backHomeTitle}>{T.backHome}</a>
           </div>
           <div className="snt-title-row">
-            <div>
-              <h1>{T.pageTitle}</h1>
-            </div>
-            <p className="snt-sub" style={{ margin: 0 }}>{T.subtitle}</p>
+            <h1>{T.headlineName} <span className="snt-year">{T.headlineYear}</span></h1>
+            <span className={`snt-pill${live ? ' snt-live' : ''}`}>
+              {live && <i className="snt-dot" />}
+              <span>{pill}</span>
+            </span>
           </div>
+          {closing && (
+            <p className="snt-closes">
+              {T.closesBefore(closing.date)}
+              <b className="snt-left">{closing.left}</b>
+            </p>
+          )}
+          {fresh && <p className="snt-fresh">{fresh}</p>}
+          <p className="snt-sub">{T.subtitle}</p>
         </div>
       </header>
       {/* mimo <header>: sticky drží jen uvnitř rodiče, tady je to celá stránka */}

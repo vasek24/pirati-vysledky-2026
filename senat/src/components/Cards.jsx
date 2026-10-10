@@ -30,7 +30,7 @@ function Card({ o, c, selected, onSelect }) {
         <small>{[c.party && T.party(c.party), T.cardMeta(c.no, c.age)].filter(Boolean).join(' · ')}</small>
       </div>
       {c.ballotLabel && <div className="snt-lbl" title={c.ballotLabel}>{T.ballot(c.ballotLabel)}</div>}
-      <div className="snt-big">
+      <div className={`snt-big${show && counted && rank ? '' : ' snt-unranked'}`}>
         <b className="snt-num">{show ? nf(v) : '0'}</b>
         <span className="snt-num">{show && counted ? pc(pct) : '0,0 %'}</span>
         <span className="snt-rk">{rankText}</span>
@@ -40,7 +40,7 @@ function Card({ o, c, selected, onSelect }) {
       <Why o={o} c={c} />
       <div className="snt-prog snt-num">
         <span>{roundPrefix}{r ? T.progress(nf(r.okrskyZprac), nf(r.okrskyCelkem), prog) : T.progressNone}</span>
-        <div className="snt-bar" aria-hidden="true"><i style={{ width: `${prog}%`, background: 'var(--adv)' }} /></div>
+        <div className="snt-bar snt-bar-prog" aria-hidden="true"><i style={{ width: `${prog}%` }} /></div>
       </div>
     </button>
   )
