@@ -1,0 +1,11 @@
+# Senate Worker — deployment log
+
+Worker `pirati-senat-zaloha` (production, custom domain `senat.dg12.cz`, **not deployed**) and `pirati-senat-zaloha-staging`
+(`https://pirati-senat-zaloha-staging.vasek24.workers.dev`). Deployed from `cloudflare-senat/` (see its README).
+
+| When (CEST) | Env | Version id | Previous | Commit | Notes |
+|---|---|---|---|---|---|
+| 2026-10-10 12:37 | staging | `0adf14fa-8ebd-4ef4-8b39-4e339dd111e8` | none (first deploy) | f466b22 | first staging deploy, frozen feed |
+| 2026-10-10 12:49 | staging | `16a82977-ef35-4eeb-b659-81d642c62f78` | `0adf14fa` | 80fb2bd | Codex findings fixed (client round detection, outlook, numeric rejects, attribution log, x-server-now) |
+
+Production: nothing deployed. Production and the custom domain need the owner's explicit go-ahead.
