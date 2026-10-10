@@ -39,3 +39,8 @@ Verze: produkce Phase 1a bez domény `a6495d68-e972-4127-b1d3-9826817d18c9`; pro
 - První dotazy do minuty po prvním nasazení nového Workeru mohou vrátit 404/503 (propagace); opakuj po ~30 s.
 - Změna cron triggeru se může propagovat až 15 minut.
 - Hlášení chyb je vypnuté: na Workeru nesmí být nastaven `GITHUB_TOKEN`.
+
+## Poznámky z nasazení Phase 1b (2026-10-10 ~11:35)
+- **Nasazení mění RPC kontrakt DO a Worker se nenasazují atomicky na všech izolátech**: v ~1 s okně po `wrangler deploy` volaly staré izoláty Workeru (verze `15a89382`) už nový DO a spadly na `Cannot read properties of undefined (reading 'cache-control')` → 3 požadavky dostaly 500. Nová verze (`d57c0296`) pak obsloužila vše. Pravidlo: změny tvaru odpovědi `run()` dělat zpětně kompatibilně (přidávat pole, nemazat), nebo nasazovat mimo špičku.
+- Verze: produkce Phase 1b `d57c0296-c5dd-417a-a93a-64be647efc17` (předchozí `15a89382-4b67-468d-9c7c-fcb90ffec3a3`); staging `7ea8f9ed-949b-43b7-a6d3-b5e6b01e8368`.
+- Po nasazení ověřit: `wrangler tail` ukáže `warmup-ok` pro všech 12 klíčů; `x-cache: HIT` při druhém dotazu; `x-server-now` v odpovědi.
