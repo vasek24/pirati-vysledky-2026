@@ -79,7 +79,9 @@ function hardReason(s) {
         }
     }
     for (const r of [s.country?.[1], s.country?.[2]]) {
-        if (r && badRound(r)) return 'negative-or-invalid-number';
+        if (!r) continue;
+        if (badRound(r)) return 'negative-or-invalid-number';
+        if (r.okrskyZprac > r.okrskyCelkem) return 'counted-out-of-range';
     }
     return null;
 }

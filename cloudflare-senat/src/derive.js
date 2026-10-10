@@ -22,7 +22,8 @@ function stateOf(o, rd) {
   const cs = o.candidates
   if (cs.some((c) => c.st2 === 'ZVOLEN' || c.st1 === 'ZVOLEN')) return 'elected'
   if (cs.some((c) => c.st2 === 'NEZVOLEN_SHODA_HLASU')) return 'tie'
-  const r2 = rd === 2 ? o.rounds[2] : null // round 2 without a UCAST: Z2 unknown, fall through to the flags
+  const r2 = rd === 2 ? o.rounds[2] : null // round 2 without a UCAST: Z2 unknown (never fabricated as 0)
+  if (rd === 2 && !r2 && cs.some((c) => c.votes2 > 0)) return 'runoff-counting' // votes without a UCAST: counting, progress unknown
   if (r2) { // also with a partly published st2: the obvod is not decided until ZVOLEN/SHODA
     const { okrskyZprac: z, okrskyCelkem: c } = r2
     if (z > 0 && z === c) return 'runoff-counted'
@@ -34,18 +35,20 @@ function stateOf(o, rd) {
   return z < c ? 'counting' : 'counted'
 }
 
-function statusOf(c, rank, rd, z) {
+// `live` = something has been counted in the round that decides the status (Z > 0, or round-2
+// votes without a UCAST, where Z2 is unknown)
+function statusOf(c, rank, rd, live) {
   if (c.st2 === 'ZVOLEN' || c.st1 === 'ZVOLEN') return ['elected', true]
   if (c.st2 === 'NEZVOLEN_SHODA_HLASU') return ['runoffTie', true]
   if (c.st2 === 'NEZVOLEN') return ['runoffLost', true]
   if (c.st1 === 'NEZVOLEN') return ['notAdvancing', true]
-  if (rd === 2 && rank != null && z > 0) {
+  if (rd === 2 && rank != null && live) {
     return [rank === 1 ? 'runoffLeading' : 'runoffBehind', false]
   }
   // A '2.KOLO' candidate without round-2 votes (withdrawn finalist) keeps the
   // official flag: it must never fall through to the round-1 rank statuses.
   if (c.st1 === '2.KOLO') return ['advancing', true]
-  if (z === 0) return ['waiting', false]
+  if (!live) return ['waiting', false]
   if (rank === 1) return ['leading', false]
   return [rank === 2 ? 'second' : 'behind', false]
 }
@@ -54,10 +57,10 @@ function statusOf(c, rank, rd, z) {
 // Round 1: 'mandate' (sole top with > 50 % of the summed votes) | 'advance' | 'out'.
 // Round 2: 'lead' | 'tie' | 'trail' (by counted votes; a rival's official flag does not suppress it).
 // Never set for the candidate's own official flag.
-function outlookOf(o, rd, key, ranks, i, z) {
+function outlookOf(o, rd, key, ranks, i, live) {
   const cs = o.candidates
   const k = cs[i]
-  if (k.official || z <= 0) return [null, null]
+  if (k.official || !live) return [null, null]
   if (rd === 2) {
     if (ranks[i] == null) return [null, null]
     const others = cs.filter((c, j) => j !== i && ranks[j] != null).map((c) => c.votes2)
@@ -84,6 +87,7 @@ function deriveObvod(o) {
   const key = rd === 2 ? 'votes2' : 'votes1'
   const { okrskyZprac: z = 0, okrskyCelkem: c = 0, platneHlasy: valid = 0 } = o.rounds[rd] ?? {}
   const ranks = rankOf(o.candidates, key)
+  const live = z > 0 || (rd === 2 && !o.rounds[2] && o.candidates.some((k) => k.votes2 > 0))
 
   o.state = stateOf(o, rd)
   o.decidedRound = 0
@@ -93,14 +97,14 @@ function deriveObvod(o) {
   o.hasPirate = o.candidates.some((k) => k.pirate)
 
   o.candidates.forEach((k, i) => {
-    const [status, official] = statusOf(k, ranks[i], rd, z)
+    const [status, official] = statusOf(k, ranks[i], rd, live)
     k.rank = ranks[i]
     k.status = status
     k.official = official
     k.majority = !official && z > 0 && z === c && ranks[i] != null && 2 * k[key] > valid
   })
   o.candidates.forEach((k, i) => {
-    ;[k.outlook, k.gap] = outlookOf(o, rd, key, ranks, i, z)
+    ;[k.outlook, k.gap] = outlookOf(o, rd, key, ranks, i, live)
   })
 }
 

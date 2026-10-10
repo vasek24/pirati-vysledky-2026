@@ -301,6 +301,40 @@ describe('derive: round 2 edge cases (review L1-L3)', () => {
     expect(o.candidates.map((c) => c.outlook)).toEqual([null, null, null])
   })
 
+  it('round-2 votes > 0 without a round-2 UCAST: runoff-counting with unknown progress, provisional (not advancing)', () => {
+    const o = one({
+      r1: [10, 10, 1000],
+      cands: [
+        cand(1, 400, { st1: '2.KOLO', votes2: 350 }),
+        cand(2, 300, { st1: '2.KOLO', votes2: 650 }),
+        cand(3, 200, { st1: 'NEZVOLEN' }),
+      ],
+    })
+    expect(o.rounds[2]).toBeUndefined() // Z2 is not fabricated
+    expect(o.state).toBe('runoff-counting')
+    expect(statuses(o)).toEqual(['runoffBehind', 'runoffLeading', 'notAdvancing'])
+    expect(ranks(o)).toEqual([2, 1, null])
+    expect(o.candidates.map((c) => c.official)).toEqual([false, false, true])
+    expect(o.candidates.map((c) => [c.outlook, c.gap])).toEqual([['trail', 300], ['lead', 300], [null, null]])
+    expect(o.candidates.map((c) => c.majority)).toEqual([false, false, false]) // progress unknown: no majority
+    const out = derive(mk(obvod(1, { r1: [10, 10, 1000], cands: [cand(1, 400, { st1: '2.KOLO', votes2: 350 }), cand(2, 300, { st1: '2.KOLO', votes2: 650 })] })))
+    expect(out.summary).toMatchObject({ runoff: 1, awaitingOfficial: 0, waiting: 0 })
+  })
+
+  it('round-2 votes without a UCAST: a tie in votes is outlook tie; a finalist with 0 votes trails', () => {
+    const tie = one({ r1: [10, 10, 1000], cands: [cand(1, 400, { st1: '2.KOLO', votes2: 500 }), cand(2, 300, { st1: '2.KOLO', votes2: 500 })] })
+    expect(tie.state).toBe('runoff-counting')
+    expect(tie.candidates.map((c) => [c.status, c.outlook, c.gap])).toEqual([['runoffLeading', 'tie', 0], ['runoffLeading', 'tie', 0]])
+    const lead = one({ r1: [10, 10, 1000], cands: [cand(1, 400, { st1: '2.KOLO', votes2: 0 }), cand(2, 300, { st1: '2.KOLO', votes2: 40 })] })
+    expect(lead.candidates.map((c) => [c.status, c.outlook, c.gap])).toEqual([['runoffBehind', 'trail', 40], ['runoffLeading', 'lead', 40]])
+  })
+
+  it('round-2 votes without a UCAST: an official st2 flag still decides the obvod', () => {
+    const o = one({ r1: [10, 10, 1000], cands: [cand(1, 400, { st1: '2.KOLO', votes2: 350, st2: 'NEZVOLEN' }), cand(2, 300, { st1: '2.KOLO', votes2: 650, st2: 'ZVOLEN' })] })
+    expect(o.state).toBe('elected')
+    expect(statuses(o)).toEqual(['runoffLost', 'elected'])
+  })
+
   it('L3: a non-finalist carrying HLASY_2KOLO="0" gets no round-2 rank', () => {
     const o = one({
       r1: [10, 10, 1000], r2: [5, 10, 100],

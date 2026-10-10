@@ -10,7 +10,7 @@ function Row({ o, c }) {
   const v = votesOf(o, c)
   const has = v != null
   const counted = isCounted(o, c)
-  const pct = has ? pctOf(o, c) : 0
+  const pct = has ? pctOf(o, c) : null
   const bio = [c.age != null && `${c.age} let`, c.job || (c.age != null ? T.noJob : null), c.residence].filter(Boolean)
   return (
     <div className={`snt-row${c.pirate ? ' snt-pir' : ''}`}>
@@ -42,7 +42,7 @@ function Row({ o, c }) {
         {out && <span className="snt-r2">{T.round2None}</span>}
       </div>
       <div className="snt-bar snt-rbar" aria-hidden="true">
-        <i style={{ width: `${Math.min(100, pct)}%` }} />
+        <i style={{ width: `${Math.min(100, pct ?? 0)}%` }} />
       </div>
     </div>
   )

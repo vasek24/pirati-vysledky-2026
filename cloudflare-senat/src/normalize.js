@@ -55,7 +55,11 @@ export function normalize(parsed, { manifest, now, pollsCloseR1, pollsCloseR2 })
     return null
   }
 
-  const candidate = (c, n) => {
+  // ČSÚ truncates percentages: a missing share is derived the same way (never rounded up), and
+  // stays null when the round has no valid votes to divide by.
+  const share = (votes, valid) => (votes != null && valid > 0 ? Math.floor((votes * 10000) / valid) / 100 : null)
+
+  const candidate = (c, n, rds) => {
     const key = `${n}:${c.no}`
     let reg = manifest.CANDIDATES[key] ?? null
     if (reg && !fold(c.last).includes(fold(reg.last))) {
@@ -75,6 +79,8 @@ export function normalize(parsed, { manifest, now, pollsCloseR1, pollsCloseR2 })
       pct2 = null
       st2 = null
     } else st2 = status(st2, ST2, n, c.no)
+    pct1 ??= share(votes1, rds[1]?.platneHlasy)
+    pct2 ??= share(votes2, rds[2]?.platneHlasy)
     return {
       no: c.no, name: `${c.first} ${c.last}`.trim(), pre: c.pre, post: c.post,
       votes1, pct1, st1, votes2, pct2, st2,
@@ -85,12 +91,15 @@ export function normalize(parsed, { manifest, now, pollsCloseR1, pollsCloseR2 })
   }
 
   const obvody = parsed.obvody
-    .map((o) => ({
-      n: o.n,
-      name: o.name,
-      rounds: rounds(o.ucast, KEYS),
-      candidates: o.candidates.map((c) => candidate(c, o.n)).sort((a, b) => a.no - b.no),
-    }))
+    .map((o) => {
+      const rds = rounds(o.ucast, KEYS)
+      return {
+        n: o.n,
+        name: o.name,
+        rounds: rds,
+        candidates: o.candidates.map((c) => candidate(c, o.n, rds)).sort((a, b) => a.no - b.no),
+      }
+    })
     .sort((a, b) => a.n - b.n)
   const country = rounds(parsed.country, COUNTRY_KEYS)
 

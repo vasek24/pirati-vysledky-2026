@@ -1,12 +1,27 @@
 // Zavření volebních místností aktuálního kola: kdy a za jak dlouho (hlavička před koncem
-// hlasování, stejná věta jako na praha.dg12.cz). Čas je pevný, stejně jako POLLS_CLOSE_R1/R2
-// ve workeru; kdyby se 2. kolo posunulo (env override ve workeru), upraví se tady.
+// hlasování, stejná věta jako na praha.dg12.cz). Čas bere z odpovědi serveru (`snapshot.closes`,
+// tedy i s přepisem POLLS_CLOSE_R2 ve workeru); tyto konstanty jsou jen záloha (starší odpověď,
+// ještě nic nenačteno) a musí odpovídat výchozím POLLS_CLOSE_R1/R2 ve workeru.
 export const POLLS_CLOSE = {
   1: Date.parse('2026-10-10T14:00:00+02:00'),
   2: Date.parse('2026-10-17T14:00:00+02:00'),
 }
-// Obě kola končí v sobotu ve 14:00 (text „v sobotu … ve 14:00“ je v T.closesBefore)
-export const CLOSE_DATE = { 1: '10. 10.', 2: '17. 10.' }
+
+// „17. 10.“ z času zavření (pražské datum, ne UTC: 24. 10. ve 00:30 v Praze je ještě 23. 10. v UTC)
+const dayFmt = new Intl.DateTimeFormat('cs-CZ', { timeZone: 'Europe/Prague', day: 'numeric', month: 'numeric' })
+export function closeDate(ms) {
+  const p = Object.fromEntries(dayFmt.formatToParts(ms).map((x) => [x.type, x.value]))
+  return `${p.day}. ${p.month}.`
+}
+// Výchozí data (text „v sobotu … ve 14:00“ je v T.closesBefore)
+export const CLOSE_DATE = { 1: closeDate(POLLS_CLOSE[1]), 2: closeDate(POLLS_CLOSE[2]) }
+
+// Časy zavření ze serveru, jen když dávají smysl (konečná čísla, 2. kolo po 1.), jinak výchozí konstanty
+function closesOf(snapshot) {
+  const c = snapshot?.closes
+  const ok = c && Number.isFinite(c[1]) && Number.isFinite(c[2]) && c[2] > c[1]
+  return ok ? { 1: c[1], 2: c[2] } : POLLS_CLOSE
+}
 
 // „43 min“, „1 h 5 min“, „6 d 22 h“ (nikdy „0 min“)
 export function remaining(ms) {
@@ -34,11 +49,12 @@ function runoffExpected(snapshot) {
 // null = nic neodpočítáváme, jinak { round, date, left }:
 //  - před zavřením místností 1. kola odpočet do 1. kola,
 //  - mezi koly odpočet do zavření 2. kola, pokud se 2. kolo čeká (viz runoffExpected),
-//  - po 17. 10. ve 14:00 nic (zůstává jen řádek čerstvosti).
+//  - po zavření 2. kola (výchozí 17. 10. ve 14:00) nic (zůstává jen řádek čerstvosti).
 export function closingModel(snapshot, serverNow) {
   if (!Number.isFinite(serverNow)) return null
-  const round = serverNow < POLLS_CLOSE[1] ? 1 : runoffExpected(snapshot) ? 2 : null
+  const closes = closesOf(snapshot)
+  const round = serverNow < closes[1] ? 1 : runoffExpected(snapshot) ? 2 : null
   if (round == null) return null
-  const ms = POLLS_CLOSE[round] - serverNow
-  return ms > 0 ? { round, date: CLOSE_DATE[round], left: remaining(ms) } : null
+  const ms = closes[round] - serverNow
+  return ms > 0 ? { round, date: closeDate(closes[round]), left: remaining(ms) } : null
 }

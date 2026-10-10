@@ -38,6 +38,8 @@ describe('view selectors', () => {
     expect(currentRound(noUcast)).toBe(2)
     expect(votesOf(noUcast, noUcast.candidates[1])).toBe(7)
     expect(pctOf(noUcast, noUcast.candidates[1])).toBe(100)
+    expect(pctOf(noUcast, { ...noUcast.candidates[1], pct2: null })).toBeNull() // missing share stays null (shown as a dash), not 0
+    expect(pctOf(o, { ...o.candidates[0], pct1: null })).toBeNull()
     expect(roundStats(noUcast, 2)).toBeNull()
     expect(isCounted(noUcast, noUcast.candidates[1])).toBe(true)
     expect(isCounted(noUcast, noUcast.candidates[0])).toBe(false) // 0 votes, round-2 stats unknown

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { CLOSE_DATE, POLLS_CLOSE, closingModel, remaining } from './closing.js'
+import { CLOSE_DATE, POLLS_CLOSE, closeDate, closingModel, remaining } from './closing.js'
 import { betweenRounds, counting, finalR2, waiting } from './fixtures/scenarios.js'
 
 const MIN = 60000
@@ -85,6 +85,28 @@ describe('closing', () => {
     expect(closingModel(undecided, t)).toBeNull()
     // ... but a decided round-2 snapshot (the 2024 final) has nothing to wait for
     expect(closingModel(finalR2(), t)).toBeNull()
+  })
+
+  test('the countdown follows the Worker close times (snapshot.closes): POLLS_CLOSE_R2 moved to 24. 10. 14:00', () => {
+    const R2b = Date.parse('2026-10-24T14:00:00+02:00')
+    const s = { ...betweenRounds(), closes: { 1: POLLS_CLOSE[1], 2: R2b } }
+    // the old 17. 10. 14:00 no longer ends the countdown, and the date text comes from the override
+    expect(closingModel(s, POLLS_CLOSE[2] - 90 * MIN)).toEqual({ round: 2, date: '24. 10.', left: '7 d 1 h' })
+    expect(closingModel(s, POLLS_CLOSE[2] + 5 * MIN)).toEqual({ round: 2, date: '24. 10.', left: '6 d 23 h' })
+    expect(closingModel(s, R2b - 30 * MIN)).toEqual({ round: 2, date: '24. 10.', left: '30 min' })
+    expect(closingModel(s, R2b)).toBeNull()
+    // round 1 date also from the server value
+    expect(closingModel({ ...s, closes: { 1: POLLS_CLOSE[1] + 24 * 60 * MIN, 2: R2b } }, POLLS_CLOSE[1] - MIN)).toEqual({ round: 1, date: '11. 10.', left: '1 d 0 h' })
+    // an unusable `closes` (not numbers, round 2 not after round 1) falls back to the constants
+    for (const closes of [{}, { 1: 'x', 2: 'y' }, { 1: R2b, 2: POLLS_CLOSE[1] }, null]) {
+      expect(closingModel({ ...s, closes }, POLLS_CLOSE[2] - 90 * MIN)).toEqual({ round: 2, date: '17. 10.', left: '1 h 30 min' })
+    }
+  })
+
+  test('closeDate is the Prague calendar date of the time (not the UTC one)', () => {
+    expect(closeDate(Date.parse('2026-10-24T00:30:00+02:00'))).toBe('24. 10.') // 22:30 UTC the day before
+    expect(closeDate(Date.parse('2026-10-24T23:30:00+02:00'))).toBe('24. 10.')
+    expect(closeDate(Date.parse('2026-11-08T14:00:00+01:00'))).toBe('8. 11.')
   })
 
   test('closingModel without a snapshot after the round-1 close stays silent', () => {

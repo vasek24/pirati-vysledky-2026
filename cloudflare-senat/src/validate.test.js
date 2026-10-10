@@ -120,6 +120,13 @@ describe('validateCandidate: hard rejects (never quarantinable)', () => {
         }
     });
 
+    it.each([1, 2])('country round %i: more processed precincts than exist is a hard reject (counted-out-of-range)', (n) => {
+        const bad = edit(good, (s) => { s.country = { [n]: { okrskyCelkem: 100, okrskyZprac: 101, okrskyZpracProc: 50, ucastProc: 40, platneHlasy: 10 } }; });
+        expect(validateCandidate(bad, null)).toEqual(rej('counted-out-of-range', false));
+        const equal = edit(good, (s) => { s.country = { [n]: { okrskyCelkem: 100, okrskyZprac: 100, okrskyZpracProc: 100, ucastProc: 40, platneHlasy: 10 } }; });
+        expect(validateCandidate(equal, null).outcome).toBe('ok');
+    });
+
     it('round 2 out of range is rejected too', () => {
         const bad = mk({ obvody: [{ n: 3, z2: 12, c2: 10, cands: [{ no: 1 }, { no: 2 }] }] });
         expect(validateCandidate(bad, null).reason).toBe('counted-out-of-range');

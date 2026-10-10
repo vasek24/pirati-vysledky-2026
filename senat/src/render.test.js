@@ -252,6 +252,25 @@ describe('render', () => {
     expect(out).toMatch(/class="snt-cell /)
   })
 
+  test('a missing share (null pct2) is shown as a dash, never as 0,00 %', () => {
+    const s = patch(withoutUcast2(runoff(), 30), 30, 2, { pct2: null })
+    const out = html(s, 30).replace(/\s/g, ' ')
+    const card = out.split('class="snt-card').slice(1).find((x) => x.includes('Sucharda'))
+    expect(card).toContain(`<b class="snt-num">${sp(nf(2000))}</b>`)
+    expect(card).toContain('<span class="snt-num">–</span>')
+    expect(card).not.toContain(sp(pc(0)))
+    const row = out.split('class="snt-row').slice(1).find((x) => x.includes('Sucharda'))
+    expect(row).toContain(`<b>${sp(nf(2000))}</b><span>–`)
+    expect(row).not.toContain(sp(pc(0)))
+  })
+
+  test('a Worker close override shows up in the header countdown (round 2 closes 24. 10.)', () => {
+    const R2b = Date.parse('2026-10-24T14:00:00+02:00')
+    const b = { ...betweenRounds(), closes: { 1: POLLS_CLOSE[1], 2: R2b } }
+    const out = renderToStaticMarkup(h(Header, { snapshot: b, serverNow: POLLS_CLOSE[2] - 3600_000, nextAt: null }))
+    expect(out).toContain('Druhé kolo: volební místnosti se zavírají v sobotu 24. 10. ve 14:00 — za <b class="snt-left">7 d 1 h</b>')
+  })
+
   test('round 2 without a UCAST: outlook text does not crash', () => {
     const s = withoutUcast2(runoff(), 30)
     const o = s.obvody.find((x) => x.n === 30)

@@ -14,8 +14,9 @@ export function truncTo(x, d) {
   return Math.floor((x ?? 0) * k + 1e-7) / k
 }
 
+// Chybějící podíl (null) je „–“, ne „0,00 %“.
 export const pc = (x, d = 2) =>
-  `${truncTo(x, d).toLocaleString('cs-CZ', { minimumFractionDigits: d, maximumFractionDigits: d })} %`
+  x == null ? '–' : `${truncTo(x, d).toLocaleString('cs-CZ', { minimumFractionDigits: d, maximumFractionDigits: d })} %`
 
 // Titul před jménem a za jménem tak, jak je v registru (např. „Ing. Jan Novák, CSc.“)
 export const fullName = (c) => {

@@ -11,7 +11,8 @@ export const roundStats = (o, round) => o.rounds[round] ?? null
 // (mají hlasy 2. kola); kdo do 2. kola nepostoupil, zůstává u čísel 1. kola.
 export const roundOf = (o, c) => (currentRound(o) === 2 && c.votes2 != null ? 2 : 1)
 export const votesOf = (o, c) => (roundOf(o, c) === 2 ? c.votes2 : c.votes1)
-export const pctOf = (o, c) => (roundOf(o, c) === 2 ? c.pct2 : c.pct1) ?? 0
+// null = podíl není k dispozici (pc(null) ukáže „–“, nikdy ne „0,00 %“)
+export const pctOf = (o, c) => (roundOf(o, c) === 2 ? c.pct2 : c.pct1) ?? null
 
 // Je v kole kandidatury sečtený aspoň jeden okrsek? Bez počtů okrsků kola (chybí rounds[2]) se bere
 // jako sečtené to, že kandidatura má nenulové hlasy tohoto kola.

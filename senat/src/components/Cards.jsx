@@ -9,7 +9,7 @@ function Card({ o, c, selected, onSelect }) {
   const v = votesOf(o, c)
   const show = v != null
   const counted = isCounted(o, c)
-  const pct = show ? pctOf(o, c) : 0
+  const pct = show ? pctOf(o, c) : null
   const prog = progressText(r)
   const rank = rankOf(o, c)
   const rankText = !(show && counted && rank) ? T.noRank : isOutOfRunoff(o, c) ? T.rankRound1(rank) : T.rank(rank)
@@ -35,7 +35,7 @@ function Card({ o, c, selected, onSelect }) {
         <span className="snt-num">{show && counted ? pc(pct) : pc(0)}</span>
         <span className="snt-rk">{rankText}</span>
       </div>
-      <div className="snt-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>
+      <div className="snt-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, pct ?? 0)}%` }} /></div>
       <div><Chip o={o} c={c} /></div>
       <Why o={o} c={c} />
       <div className="snt-prog snt-num">

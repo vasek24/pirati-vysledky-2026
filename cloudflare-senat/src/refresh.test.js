@@ -7,6 +7,7 @@ import { parseResultsXml } from './xml.js'
 import { normalize } from './normalize.js'
 import { derive } from './derive.js'
 import { createSenatFeed } from './feed.js'
+import { markStale } from './edge.js'
 import { REFRESH, computeNextRefreshAt, createRefresher, phaseOfSnapshot } from './refresh.js'
 
 // Time: vitest fake timers (they mock Date too), `now` = Date.now. Tests run with
@@ -221,6 +222,17 @@ describe('phaseOfSnapshot', () => {
     expect(phaseOfSnapshot(snap({ obvody: [o(3, runoff), o(6, r2)] }))).toBe('counting')
   })
 
+  it('counting: round-2 votes without a round-2 UCAST (progress unknown) is never idle', () => {
+    const noUcast = { ...runoff, votes2: [60, 40] } // no z2: rounds[2] absent
+    const s = snap({ obvody: [o(3, noUcast), o(6, runoff)] })
+    expect(s.obvody[0].rounds[2]).toBeUndefined()
+    expect(s.obvody[0].state).toBe('runoff-counting')
+    expect(phaseOfSnapshot(s)).toBe('counting')
+    expect(phaseOfSnapshot(snap({ obvody: [o(3, noUcast)] }))).toBe('counting')
+    // all-zero round-2 votes stay a plain runoff
+    expect(phaseOfSnapshot(snap({ obvody: [o(3, { ...runoff, votes2: [0, 0] })] }))).toBe('idle')
+  })
+
   it('idle: every obvod elected/tie/runoff with round 2 not counting, not all final', () => {
     expect(phaseOfSnapshot(snap({ obvody: [o(3, runoff), o(6, runoff)] }))).toBe('idle')
     expect(phaseOfSnapshot(snap({ obvody: [o(3, elected), o(6, runoff)] }))).toBe('idle')
@@ -283,6 +295,27 @@ describe('request path', () => {
     // the persisted string itself carries no response meta
     expect(JSON.parse(persisted)).not.toHaveProperty('stale')
     expect(JSON.parse(persisted)).not.toHaveProperty('refreshedAt')
+  })
+
+  it('body header carries closes {1,2} (ms) after "stale":, within the first 300 chars; markStale still works', async () => {
+    const { r } = setup()
+    const res = await r.get()
+    expect(parse(res).closes).toEqual({ 1: R1, 2: R2 })
+    expect(res.body.slice(0, 300)).toContain(`"closes":{"1":${R1},"2":${R2}}`)
+    expect(res.body.indexOf('"stale":')).toBeLessThan(res.body.indexOf('"closes":'))
+    expect(JSON.parse(markStale(res.body)).stale).toBe(true)
+    expect(JSON.parse(markStale(res.body)).closes).toEqual({ 1: R1, 2: R2 })
+  })
+
+  it('closes follow a POLLS_CLOSE_R2 override (2026-10-24T14:00+02:00)', async () => {
+    const R2b = at('2026-10-24T14:00:00+02:00')
+    const st = memStorage()
+    const r = createRefresher({
+      now: () => Date.now(), random: () => 0.5, storage: st, feed: { build: vi.fn(async () => ok(snap(), 1)), invalidate: vi.fn() },
+      base: BASE, log: vi.fn(), pollsCloseR1: R1, pollsCloseR2: R2b, waitUntil: vi.fn(),
+    })
+    vi.setSystemTime(T0)
+    expect(parse(await r.get()).closes).toEqual({ 1: R1, 2: R2b })
   })
 
   it('the body keeps phase after install, after a 304 and after a rehydrate', async () => {

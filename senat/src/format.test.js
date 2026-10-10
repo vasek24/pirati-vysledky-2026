@@ -7,7 +7,8 @@ describe('format', () => {
     expect(nf(1234567).replace(/\s/g, ' ')).toBe('1 234 567')
     expect(pc(12.345, 1)).toBe('12,3 %')
     expect(pc(0, 2)).toBe('0,00 %')
-    expect(pc(null, 1)).toBe('0,0 %')
+    expect(pc(null, 1)).toBe('–') // a missing share is a dash, never 0,00 %
+    expect(pc(undefined)).toBe('–')
   })
 
   // ČSÚ procenta ořezává: nikdy nezaokrouhlujeme nahoru (49,96 se nesmí ukázat jako „50,0 %“)
@@ -19,8 +20,8 @@ describe('format', () => {
     expect(t(5)).toBe('5,00 %')
     expect(t(100)).toBe('100,00 %')
     expect(t(0)).toBe('0,00 %')
-    expect(t(null)).toBe('0,00 %')
-    expect(t(undefined)).toBe('0,00 %')
+    expect(t(null)).toBe('–')
+    expect(t(undefined)).toBe('–')
     // computed value with more decimals: truncated
     expect(t(49.999)).toBe('49,99 %')
     expect(t(49.9501)).toBe('49,95 %')

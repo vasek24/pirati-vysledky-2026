@@ -40,7 +40,7 @@ export function retryDelay(failures, random) {
  *  final    every obvod elected/tie
  *  idle     every obvod elected/tie/runoff (round 2 not counting) and not all final
  *  waiting  no precinct counted in any round of any obvod
- *  counting everything else
+ *  counting everything else (a 'runoff-counting' obvod, with or without a round-2 UCAST, is never idle)
  * No snapshot (or no obvody) → 'waiting'.
  */
 export function phaseOfSnapshot(snapshot) {
@@ -49,6 +49,7 @@ export function phaseOfSnapshot(snapshot) {
   const terminal = (o) => o.state === 'elected' || o.state === 'tie'
   if (obvody.every(terminal)) return 'final'
   if (obvody.every((o) => terminal(o) || o.state === 'runoff')) return 'idle'
+  if (obvody.some((o) => o.state === 'runoff-counting')) return 'counting'
   if (obvody.every((o) => Object.values(o.rounds ?? {}).every((r) => r.okrskyZprac === 0))) return 'waiting'
   return 'counting'
 }
@@ -359,8 +360,11 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
       stale,
       phase: phaseOfSnapshot(good.snapshot),
     }
+    // closes = the Worker's poll-close times (POLLS_CLOSE_R2 may override), so the client countdown
+    // follows them; after `"stale":` so that key stays within edge.js markStale's window
+    const closes = Number.isFinite(pollsCloseR1) && Number.isFinite(pollsCloseR2) ? `"closes":{"1":${pollsCloseR1},"2":${pollsCloseR2}},` : ''
     const body = `{"refreshedAt":${meta.refreshedAt},"nextRefreshAt":${meta.nextRefreshAt},"servedAt":${meta.servedAt},`
-      + `"stale":${meta.stale},"phase":"${meta.phase}",${good.str.slice(1)}`
+      + `"stale":${meta.stale},"phase":"${meta.phase}",${closes}${good.str.slice(1)}`
     return { status: 200, body, meta }
   }
 

@@ -222,3 +222,41 @@ test('L6: suppressedByClock is true only when `now` alone zeroed counted data (f
   // generated between the closes, clock before R1 -> R1 gate by clock (the file carries round-1 data)
   expect(run(finalBetween, R1 - 3600000).suppressedByClock).toBe(true)
 })
+
+// ---- missing HLASY_PROC_* is derived (ČSÚ truncation), never invented -------------------------
+const dropPct = (text, k) => text.replace(new RegExp(` ${k}="[^"]*"`, 'g'), '')
+
+test('a missing HLASY_PROC_2KOLO is derived as floor(votes2 / valid2 * 10000) / 100; present values stay as sent', () => {
+  const s = run(dropPct(finalText, 'HLASY_PROC_2KOLO'), R2 + DAY, none)
+  const o5 = s.obvody.find((o) => o.n === 5)
+  expect(o5.rounds[2].platneHlasy).toBe(12959)
+  expect(o5.candidates.find((c) => c.no === 5)).toMatchObject({ votes2: 6862, pct2: 52.95 }) // 6862 / 12959 = 52.9514...
+  expect(o5.candidates.find((c) => c.st1 === '2.KOLO' && c.no !== 5)).toMatchObject({ votes2: 6097, pct2: 47.04 }) // 47.0485... truncated, not 47.05
+  expect(o5.candidates.filter((c) => c.st1 !== '2.KOLO').every((c) => c.pct2 === null)).toBe(true) // no round-2 votes: nothing to derive
+  // untouched where the source sends it
+  expect(run(finalText, R2 + DAY, none).obvody.find((o) => o.n === 5).candidates.find((c) => c.no === 5).pct2).toBe(52.95)
+})
+
+test('a missing HLASY_PROC_2KOLO stays null when round 2 has no valid votes (or no UCAST of round 2)', () => {
+  const noValid = finalText.replace(/(<UCAST KOLO="2"[^>]*?)PLATNE_HLASY="12959"/, '$1PLATNE_HLASY="0"')
+  const s = run(dropPct(noValid, 'HLASY_PROC_2KOLO'), R2 + DAY, none)
+  const o5 = s.obvody.find((o) => o.n === 5)
+  expect(o5.rounds[2].platneHlasy).toBe(0)
+  expect(o5.candidates.find((c) => c.no === 5)).toMatchObject({ votes2: 6862, pct2: null })
+  // votes2 without any round-2 UCAST: no total to divide by
+  const noUcast = finalText.replace(/<UCAST KOLO="2"[^>]*\/>/, '')
+  const s2 = run(dropPct(noUcast, 'HLASY_PROC_2KOLO'), R2 + DAY, none)
+  const o = s2.obvody.find((x) => x.n === 5)
+  expect(o.rounds[2]).toBeUndefined()
+  expect(o.candidates.find((c) => c.no === 5)).toMatchObject({ votes2: 6862, pct2: null })
+})
+
+test('a missing pct1 (e.g. from another parser) is derived the same way when round 1 has valid votes', () => {
+  const parsed = parseResultsXml(finalText)
+  for (const o of parsed.obvody) for (const c of o.candidates) c.pct1 = null
+  const s = normalize(parsed, { manifest: none, now: R2 + DAY, pollsCloseR1: R1, pollsCloseR2: R2 })
+  const o5 = s.obvody.find((o) => o.n === 5)
+  const c5 = o5.candidates.find((c) => c.no === 5)
+  expect(c5.pct1).toBe(Math.floor((4480 * 10000) / o5.rounds[1].platneHlasy) / 100)
+  expect(Number.isFinite(c5.pct1)).toBe(true)
+})
