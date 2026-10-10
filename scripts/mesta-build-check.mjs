@@ -12,6 +12,7 @@ const MARKER = 'Piráti ve městech'
 const PATCHED_TEXTS = ['Kandidátka s Piráty', 'pražských výsledcích 2022', 'Ostatní města', 'Postaveno na kódu']
 const FORBIDDEN_JS = [
   ['Záložní kopie originálu', 'Prague footer wording'],
+  ['pirati-vysledky-2026-cloudflare.workers.dev', 'Prague tracker fallback link ({původní web})'],
   ['appdata/kv2026', 'direct ČSÚ URL in browser code'],
   ['data ČSÚ (volby.gov.cz)', "Prague Landing content (Landing page bundled)"],
 ]

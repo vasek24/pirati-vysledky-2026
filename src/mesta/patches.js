@@ -48,6 +48,12 @@ export const PATCHES = [
         from: 'výpočet ověřený na výsledcích 2022',
         to: 'výpočet ověřený na pražských výsledcích 2022',
     },
+    // --- ElectionHeader: „Mezitím se můžeš podívat na původní web“ by u měst vedlo na pražský tracker
+    {
+        file: 'src/components/ElectionHeader.jsx',
+        from: '            <a href={ORIGINAL_SITE_URL} target="_blank" rel="noopener noreferrer" className={cls}>původní web</a>\n            {\' \'}nebo na{\' \'}\n',
+        to: '',
+    },
     // --- Councilors
     {
         file: 'src/components/Councilors.jsx',

@@ -12,13 +12,13 @@ const HEADER = 'src/components/ElectionHeader.jsx';
 const COUNCILORS = 'src/components/Councilors.jsx';
 
 describe('patch list (spec §5)', () => {
-    it('has CouncilApp x7, WelcomeGuide x2, ElectionHeader x1, Councilors x1', () => {
+    it('has CouncilApp x7, WelcomeGuide x2, ElectionHeader x2, Councilors x1', () => {
         const per = (file) => PATCHES.filter((p) => p.file === file).length;
         expect(per(COUNCIL_APP)).toBe(7);
         expect(per(WELCOME)).toBe(2);
-        expect(per(HEADER)).toBe(1);
+        expect(per(HEADER)).toBe(2);
         expect(per(COUNCILORS)).toBe(1);
-        expect(PATCHES).toHaveLength(11);
+        expect(PATCHES).toHaveLength(12);
     });
 
     it('every anchor occurs exactly once in the real Prague file', () => {
