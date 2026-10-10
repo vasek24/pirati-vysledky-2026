@@ -18,11 +18,5 @@
 // Pravidla hlídá `validateOverrides` (scripts/mesta/registryCore.js), test `overrides.test.js`.
 export default {
     reviewedAt: null,
-    towns: {
-        // Majitel (2026-10-10): města bez oficiálních či podpořených kandidátů se nezveřejňují — tady jsou na pirátské
-        // kandidátce jen nominovaní nečlenové, žádný člen strany.
-        '579203': { name: 'Dvůr Králové nad Labem', include: false, reason: 'Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny)' },
-        '573868': { name: 'Náchod', include: false, reason: 'Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny)' },
-        '588458': { name: 'Holešov', include: false, reason: 'Piráti tu na kandidátce nemají žádného člena (jen nominované nečleny)' },
-    },
+    towns: {},
 };
