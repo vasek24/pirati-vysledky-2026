@@ -11,6 +11,24 @@ export function useDialog(open, onClose) {
         closeRef.current = onClose;
     }, [onClose]);
 
+    // Tlačítko Zpět (hlavně na telefonu) zavře okno a nevyhodí návštěvníka ze stránky:
+    // otevřené okno má vlastní záznam v historii, zavření křížkem/Esc ho zase odebere
+    useEffect(() => {
+        if (!open) return undefined;
+        const id = `dlg${Date.now()}${Math.random().toString(36).slice(2, 7)}`;
+        let closedByBack = false;
+        history.pushState({ dlg: id }, '');
+        const onPop = () => {
+            closedByBack = true;
+            closeRef.current?.();
+        };
+        window.addEventListener('popstate', onPop);
+        return () => {
+            window.removeEventListener('popstate', onPop);
+            if (!closedByBack && history.state?.dlg === id) history.back();
+        };
+    }, [open]);
+
     useEffect(() => {
         if (!open) return undefined;
         const previous = document.activeElement;
