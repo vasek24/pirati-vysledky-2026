@@ -4,8 +4,66 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<title>volby.dg12.cz</title>
-<!-- Rozcestník zatím prázdný. Správce: Václav Vislous, tel. +420 777 954 389. -->
+<meta name="theme-color" content="#000000">
+<title>Volební výsledky — Piráti</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<!-- Rozcestník volby.dg12.cz. Správce: Václav Vislous, tel. +420 777 954 389. -->
+<style>
+:root{--y:#fec900;--bg:#000;--fg:#fff;--mute:#a3a3a3;--line:#3a3a3a}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{margin:0;min-height:100vh;min-height:100dvh;background:var(--bg);color:var(--fg);
+  font:16px/1.4 Roboto,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+main{flex:1;width:100%;max-width:720px;margin:0 auto;padding:40px 16px 24px;
+  padding-left:max(16px,env(safe-area-inset-left));padding-right:max(16px,env(safe-area-inset-right))}
+.logo{display:block;width:180px;max-width:70%;height:auto;margin:0 0 40px}
+h1{margin:0;font:400 clamp(2.75rem,12vw,4.5rem)/.95 "Bebas Neue","Roboto Condensed",Impact,"Arial Narrow",sans-serif;
+  letter-spacing:.02em;text-transform:uppercase;color:var(--y)}
+.lead{margin:12px 0 32px;font-size:1.0625rem;color:var(--fg)}
+ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.card{display:block;min-height:72px;padding:16px 20px;border-radius:16px;
+  border:2px solid var(--y);background:var(--y);color:#000;text-decoration:none}
+.card b{display:block;font:400 2rem/1 "Bebas Neue","Roboto Condensed",Impact,"Arial Narrow",sans-serif;
+  letter-spacing:.04em;text-transform:uppercase}
+.card span{display:block;margin-top:4px;font-size:.9375rem}
+.card small{display:block;margin-top:2px;font-size:.8125rem;opacity:.75}
+a.card:hover{background:#ffd633;border-color:#ffd633}
+a.card:active{background:#e6b500;border-color:#e6b500}
+a.card:focus-visible{outline:3px solid var(--fg);outline-offset:3px}
+.card[aria-disabled="true"]{background:#0d0d0d;border:2px dashed var(--line);color:var(--mute);cursor:not-allowed}
+.card[aria-disabled="true"] b{color:#c4c4c4}
+@media (min-width:720px){
+  main{padding-top:72px}
+  .logo{width:220px;margin-bottom:56px}
+  ul{grid-template-columns:repeat(3,1fr);gap:16px}
+  .card{min-height:150px}
+}
+@media (prefers-reduced-motion:no-preference){a.card{transition:background-color .15s}}
+footer{padding:16px;text-align:center;font-size:.8125rem;color:var(--mute)}
+footer a{color:var(--fg);text-underline-offset:3px}
+footer a:focus-visible{outline:3px solid var(--y);outline-offset:2px}
+</style>
 </head>
-<body></body>
+<body>
+<main>
+  <img class="logo" src="logo-full-white.svg" alt="Česká pirátská strana" width="144" height="40">
+  <h1>Volební výsledky</h1>
+  <p class="lead">Piráti — komunální a senátní volby 2026</p>
+  <nav aria-label="Volební přehledy">
+    <ul>
+      <!-- STAV: aktivní. Vypnutí = tuto kartu přepsat na div s aria-disabled jako níže. -->
+      <li><a class="card" data-live="true" href="https://praha.dg12.cz">
+        <b>Praha</b><span>Městské části a Magistrát</span><small>praha.dg12.cz</small></a></li>
+      <!-- STAV: připravujeme (mesta.dg12.cz). Zapnutí = značku div (začátek i konec) změnit na a s href=mesta.dg12.cz v uvozovkách (https), odebrat aria-disabled, data-live="true". -->
+      <li><div class="card" data-live="false" aria-disabled="true">
+        <b>Města</b><span>Další města — připravujeme</span><small>mesta.dg12.cz</small></div></li>
+      <!-- STAV: připravujeme (senat.dg12.cz). Zapnutí stejně jako u Měst. -->
+      <li><div class="card" data-live="false" aria-disabled="true">
+        <b>Senát</b><span>Senátní volby — připravujeme</span><small>senat.dg12.cz</small></div></li>
+    </ul>
+  </nav>
+</main>
+<footer>Správce: Václav Vislous · <a href="tel:+420777954389">777 954 389</a></footer>
+</body>
 </html>
