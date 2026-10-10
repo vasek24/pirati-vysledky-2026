@@ -537,6 +537,21 @@ describe('createShardPoller', () => {
         p.destroy();
     });
 
+    it('disconnect stops all requests and connect resumes them (React StrictMode runs effects twice)', async () => {
+        const p = make();
+        p.connect();
+        p.setFeatured(['top-1']);
+        await flush(10);
+        p.disconnect();
+        calls.length = 0;
+        await flush(10 * 60_000);
+        expect(calls).toEqual([]);
+        p.connect();
+        await flush(10);
+        expect(calls).toEqual(['top-1']);
+        p.destroy();
+    });
+
     it('derives the client clock skew from x-server-now', async () => {
         serverNow = () => Date.now() + 90_000;
         const p = make();

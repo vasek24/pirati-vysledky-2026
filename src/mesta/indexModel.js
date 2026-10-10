@@ -380,6 +380,16 @@ export function createShardPoller({
         }
     }
 
+    function disconnect() {
+        dead = true;
+        for (const s of st.values()) { clearTimeout(s.timer); s.timer = null; }
+        for (const t of dwell.values()) clearTimeout(t);
+        dwell.clear();
+        waiting.length = 0;
+        active = new Set();
+        fast = new Set();
+    }
+
     return {
         getSnapshot: () => snapshot,
         subscribe(fn) {
@@ -419,10 +429,14 @@ export function createShardPoller({
             if (isHidden()) return;
             for (const id of active) if (get(id).errors > 0 && !get(id).inflight) schedule(id, visibilityDelay(random()));
         },
+        // React StrictMode (a návrat na stránku) spouští efekty znovu: connect/disconnect jsou vratné
+        connect() {
+            dead = false;
+            reconcile();
+        },
+        disconnect,
         destroy() {
-            dead = true;
-            for (const s of st.values()) clearTimeout(s.timer);
-            for (const t of dwell.values()) clearTimeout(t);
+            disconnect();
             listeners.clear();
         },
     };
