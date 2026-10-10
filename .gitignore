@@ -9,4 +9,3 @@ dist
 .gstack/
 .wrangler/
 .dev.vars*
-**/logos.tmp
