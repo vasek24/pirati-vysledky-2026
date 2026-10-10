@@ -4,7 +4,7 @@ Date: 2026-10-10 · Final, after challenge by an Opus advisor (corrections folde
 Question: three products behind a splitter (Prague / ~90 other towns / Senate) with national headline indicators ("estimated" seats), assume ~10,000 visitors; do separate Workers help; is it wise?
 
 ## 1. Verdict
-**Do not build a live republic tracker. Do not touch the Prague mirror's production path for it.** The infrastructure can be made to carry it; that is not the problem. The problems are mandate, correctness of attribution, estimates, and the effort-to-value ratio. The cheapest defensible thing is a **static, official-final-results summary** (and only after the party/author agree), not a live product.
+**Do not build a live republic tracker. Do not touch the Prague mirror's production path for it.** The infrastructure can be made to carry it; that is not the problem. The problems are mandate, correctness of attribution, estimates, and the effort-to-value ratio. The cheapest defensible thing is a **static, official-final-results summary**, not a live product.
 
 ## 2. Direct answers
 **Can it take 10,000 visitors?** Yes. 10k visitors ≈ 30–170 requests/s at the edge (clients poll once per refresh cycle plus a random 0–25 s offset). Our staging test: ~230 req/s equivalent, 99.6–99.8 % cache hits, p95 46–63 ms, one upstream refresh per feed. Cloudflare Workers Paid has no per-second request cap; DO limits are per object; ~200 feeds = 200 cheap Durable Objects. Caveats: (a) every API request still invokes the Worker even on a cache HIT (≈0.6 M invocations/evening, cheap on Paid; **would break on the Free plan's 100k/day at ~1,500 visitors** — the account is on Paid); (b) the load test was one machine/one colo, three endpoints, pre-count — it proves edge caching, not a 200-key fan-out or ČSÚ latency under load.
@@ -18,7 +18,7 @@ CONFIRMED today: per-town JSON works for Brno/Ostrava/Plzeň with the same path 
 INFERRED/UNVERIFIED: effort estimates (unmeasured), okres XML completeness, Senate runoff schema, JSON shape once counting starts, ČSÚ candidate-register fields for 2026 (see §5 H), ČSÚ's reuse licence (CC BY 4.0 is *not* confirmed).
 
 ## 4. Risks (ranked)
-1. **Mandate, licence, brand — #1.** The mirror exists with the author's knowledge; the upstream repo has **no licence file**; "the author knows" is not permission to build a new derivative product. The page carries the Česká pirátská strana logo — a republic page with seat estimates will read as official party communication. Nobody has shown the party or the author wants this, or that pirati.cz/media don't already cover it. **Gate: party HQ/comms and the author sign off before anything public; otherwise it stays an internal report.**
+1. **(Resolved by the owner, 2026-10-10)** Mandate/licence/brand: the owner is a senior party official and states everything is above board. Not a gating risk; no sign-off step. (Only residual point: a republic page with seat numbers reads as party communication, so numbers must be right — see 2 and 3.)
 2. **Wrong political attribution** (which lists/coalitions/candidates are "Pirates" in ~90 towns; "Pirate" = member vs nominee). Reputational harm. Needs a human-approved manifest per town/constituency, or ČSÚ's own affiliation fields.
 3. **Estimates.** National sums of D'Hondt projections across towns at different counting progress are misleading; once screenshotted they become misinformation pinned on the party. Senate round 1 rarely elects anyone outright, so "estimated Senate seats" is a runoff prediction. Coalition thresholds and preferential votes also decide who sits. **No national estimates in this product — not "later after a replay test".**
 4. **Moratorium/legal (uncertain, check with a lawyer):** Czech election law restricts publishing polls in the days before voting and until polls close; the ban applies again before the Senate runoff; a projection from round-1 results may fall in a grey zone. Avoid Senate projections entirely.
@@ -42,7 +42,7 @@ INFERRED/UNVERIFIED: effort estimates (unmeasured), okres XML completeness, Sena
 ## 6. Recommended path
 - **Tonight:** Prague only; I watch the live results, compare with the original site, fix issues. No new products.
 - **Sun–Mon:** check ČSÚ's candidate-register fields; compute Pirate councillors by membership and by nomination (2026 vs 2022) and the Senate table from final official data (H).
-- **Tue:** sign-off on definitions and branding from the party and the author. **Without it, stop.**
+- **Tue:** party-side review of the definitions (who counts as a Pirate: member vs nominee; coalition lists) — a correctness review, not a permission step.
 - **Wed–Thu:** generate the static page on a separate subdomain, labelled "official final results", with timestamp and ČSÚ attribution. One regeneration after the Senate runoff (statutory one week after round 1; ČSÚ runoff data paths not yet published).
-- **Kill criteria:** no sign-off; ČSÚ affiliation data unusable and hand attribution can't be reviewed in time; legal doubt about publishing; any need to touch the Prague Worker.
+- **Kill criteria:** ČSÚ affiliation data unusable and hand attribution can't be reviewed in time; legal doubt about publishing; any need to touch the Prague Worker.
 - Reject Codex's "build live architecture for the next count" for now (agree with its "freeze Prague tonight", "okres aggregates", "no estimates at first", "split Workers if ever live").
