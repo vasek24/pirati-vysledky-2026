@@ -1,4 +1,4 @@
-// Cloudflare Worker: záložní kopie pirati-vysledky-2026 (volby.dg12.cz).
+// Cloudflare Worker: záložní kopie pirati-vysledky-2026 (praha.dg12.cz).
 // Nasazuje se RUČNĚ z této složky: nejdřív `npx wrangler deploy --env staging`,
 // po kontrolách `npx wrangler deploy` (produkce). Žádný GITHUB_TOKEN secret se
 // nenastavuje (hlášení chyb je vypnuté). Viz docs/ops/runbook.md.

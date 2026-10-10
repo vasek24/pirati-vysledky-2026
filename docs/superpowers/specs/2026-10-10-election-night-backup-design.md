@@ -1,3 +1,5 @@
+Note (2026-10-10 later): production hostname moved from volby.dg12.cz to praha.dg12.cz; volby.dg12.cz is now the front door.
+
 # Election-night backup mirror — design (Phase 1), revision 2
 
 Date: 2026-10-10 · Status: revised after Opus review r1 (`docs/superpowers/reviews/2026-10-10-opus-spec-plan-review-r1.md`), pending Codex review · Maintainer: Václav Vislous (manages this fork)

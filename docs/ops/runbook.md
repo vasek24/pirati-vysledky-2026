@@ -1,4 +1,4 @@
-# Runbook — záložní kopie volebních výsledků (volby.dg12.cz)
+# Runbook — záložní kopie volebních výsledků (praha.dg12.cz)
 
 Správce kopie: Václav Vislous, tel. +420 777 954 389 (spravuje tuto fork a její úpravy; není autorem originálu).
 Maintainer: Václav Vislous manages this fork and its modifications. Phone +420 777 954 389.
@@ -6,8 +6,9 @@ Maintainer: Václav Vislous manages this fork and its modifications. Phone +420 
 ## Kde co běží
 | Prostředí | Worker | URL | Pozn. |
 |---|---|---|---|
-| produkce | `pirati-volby-zaloha` | https://pirati-volby-zaloha.vasek24.workers.dev (a po připojení https://volby.dg12.cz) | cron `* * * * *` zahřívá 11 radnic + přehled |
+| produkce | `pirati-volby-zaloha` | https://praha.dg12.cz (též https://pirati-volby-zaloha.vasek24.workers.dev) | cron `* * * * *` zahřívá 11 radnic + přehled |
 | staging | `pirati-volby-zaloha-staging` | https://pirati-volby-zaloha-staging.vasek24.workers.dev | bez cronu, vlastní KV a Durable Object |
+| rozcestník (front door) | `pirati-rozcestnik` | https://volby.dg12.cz | statická stránka se třemi produkty (praha / mesta / senat), složka `placeholder/`, konfig `cloudflare/wrangler.placeholder.jsonc`; nasazení `cd cloudflare && npx wrangler deploy -c wrangler.placeholder.jsonc` |
 
 Cloudflare účet: vasek24@protonmail.com (`account_id` 741febb7a315a409b83e5a9a1b62954d). GitHub fork: vasek24/pirati-vysledky-2026 (upstream jsemfast/pirati-vysledky-2026 — nikdy nepushovat).
 
@@ -27,9 +28,11 @@ Nikdy nenasazovat zkušební/falešný `CSU_BASE` na `pirati-volby-zaloha`; dril
 cd cloudflare && npx wrangler deployments list
 npx wrangler rollback <version-id>
 ```
-Verze: produkce Phase 1a bez domény `a6495d68-e972-4127-b1d3-9826817d18c9`; produkce Phase 1a + doména volby.dg12.cz (2026-10-10 ~10:14) `15a89382-4b67-468d-9c7c-fcb90ffec3a3`; staging `5e68248d-52ea-4c2b-b7c8-7f018648ce00`.
+Hostname: tracker se 2026-10-10 později přesunul z volby.dg12.cz na praha.dg12.cz; volby.dg12.cz je teď rozcestník.
+Verze (historicky; „doména volby.dg12.cz“ = tehdejší hostname trackeru): produkce Phase 1a bez domény `a6495d68-e972-4127-b1d3-9826817d18c9`; produkce Phase 1a + doména volby.dg12.cz (2026-10-10 ~10:14) `15a89382-4b67-468d-9c7c-fcb90ffec3a3`; staging `5e68248d-52ea-4c2b-b7c8-7f018648ce00`.
 
 ## Kontroly po nasazení
+`<URL>` = https://praha.dg12.cz (produkce) nebo staging workers.dev adresa. Rozcestník: `curl -s -o /dev/null -w "%{http_code}\n" https://volby.dg12.cz/` → 200.
 - `curl -s -o /dev/null -w "%{http_code}\n" <URL>/version.json` → 200
 - `curl -s <URL>/api/prehled | head -c 200` a `/api/volby?z=500216` (Praha 9), `/api/volby?z=554782` (Magistrát) → 200 JSON
 - `/humans.txt`, `/kontakt.txt`, `/.well-known/security.txt` → 200

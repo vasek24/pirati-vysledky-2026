@@ -40,3 +40,7 @@ not the author of the original tracker. Never call him "the author".
   (`src/volby/format.js`); tests run with `TZ=UTC`.
 - Commits: imperative, one logical change each, end with the Co-Authored-By line.
 - Maintainer contact: Václav Vislous, phone +420 777 954 389.
+- Hostnames: `praha.dg12.cz` = this tracker; `volby.dg12.cz` = front door (Worker
+  `pirati-rozcestnik`, `placeholder/`, `cloudflare/wrangler.placeholder.jsonc`); mesta/senat planned.
+- Codex only via `tools/codex-review.sh` / `tools/codex-ideate.sh` (one pass on spec+plan, one
+  on the diff; more only with the operator's yes) — see `docs/ops/codex-review.md`.
