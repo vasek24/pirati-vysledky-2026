@@ -23,7 +23,7 @@
   },
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Feed"] }],
   // Vlastní doména (jen produkce; staging má routes explicitně prázdné)
-  "routes": [{ "pattern": "volby.dg12.cz", "custom_domain": true }],
+  "routes": [{ "pattern": "praha.dg12.cz", "custom_domain": true }],
   "workers_dev": true,
   "observability": { "enabled": true },
   // Warm-up první třídy feedů (feedClasses.js) — jen produkce, ne staging

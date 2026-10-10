@@ -1,0 +1,9 @@
+// Prázdný rozcestník volby.dg12.cz (jen statická prázdná stránka, žádný kód).
+// Nasazení: cd cloudflare && npx wrangler deploy -c wrangler.placeholder.jsonc
+{
+  "name": "pirati-rozcestnik",
+  "account_id": "741febb7a315a409b83e5a9a1b62954d",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "../placeholder" },
+  "routes": [{ "pattern": "volby.dg12.cz", "custom_domain": true }]
+}

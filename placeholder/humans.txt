@@ -1,0 +1,4 @@
+/* MAINTAINER */
+Name: Václav Vislous
+Role: manages this site and the related election trackers (praha.dg12.cz, mesta.dg12.cz, senat.dg12.cz)
+Phone: +420 777 954 389 (tel:+420777954389)
