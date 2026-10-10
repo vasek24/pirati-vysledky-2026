@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { compute, execute, pirates2022 } from './mesta-registry.js';
+import { compute, execute, pirates2022, fetchJmsez, buildDocs } from './mesta-registry.js';
 
 describe('pirates2022', () => {
     const row = (extra) => ({ DATUMVOLEB: '20220923', KODZASTUP: '100', SLOZENI: '720', PROCHLSTR: '8.35', MAND_STR: '2', ...extra });
@@ -100,12 +100,78 @@ describe('compute (end to end on an in-memory registry)', () => {
     });
 });
 
+describe('compute: ČSÚ 2025 population cross-check (population-band-differs)', () => {
+    const pop = (entries) => new Map(Object.entries(entries).map(([z, population]) => [Number(z), { name: 'x', population }]));
+    const find = (res, name) => ({ t: res.towns.find((x) => x.name === name), s: res.specifics.find((x) => x.zastup === res.towns.find((t) => t.name === name).zastup) });
+
+    it('fills populationCsu2025; a differing band flags the town low but never changes inclusion', () => {
+        // Alfa 20 000 -> 9 990 (jiné pásmo), Beta 12 000 -> 12 100 (stejné), Delta 9 000 -> 10 050 (jiné), Gama není v tabulce
+        const res = compute({ ...source(), pop2025: pop({ 1001: 9990, 1002: 12100, 1004: 10050 }) }, OWNER, { reviewedAt: null, towns: {} });
+        const alfa = find(res, 'Alfa');
+        expect(alfa.t).toMatchObject({ populationCsu2025: 9990, inclusion: 'auto' });
+        expect(alfa.s.flags).toContain('population-band-differs');
+        expect(alfa.s.confidence).toBe('low');
+        expect(find(res, 'Beta').t.populationCsu2025).toBe(12100);
+        expect(find(res, 'Beta').s.flags).not.toContain('population-band-differs');
+        expect(find(res, 'Beta').s.confidence).toBe('high');
+        const delta = find(res, 'Delta');
+        expect(delta.t).toMatchObject({ populationCsu2025: 10050, inclusion: 'borderline-included' });
+        expect(delta.s.flags).toContain('population-band-differs');
+        expect(res.towns.map((t) => t.name)).toEqual(['Alfa', 'Beta', 'Delta']);
+        expect(res.problems).toEqual([]);
+    });
+
+    it('without the table (null) populationCsu2025 stays null and no flag appears', () => {
+        const res = compute({ ...source(), pop2025: null }, OWNER, { reviewedAt: null, towns: {} });
+        expect(res.towns.every((t) => t.populationCsu2025 === null)).toBe(true);
+        expect(res.specifics.flatMap((s) => s.flags)).not.toContain('population-band-differs');
+    });
+
+    it('a published town missing from the table warns and stays null', () => {
+        const res = compute({ ...source(), pop2025: pop({ 1001: 20000 }) }, OWNER, { reviewedAt: null, towns: {} });
+        expect(find(res, 'Beta').t.populationCsu2025).toBeNull();
+        expect(res.warnings.join('\n')).toMatch(/Beta \(1002\).*2025/);
+    });
+
+    it('a differing band on an unpublished town sets no flag (it only matters for published ones)', () => {
+        const res = compute({ ...source(), pop2025: pop({ 1005: 12000 }) }, OWNER, { reviewedAt: null, towns: {} });
+        expect(res.records.find((r) => r.council.name === 'Epsilon').flags).not.toContain('population-band-differs');
+    });
+});
+
+describe('compute: jmsez cross-check (jmsez-mismatch)', () => {
+    const jm = (rows) => ({ generovano: 't', platni: { 3: { stranaNazev: 'X', seznam: rows } } });
+
+    it('a Piráti label missing from members/others flags the town low; matching jmsez does not', () => {
+        const ok = jm([[1, 'P1 Jan', 40, 'Piráti', 'Piráti']]);
+        const bad = jm([[1, 'P1 Jan', 40, 'Piráti', 'Piráti'], [9, 'Cizí Karel', 40, 'Piráti', 'Piráti']]);
+        const res = compute({ ...source(), jmsez: new Map([[1001, ok], [1002, bad]]) }, OWNER, { reviewedAt: null, towns: {} });
+        const s = (z) => res.specifics.find((x) => x.zastup === z);
+        expect(s(1001).flags).not.toContain('jmsez-mismatch');
+        expect(s(1002).flags).toContain('jmsez-mismatch');
+        expect(s(1002).confidence).toBe('low');
+        expect(res.towns.map((t) => t.name)).toEqual(['Alfa', 'Beta', 'Delta']);
+    });
+
+    it('exposes the 2022 results and the chosen list row for the reports', () => {
+        const res = compute(source(), OWNER, { reviewedAt: null, towns: {} });
+        expect(res.pirates2022.get(1005)).toEqual({ pct: 5, seats: 0 });
+        expect(res.records.find((r) => r.council.name === 'Beta').listRow).toMatchObject({ VSTRANA: '1350', SLOZENI: '166,720' });
+    });
+});
+
 describe('execute: exit codes', () => {
-    it('0 and writes all three files for a clean run', () => {
+    it('0 and writes the three JSON files plus the reports and the extract for a clean run', () => {
         const { code, io } = run(source());
         expect(code).toBe(0);
         expect(io.write).toHaveBeenCalledTimes(1);
-        expect(Object.keys(io.write.mock.calls[0][0])).toEqual(['towns', 'specifics', 'excluded']);
+        const keys = Object.keys(io.write.mock.calls[0][0]);
+        expect(keys.slice(0, 3)).toEqual(['towns', 'specifics', 'excluded']);
+        expect(keys).toEqual(expect.arrayContaining([
+            'docs/analysis/mesta-specifics.md', 'docs/analysis/mesta-list-verification.md',
+            'docs/analysis/mesta-extract/README.md', 'docs/analysis/mesta-extract/councils.csv', 'docs/analysis/mesta-extract/jmsez-pirati.json',
+        ]));
+        expect(io.write.mock.calls[0][0]['docs/analysis/mesta-list-verification.md']).toMatch(/## 1\. Potvrzená/);
         expect(JSON.parse(io.write.mock.calls[0][0].towns)).toHaveLength(3);
         expect(io.err).not.toHaveBeenCalled();
     });
@@ -148,5 +214,57 @@ describe('execute: exit codes', () => {
         expect(code).toBe(0);
         expect(io.err.mock.calls.join('\n')).toMatch(/WARNING: Alfa \(1001\).*list row is missing/);
         expect(JSON.parse(io.write.mock.calls[0][0].specifics).find((s) => s.zastup === 1001).flags).toContain('candidate-without-list');
+    });
+});
+
+describe('fetchJmsez', () => {
+    const towns = [1, 2, 3, 4, 5].map((z) => ({ zastup: z, okres: 2101, name: `T${z}` }));
+
+    it('collects every town and reports ok; the URL is built from okres and zastup', async () => {
+        const urls = [];
+        const out = await fetchJmsez(towns, { get: async (u) => { urls.push(u); return { platni: {} }; }, warn: () => {} });
+        expect(out.meta).toMatchObject({ status: 'ok', fetched: 5, failed: [] });
+        expect(out.map.size).toBe(5);
+        expect(urls[0]).toMatch(/\/jmsez\/2101\/1\.json$/);
+    });
+
+    it('single failures give "partial" and name the failed towns', async () => {
+        const warn = vi.fn();
+        const out = await fetchJmsez(towns, { get: async (u) => { if (u.includes('/3.json')) throw new Error('500'); return {}; }, warn });
+        expect(out.meta).toMatchObject({ status: 'partial', fetched: 4, failed: [3] });
+        expect(warn.mock.calls.join('\n')).toMatch(/T3 \(3\).*500/);
+    });
+
+    it('three failures in a row mean not-run with a clear warning (nothing partial is used)', async () => {
+        const warn = vi.fn();
+        const out = await fetchJmsez(towns, { get: async () => { throw new Error('ECONNREFUSED'); }, warn });
+        expect(out.map).toBeNull();
+        expect(out.meta).toMatchObject({ status: 'not-run' });
+        expect(out.meta.reason).toMatch(/nedostupné/);
+        expect(warn.mock.calls.join('\n')).toMatch(/PŘESKOČENA/);
+    });
+
+    it('a blown time budget means not-run', async () => {
+        const out = await fetchJmsez(towns, { get: async () => ({}), warn: () => {}, budgetMs: -1 });
+        expect(out.meta).toMatchObject({ status: 'not-run' });
+        expect(out.meta.reason).toMatch(/pomalé/);
+    });
+});
+
+describe('buildDocs: Litovel note and the three tables', () => {
+    it('adds a mentioned-by-owner town (Litovel 503444) with the Senate note when the registry has it without a Pirate list', () => {
+        const src = source();
+        src.kvrzcoco.push(rzc(503444, 'Litovel', 9448, 2));
+        src.kvros.push(ros(503444, 1, '053', 53));
+        src.senate = { obvody: [{ obvod: 66, nazevObvodu: 'Litovel' }] };
+        const res = compute(src, OWNER, { reviewedAt: null, towns: {} });
+        const files = buildDocs(res, src, { reviewedAt: null, towns: {} }, res.owner.length);
+        const md = files['docs/analysis/mesta-list-verification.md'];
+        const line = md.split('\n').find((l) => l.startsWith('|') && l.includes('Litovel'));
+        expect(line).toMatch(/obvodu 66/);
+        expect(line).toMatch(/typ d/);
+        expect(md).toMatch(/potvrzeno: 2/);
+        expect(md).toMatch(/zamítnuto ze seznamu majitele: 1\n/); // Gama; Litovel je mimo soubor seznamu
+        expect(files['docs/analysis/mesta-extract/lists.csv']).toContain('503444');
     });
 });

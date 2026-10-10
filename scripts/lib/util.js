@@ -14,10 +14,11 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // Stažení s diskovou cache v .cache/ (velké zipy ČSÚ se tahají jen jednou;
 // `npm run data -- --fresh` cache ignoruje)
+export const cacheFile = (url) => path.join(CACHE_DIR, createHash('sha1').update(url).digest('hex').slice(0, 16) + path.extname(new URL(url).pathname));
+
 export async function download(url, { fresh = false, delayMs = 0 } = {}) {
     await fs.mkdir(CACHE_DIR, { recursive: true });
-    const name = createHash('sha1').update(url).digest('hex').slice(0, 16) + path.extname(new URL(url).pathname);
-    const file = path.join(CACHE_DIR, name);
+    const file = cacheFile(url);
     if (!fresh) {
         try {
             return await fs.readFile(file);
