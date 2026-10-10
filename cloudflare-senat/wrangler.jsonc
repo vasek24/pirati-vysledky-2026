@@ -1,0 +1,48 @@
+// Cloudflare Worker: výsledky voleb do Senátu 2026 (senat.dg12.cz), záložní kopie.
+// Nasazuje se RUČNĚ jen z této složky (cloudflare-senat/): nejdřív
+// `npx wrangler deploy --env staging`, produkce a vlastní doména až na výslovný
+// pokyn majitele (Václav Vislous). Žádný GITHUB_TOKEN ani jiný secret, žádné KV.
+// Deploy only from this directory; staging first; production + custom domain
+// only on the owner's explicit confirmation. Viz README.md.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "pirati-senat-zaloha",
+  "account_id": "741febb7a315a409b83e5a9a1b62954d",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../senat/dist",
+    "binding": "ASSETS"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "SENAT_FEED", "class_name": "SenatFeed" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SenatFeed"] }],
+  // Vlastní doména (jen produkce; staging má routes explicitně prázdné)
+  "routes": [{ "pattern": "senat.dg12.cz", "custom_domain": true }],
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  // Warm-up feedu (volá DO jako divák) — jen produkce, ne staging
+  "triggers": { "crons": ["* * * * *"] },
+
+  // Staging: samostatný skript (vlastní Durable Object storage), jen workers.dev,
+  // bez routes a cronů. Každé nasazení jde nejdřív sem (`wrangler deploy --env staging`).
+  // Wrangler nededí assets, DO ani migrace — proto jsou níže znovu.
+  "env": {
+    "staging": {
+      "name": "pirati-senat-zaloha-staging",
+      // triggers se dědí z produkce — prázdný seznam vypne cron na stagingu
+      "triggers": { "crons": [] },
+      "routes": [],
+      "workers_dev": true,
+      "assets": {
+        "directory": "../senat/dist",
+        "binding": "ASSETS"
+      },
+      "durable_objects": {
+        "bindings": [{ "name": "SENAT_FEED", "class_name": "SenatFeed" }]
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SenatFeed"] }]
+    }
+  }
+}
