@@ -118,6 +118,8 @@ export default function UpdateManager() {
 
         // Krátké upozornění, pak reload; při psaní počkat na dopsání
         const tryReload = () => {
+            // volební noc mohla začít, od kdy je pokus naplánovaný
+            if (!shouldAutoReload({ hidden: document.visibilityState === 'hidden', electionNight: isElectionNight() })) return;
             if (!isEditing()) reload();
         };
         const initial = setTimeout(tryReload, 2500);

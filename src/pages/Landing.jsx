@@ -352,7 +352,7 @@ function Hero({ snapshot, live, lists }) {
                     </a>
                 </div>
 
-                <div className="mt-3 flex items-center gap-3 text-[11px] text-white/40 tabular-nums">
+                <div className="mt-3 flex items-center gap-3 text-[11px] text-white/70 tabular-nums">
                     {phase !== 'pre' && dataTime && <span>ČSÚ {fmtTime(dataTime)}</span>}
                     {live.lastSuccess && <span>kontrola {fmtShortTime(live.lastSuccess)}</span>}
                 </div>

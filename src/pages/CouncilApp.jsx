@@ -120,7 +120,7 @@ function PreElectionCard({ slug }) {
             <div className="font-condensed text-xs font-bold uppercase tracking-wider text-neutral-500">Výsledky začnou chodit po 14:00</div>
             <div className="mt-1 font-display text-5xl leading-none text-black">za {countdown(POLLS_CLOSE - now)}</div>
             <p className="mt-2 text-sm text-neutral-600">
-                Volební místnosti se zavírají v sobotu 10. 10. ve 14:00. Pak se stránka sama obnovuje každou minutu
+                Volební místnosti se zavírají v sobotu 10. 10. ve 14:00. Pak se stránka sama obnovuje (ČSÚ zveřejňuje data zhruba jednou za minutu)
                 a postupně ukáže sečtené okrsky, mandáty, zvolené zastupitele i možné koalice.
             </p>
             <a href={`/${slug}?demo`} className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-black text-white text-sm font-semibold px-3.5 py-2 hover:bg-neutral-800">

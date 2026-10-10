@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNow } from '../hooks/useNow';
+import { useOnline } from '../hooks/useOnline';
 import { useDialog } from '../hooks/useDialog';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { setMapEnabled, useMapEnabled } from '../hooks/useMapPreference';
@@ -11,14 +12,23 @@ import { openChangelog } from '../utils/openChangelog';
 import { COUNCILS, POLLS_CLOSE } from '../councils';
 import { activeCouncil } from '../volby/council';
 import { countdown, fmtPct, fmtTime, parseCsuTime } from '../volby/format';
+import { ageSeconds, formatAge, liveState, nextCheckLabel } from '../lib/freshness';
 import { PrecinctStrip } from './Precincts';
 
-export function StatusPill({ phase, demo, stale }) {
+// Když Worker nevrací nic použitelného (503 a žádný snapshot), kam se lidé podívají sami
+const ORIGINAL_SITE_URL = 'https://pirati-vysledky-2026.pirati-vysledky-2026-cloudflare.workers.dev';
+const CSU_RESULTS_URL = 'https://volby.gov.cz/app/kv2026/';
+
+// `state` (live | pre | final | stale | offline z freshness.liveState) má
+// přednost; bez něj se stav odvodí z fáze (Landing)
+export function StatusPill({ phase, demo, stale, state }) {
     const base = 'font-condensed rounded px-1.5 py-0.5 text-[11px] font-bold tracking-wider whitespace-nowrap shrink-0';
+    const st = state ?? (stale ? 'stale' : phase === 'final' ? 'final' : phase === 'counting' || phase === 'waiting' ? 'live' : 'pre');
     if (demo) return <span className={`${base} bg-[#FEC900] text-black`}>DEMO</span>;
-    if (stale) return <span className={`${base} bg-orange-500 text-white`}>OFFLINE</span>;
-    if (phase === 'final') return <span className={`${base} bg-emerald-500 text-white`}>KONEČNÉ</span>;
-    if (phase === 'counting' || phase === 'waiting') {
+    if (st === 'offline') return <span className={`${base} bg-orange-700 text-white`}>OFFLINE</span>;
+    if (st === 'stale') return <span className={`${base} bg-orange-700 text-white`}>ZASTARALÉ</span>;
+    if (st === 'final') return <span className={`${base} bg-emerald-500 text-white`}>KONEČNÉ</span>;
+    if (st === 'live') {
         return (
             <span className={`${base} inline-flex items-center gap-1 bg-red-600 text-white`}>
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> ŽIVĚ
@@ -30,7 +40,8 @@ export function StatusPill({ phase, demo, stale }) {
 
 const fmtWait = (sec) => (sec >= 90 ? `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}` : `${sec} s`);
 // Sekundy do další automatické kontroly (null = pauza ve skryté záložce)
-const nextInOf = (live, now) => (live.nextAt ? Math.max(0, Math.ceil((live.nextAt - now) / 1000)) : null);
+// (nextAt je čas serveru, `now` čas klienta → oprava o live.skew)
+const nextInOf = (live, now) => (live.nextAt ? Math.max(0, Math.ceil((live.nextAt - (now + (live.skew || 0))) / 1000)) : null);
 
 // Za jak dlouho se stránka sama obnoví — vedle odpočtu, ať ji nikdo
 // neobnovuje ručně (rychleji to nebude, jen to zatěžuje server)
@@ -235,18 +246,30 @@ function CouncilMenu({ demo }) {
 
 export default function ElectionHeader({ live, snapshot, demo, geoJson, selectedId, onSelectPrecinct, onOpenPrecincts }) {
     const now = useNow(1000);
+    const online = useOnline();
+    // čas serveru: hodiny klienta + rozdíl z x-server-now (rychlé/pomalé hodiny)
+    const nowC = now + (live.skew || 0);
     const council = activeCouncil();
     const phase = snapshot?.phase || 'pre';
     const p = snapshot?.precincts;
     const dataTime = demo ? snapshot?.fetchedAt : parseCsuTime(snapshot?.generated);
+    // Worker nevrací nic použitelného: chyba a žádný živý snapshot (ani z reloadu);
+    // `snapshot` z props může být jen náhradní (emptySnapshot z kandidátek)
+    const unavailable = !live.snapshot && live.status === 'error';
+    const pillState = unavailable
+        ? 'offline'
+        : liveState({ snapshot: snapshot && { ...snapshot, stale: live.stale }, now: nowC, pollsClose: POLLS_CLOSE, online });
+    const hasCsuTime = !demo && phase !== 'pre' && !!dataTime;
+    const age = hasCsuTime ? ageSeconds(nowC, snapshot.generated) : 0;
+    const nextLabel = live.fetching ? null : nextCheckLabel(live.nextAt, nowC);
 
     // shortLine = telefon: vedle se musí vejít, kdy se stránka sama obnoví
     let line;
     let shortLine;
-    if (!snapshot) line = live.status === 'error' ? 'Výsledky se nepodařilo načíst — zkusím to znovu.' : 'Načítám výsledky…';
+    if (!snapshot || unavailable) line = live.status === 'error' ? 'Výsledky se nepodařilo načíst — zkusím to znovu.' : 'Načítám výsledky…';
     else if (phase === 'pre') {
-        line = `Místnosti se zavírají v sobotu 10. 10. ve 14:00 · za ${countdown(POLLS_CLOSE - now)}`;
-        shortLine = `Konec voleb v so 14:00 · za ${countdown(POLLS_CLOSE - now)}`;
+        line = `Místnosti se zavírají v sobotu 10. 10. ve 14:00 · za ${countdown(POLLS_CLOSE - nowC)}`;
+        shortLine = `Konec voleb v so 14:00 · za ${countdown(POLLS_CLOSE - nowC)}`;
     } else if (phase === 'waiting') {
         line = 'Volby skončily — čekáme na první okrskové komise';
         shortLine = 'Čekáme na první okrsky';
@@ -268,7 +291,7 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                     </a>
                     <div className="min-w-0 flex-1 border-l border-white/20 pl-3">
                         <div className="flex items-center gap-2">
-                            <StatusPill phase={phase} demo={demo} stale={live.stale} />
+                            <StatusPill phase={phase} demo={demo} stale={live.stale} state={pillState} />
                             {/* na telefonu se vedle štítku stavu nevejde (useklo by se na „23 MANDÁ…“);
                                 počet mandátů je i v půlkruhu a v menu */}
                             <span className="hidden sm:inline font-condensed text-[11px] uppercase tracking-wider text-white/50 truncate">
@@ -288,23 +311,38 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                     <CouncilMenu demo={demo} />
                 </div>
 
-                <div className="mt-2 short:mt-1 flex items-center justify-between gap-3 text-[11px] text-white/70">
-                    <span className="truncate">
-                        <span className="sm:hidden">{shortLine || line}</span>
-                        <span className="hidden sm:inline">{line}</span>
-                    </span>
-                    <span
-                        className="shrink-0 tabular-nums text-white/60 sm:hidden"
-                        title={live.lastSuccess ? `Poslední kontrola ${fmtTime(live.lastSuccess)}` : undefined}
-                    >
-                        <AutoRefreshNote live={live} now={now} />
-                    </span>
-                    <span className="hidden sm:inline shrink-0 tabular-nums text-white/45" title={dataTime ? `Data ČSÚ vygenerována ${fmtTime(dataTime)}` : undefined}>
-                        {phase !== 'pre' && dataTime ? `ČSÚ ${fmtTime(dataTime)} · ` : ''}
-                        {live.lastSuccess ? `kontrola ${fmtTime(live.lastSuccess)}` : ''}
-                        {(live.fetching || live.nextAt) && <span className="text-white/70"> · <AutoRefreshNote live={live} now={now} /></span>}
-                    </span>
+                <div className="mt-2 short:mt-1 text-[11px] text-white/80 truncate">
+                    <span className="sm:hidden">{shortLine || line}</span>
+                    <span className="hidden sm:inline">{line}</span>
                 </div>
+                {!demo && (
+                    // čerstvost dat — na telefonu i na desktopu (title na dotyku není vidět)
+                    <div className="mt-1 short:mt-0.5 flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[11px] leading-snug text-white/80 tabular-nums">
+                        {hasCsuTime && (
+                            <span>
+                                ČSÚ data z <b className="font-semibold text-white">{fmtTime(dataTime)}</b>
+                                <span className="text-white/60"> · </span>
+                                <span className="font-semibold text-white">{formatAge(age)}</span>
+                            </span>
+                        )}
+                        <span>
+                            {live.fetching ? 'načítám nová data…' : nextLabel ? <>další kontrola za <b className="font-semibold text-white">{nextLabel}</b></> : 'kontrola pozastavena'}
+                        </span>
+                    </div>
+                )}
+                {!demo && (
+                    <div className="mt-0.5 text-[11px] leading-snug text-white/65">
+                        ČSÚ zveřejňuje data zhruba jednou za minutu; stránka se obnovuje sama.
+                    </div>
+                )}
+                {unavailable && (
+                    <div className="mt-1.5 text-xs leading-snug text-white/85">
+                        Mezitím se můžeš podívat na{' '}
+                        <a href={ORIGINAL_SITE_URL} target="_blank" rel="noopener noreferrer" className="inline-block py-1 font-semibold text-[#FEC900] underline">původní web</a>
+                        {' '}nebo na{' '}
+                        <a href={CSU_RESULTS_URL} target="_blank" rel="noopener noreferrer" className="inline-block py-1 font-semibold text-[#FEC900] underline">výsledky ČSÚ</a>.
+                    </div>
+                )}
                 {snapshot && phase !== 'pre' && geoJson && (
                     <div className="mt-2">
                         <PrecinctStrip geoJson={geoJson} snapshot={snapshot} freshIds={live.freshIds} selectedId={selectedId} onSelect={onSelectPrecinct} onOpen={onOpenPrecincts} />
@@ -317,8 +355,9 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                 )}
             </div>
             {live.stale && live.error && (
-                <div className="bg-orange-500/90 text-white text-[11px] px-4 py-1">
-                    Zdroj teď neodpovídá — ukazuji poslední načtená data, zkouším to znovu.
+                <div className="bg-orange-700 text-white text-xs px-4 py-1.5 leading-snug">
+                    Zdroj teď neodpovídá — ukazuji poslední načtená data
+                    {hasCsuTime ? ` (ČSÚ data z ${fmtTime(dataTime)}, ${formatAge(age)})` : ''}, zkouším to znovu.
                 </div>
             )}
         </header>

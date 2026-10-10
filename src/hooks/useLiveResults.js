@@ -3,11 +3,15 @@
 //  - prohlížeč nikdy nesahá na volby.gov.cz; když náš server neodpovídá,
 //    zůstává poslední snapshot (označený jako zastaralý) a zkouší se dál
 //    jen náš server (backoff níže),
-//  - interval podle fáze: před 14:00 jednou za 10 min (probuzení přesně na
-//    uzavření místností), při sčítání 60 s (ČSÚ data stejně cachuje 60 s),
+//  - další dotaz podle `nextRefreshAt` z odpovědi (čas serveru) + náhodný posun
+//    záložky 0–25 s; hodiny klienta se opravují o rozdíl vůči `x-server-now`
+//    (skew), jinak by rychlé hodiny dotazovaly každých 5–10 s. Nejméně 5 s
+//    mezi dotazy (schedule.js),
+//  - bez `nextRefreshAt` (starší Worker) interval podle fáze: před 14:00 jednou
+//    za 10 min (probuzení přesně na uzavření místností), při sčítání 60 s,
 //    po vyhlášení mandátů 15 min; ±15 % jitter, ať se klienti nesešikují,
-//  - skrytý panel/tab = žádné dotazy; po návratu dotaz jen když jsou data stará,
-//  - chyby = exponenciální backoff 1 → 2 → 4 → 8 → 10 min,
+//  - skrytý panel/tab = žádné dotazy; po návratu dotaz, když už je na čase,
+//  - chyby = backoff s full jitter, strop 5 min (backoffDelay),
 //  - obnovit dřív, než vyprší odpočet do další kontroly, nejde — ani
 //    tlačítkem, ani reloadem stránky (poslední snapshot a čas další kontroly
 //    drží sessionStorage, reload ho jen ukáže a počká),
@@ -19,14 +23,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { phaseOf, SNAPSHOT_VERSION } from '../volby/feed.js';
 import { OVERVIEW_VERSION } from '../volby/overview.js';
 import { POLLS_CLOSE } from '../councils.js';
+import { MIN_GAP_MS, backoffDelay, computeSkew, nextPollDelay, pickOffset, visibilityDelay } from './schedule.js';
 
 const INTERVAL = { pre: 10 * 60e3, waiting: 60e3, counting: 60e3, final: 15 * 60e3 };
 const DEMO_INTERVAL = 4000;
 const MANUAL_GAP_MS = 15e3;
-const PROXY_TIMEOUT_MS = 15e3;
+const PROXY_TIMEOUT_MS = 25e3;
 const arrivalsKey = (source) => `kv26.arrivals.${source.key}`;
 const SNAP_PREFIX = 'kv26.snap.';
 const MAX_CACHED_WAIT_MS = 15 * 60e3;
+const RESPONSE_META = ['stale', 'refreshedAt', 'nextRefreshAt', 'servedAt', 'complete', 'refreshing'];
 
 // Zdroj = jedno zastupitelstvo; objekt je pro dané zastupitelstvo vždy
 // stejný (hook podle něj plánuje dotazy)
@@ -74,16 +80,21 @@ function viewHeader(seconds, visit) {
     return q.toString();
 }
 
-async function fetchProxy(source, view) {
+async function fetchProxy(source, view, onServerNow) {
     const signal = typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(PROXY_TIMEOUT_MS) : undefined;
+    const sent = Date.now();
     const res = await fetch(source.url, { headers: { Accept: 'application/json', 'X-Kv26-View': view }, signal });
+    // hodiny serveru hned (i u chybové odpovědi); klient = střed mezi odesláním a příjmem
+    onServerNow(computeSkew(res.headers.get('x-server-now'), (sent + Date.now()) / 2));
     const type = res.headers.get('content-type') || '';
     // Vite dev bez API / výpadek funkce vrátí HTML nebo chybu → chyba (poslední data zůstávají)
     if (!type.includes('application/json')) throw new Error('proxy-unavailable');
     const body = await res.json();
     if (!res.ok || body?.v !== source.version) throw new Error(body?.error || `proxy-${res.status}`);
-    const { stale, ...snapshot } = body;
-    return { snapshot, stale: !!stale };
+    // metadata plánovače a čerstvosti nejsou součástí snapshotu
+    const snapshot = { ...body };
+    for (const k of RESPONSE_META) delete snapshot[k];
+    return { snapshot, stale: !!body.stale, nextRefreshAt: Number.isFinite(body.nextRefreshAt) ? body.nextRefreshAt : undefined };
 }
 
 function readArrivals(source) {
@@ -110,7 +121,7 @@ function writeArrivals(source, map) {
 function readCached(source) {
     try {
         const c = JSON.parse(sessionStorage.getItem(SNAP_PREFIX + source.key) || 'null');
-        const wait = (c?.nextAt || 0) - Date.now();
+        const wait = (c?.nextAt || 0) - (Date.now() + (c?.skew || 0));
         return c?.snapshot?.v === source.version && wait > 0 && wait <= MAX_CACHED_WAIT_MS ? c : null;
     } catch {
         return null;
@@ -133,12 +144,15 @@ function writeCached(source, entry) {
     }
 }
 
-function delayFor(phase, errors, demo) {
+// Pauza do dalšího dotazu. `now` = čas serveru (Date.now() + skew),
+// `nextRefreshAt` z odpovědi (undefined = starší Worker → interval podle fáze).
+function delayFor({ phase, errors, demo, nextRefreshAt, now, offset }) {
     if (demo) return DEMO_INTERVAL;
-    if (errors > 0) return Math.min(60e3 * 2 ** (errors - 1), 10 * 60e3);
+    if (errors > 0) return backoffDelay(errors, Math.random());
+    if (nextRefreshAt !== undefined) return nextPollDelay({ nextRefreshAt, now, offset, random: Math.random() });
     let base = INTERVAL[phase] ?? 60e3;
-    if (phase === 'pre') base = Math.min(base, Math.max(15e3, POLLS_CLOSE - Date.now() + 5e3));
-    return base * (0.85 + Math.random() * 0.3);
+    if (phase === 'pre') base = Math.min(base, Math.max(15e3, POLLS_CLOSE - now + 5e3));
+    return Math.max(MIN_GAP_MS, base * (0.85 + Math.random() * 0.3));
 }
 
 // demo = true: čekat na demoFeed (simulace), na síť nesahat
@@ -154,7 +168,8 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
         stale: cached?.stale ?? false,
         error: cached?.error ?? null,
         lastSuccess: cached?.lastSuccess ?? null,
-        nextAt: cached?.nextAt ?? null,
+        nextAt: cached?.nextAt ?? null, // čas serveru (Date.now() + skew)
+        skew: cached?.skew ?? 0, // čas serveru − čas klienta (ms)
         fetching: false,
     }));
     // okrsek → čas, kdy ho tenhle prohlížeč poprvé viděl sečtený (null = už při otevření)
@@ -163,6 +178,11 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
 
     const timerRef = useRef(null);
     const nextAtRef = useRef(cached?.nextAt ?? null);
+    // naplánovaný čas dalšího dotazu přežije skrytí záložky (nextAtRef ne)
+    const dueAtRef = useRef(cached?.nextAt ?? null);
+    const skewRef = useRef(cached?.skew ?? 0);
+    const offsetRef = useRef(null); // posun této záložky, jednou za mount
+    const nextRefreshAtRef = useRef(undefined);
     const errorsRef = useRef(0);
     const lastAttemptRef = useRef(cached?.lastAttempt ?? 0);
     const phaseRef = useRef(cached?.snapshot.phase ?? 'pre');
@@ -176,18 +196,25 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     const hiddenMsRef = useRef(0);
     const hiddenAtRef = useRef(null);
 
+    // čas serveru (hodiny klienta opravené o skew)
+    const serverNow = useCallback(() => Date.now() + skewRef.current, []);
+
     const schedule = useCallback((ms) => {
         clearTimeout(timerRef.current);
+        // mezi dotazy aspoň 5 s (ne v demu)
+        const gap = demoFeed ? 0 : MIN_GAP_MS - (Date.now() - lastAttemptRef.current);
+        const wait = Math.max(ms, gap, 0);
+        const at = serverNow() + wait;
+        dueAtRef.current = at;
         if (document.hidden) {
             nextAtRef.current = null;
             setState((s) => ({ ...s, nextAt: null }));
             return;
         }
-        const at = Date.now() + ms;
         nextAtRef.current = at;
-        timerRef.current = setTimeout(() => runRef.current?.(), ms);
+        timerRef.current = setTimeout(() => runRef.current?.(), wait);
         setState((s) => ({ ...s, nextAt: at }));
-    }, []);
+    }, [demoFeed, serverNow]);
 
     const run = useCallback(async () => {
         // Jeden dotaz naráz — jinak by pomalejší starší odpověď (online/
@@ -213,7 +240,11 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
             } else {
                 const visit = visitRef.current;
                 visitRef.current = false;
-                result = await fetchProxy(target, viewHeader(viewSeconds, visit));
+                result = await fetchProxy(target, viewHeader(viewSeconds, visit), (skew) => {
+                    // bez hlavičky 0 = hodiny klienta beze změny (starší Worker)
+                    skewRef.current = skew;
+                    setState((s) => (s.skew === skew ? s : { ...s, skew }));
+                });
             }
         } catch (e) {
             error = e;
@@ -221,9 +252,10 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
 
         if (result) {
             errorsRef.current = 0;
+            nextRefreshAtRef.current = result.nextRefreshAt;
             const snap = result.snapshot;
             // Fázi přepočítat lokálně — CDN mohla podržet „pre" i po 14:00
-            const phase = demoFeed ? snap.phase : phaseOf({ counted: snap.precincts.counted, official: snap.official });
+            const phase = demoFeed ? snap.phase : phaseOf({ counted: snap.precincts.counted, official: snap.official }, serverNow());
             phaseRef.current = phase;
             const keys = Object.keys(snap.okrsky || {});
             const prev = prevKeysRef.current;
@@ -274,11 +306,18 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
             }));
         }
         inFlightRef.current = false;
-        const delay = delayFor(phaseRef.current, errorsRef.current, !!demoFeed);
+        const delay = delayFor({
+            phase: phaseRef.current,
+            errors: errorsRef.current,
+            demo: !!demoFeed,
+            nextRefreshAt: nextRefreshAtRef.current,
+            now: serverNow(),
+            offset: offsetRef.current ?? 0,
+        });
         lastDelayRef.current = delay;
-        if (stored && !demoFeed) writeCached(target, { ...stored, nextAt: Date.now() + delay });
+        if (stored && !demoFeed) writeCached(target, { ...stored, nextAt: serverNow() + delay, skew: skewRef.current });
         schedule(delay);
-    }, [target, demoFeed, schedule]);
+    }, [target, demoFeed, schedule, serverNow]);
 
     useEffect(() => {
         runRef.current = run;
@@ -286,10 +325,11 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
 
     useEffect(() => {
         if (idle) return undefined;
+        if (offsetRef.current === null) offsetRef.current = pickOffset(Math.random());
         // první načtení hned (po reloadu až po odpočtu), ale mimo tělo
         // efektu (setState v run/schedule)
         timerRef.current = setTimeout(() => {
-            const wait = cached && !demoFeed ? cached.nextAt - Date.now() : 0;
+            const wait = cached && !demoFeed ? cached.nextAt - serverNow() : 0;
             if (wait > 0) schedule(wait);
             else runRef.current?.();
         }, 0);
@@ -304,13 +344,15 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
             }
             if (hiddenAtRef.current !== null) hiddenMsRef.current += Date.now() - hiddenAtRef.current;
             hiddenAtRef.current = null;
-            const due = delayFor(phaseRef.current, errorsRef.current, !!demoFeed) * 0.85;
-            const since = Date.now() - lastAttemptRef.current;
-            if (since >= due) runRef.current?.();
-            else schedule(due - since);
+            // návrat do záložky: když už je na čase, dotaz s náhodným zpožděním
+            // (po hromadném návratu se záložky nesešikují), jinak počkat do termínu
+            const left = dueAtRef.current === null ? 0 : dueAtRef.current - serverNow();
+            schedule(left > 0 ? left : visibilityDelay(Math.random()));
         };
         const onOnline = () => {
-            if (!document.hidden) runRef.current?.();
+            // znovu se zkusit jen, když se zrovna nedaří nebo už je na čase
+            const overdue = dueAtRef.current !== null && dueAtRef.current <= serverNow();
+            if (!document.hidden && (errorsRef.current > 0 || overdue)) schedule(visibilityDelay(Math.random()));
         };
         document.addEventListener('visibilitychange', onVisible);
         window.addEventListener('online', onOnline);
@@ -319,7 +361,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
             document.removeEventListener('visibilitychange', onVisible);
             window.removeEventListener('online', onOnline);
         };
-    }, [run, schedule, demoFeed, idle, cached]);
+    }, [run, schedule, serverNow, demoFeed, idle, cached]);
 
     // Ruční obnovení až po vypršení odpočtu do další plánované kontroly —
     // dřív by jen zbytečně zatěžovalo (ČSÚ i CDN data stejně obnovují po
@@ -330,12 +372,12 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
         const early = demoFeed
             ? now - lastAttemptRef.current < 1000
             : nextAtRef.current
-                ? now < nextAtRef.current
+                ? serverNow() < nextAtRef.current
                 : now - lastAttemptRef.current < MANUAL_GAP_MS;
         if (early) return false;
         runRef.current?.();
         return true;
-    }, [demoFeed]);
+    }, [demoFeed, serverNow]);
 
     return { snapshot, ...state, arrivals, freshIds, refresh };
 }
