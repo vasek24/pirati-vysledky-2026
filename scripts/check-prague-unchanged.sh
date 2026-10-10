@@ -9,12 +9,13 @@
 #    .cache/prague-base-<sha>-<klíč>.sha256; při prvním běhu (bez cache) se build
 #    i dry-run navíc opakují na jednom stromu — musí dát stejné hashe (determinismus).
 # Výstup: `PRAGUE UNCHANGED` (exit 0) | rozdíly + `PRAGUE CHANGED` (exit 1) |
-# nedeterministický build (exit 2) | chyba buildu/uživatele (exit 3+).
+# nedeterministický build (exit 2) | chyba buildu/uživatele (exit 3) |
+# `PARTIAL:` (exit 4, GUARD_SKIP_WORKER=1: worker nebyl ověřen, není to průchod).
 # Nic nenasazuje, nic nepushuje; wrangler běží jen s --dry-run.
 #
 # Testovací háčky (env; používá jen scripts/check-prague-unchanged.test.js):
 #   GUARD_ALLOW_REGEX, GUARD_INSTALL_CMD, GUARD_BUILD_CMD, GUARD_WORKER_CMD ($WORKER_OUT),
-#   GUARD_SKIP_WORKER=1 (jen dist; výsledek je označený PARTIAL), GUARD_REFRESH=1 (ignoruj cache).
+#   GUARD_SKIP_WORKER=1 (jen dist; exit 4, první řádek PARTIAL:), GUARD_REFRESH=1 (ignoruj cache).
 set -euo pipefail
 
 GUARD_VERSION=1
@@ -31,6 +32,9 @@ BUILD_CMD=${GUARD_BUILD_CMD:-'npx vite build && cp cloudflare/_headers dist/_hea
 WORKER_CMD=${GUARD_WORKER_CMD:-'(cd cloudflare && npm ci --no-audit --no-fund) && (cd cloudflare && WRANGLER_SEND_METRICS=false npx wrangler deploy --dry-run --outdir "$WORKER_OUT")'}
 SKIP_WORKER=${GUARD_SKIP_WORKER:-0}
 
+# Částečný běh (bez wrangler dry-run) nesmí vypadat jako průchod: první řádek PARTIAL:, exit 4.
+[[ ${GUARD_SKIP_WORKER:-0} != 1 ]] || echo "PARTIAL: GUARD_SKIP_WORKER=1 — the worker dry-run is skipped; this run can never pass (exit 4 at best)"
+
 die() { echo "check-prague-unchanged: $*" >&2; exit "${2:-3}"; }
 
 cd "$(git rev-parse --show-toplevel)"
@@ -46,13 +50,13 @@ git merge-base --is-ancestor "$base" "$head" || echo "warning: base $base is not
 [[ -z $(git status --porcelain --untracked-files=no) ]] || echo "warning: uncommitted changes are not covered (the guard checks committed HEAD only)" >&2
 
 # --- 1. allow-list --------------------------------------------------------
-bad=$(git diff --name-only --no-renames "$base" "$head" | grep -Ev -- "$ALLOW_REGEX" || true)
+bad=$(git -c core.quotePath=false diff --name-only --no-renames "$base" "$head" | grep -Ev -- "$ALLOW_REGEX" || true)
 if [[ -n $bad ]]; then
   echo "FORBIDDEN: these changed paths are outside the mesta allow-list (base ${base:0:10}..HEAD):" >&2
   echo "$bad" | sed 's/^/  /' >&2
   exit 1
 fi
-echo "allow-list ok: $(git diff --name-only --no-renames "$base" "$head" | wc -l | tr -d ' ') changed path(s), all mesta-only"
+echo "allow-list ok: $(git -c core.quotePath=false diff --name-only --no-renames "$base" "$head" | wc -l | tr -d ' ') changed path(s), all mesta-only"
 
 # --- 2. byte comparison ---------------------------------------------------
 tmp=$(mktemp -d "${TMPDIR:-/tmp}/prague-guard.XXXXXX")
@@ -107,7 +111,8 @@ build_side() { # build_side <rev> <name> <record-file> <determinism 0|1>
   { sed 's/^/dist /' "$tmp/$name.dist"; if [[ $SKIP_WORKER != 1 ]]; then sed 's/^/worker /' "$tmp/$name.worker"; fi; } >"$record"
 }
 
-keyhash=$(printf '%s' "$GUARD_VERSION|${STRIP[*]}|$INSTALL_CMD|$BUILD_CMD|$WORKER_CMD|$SKIP_WORKER" | sha256sum | cut -c1-8)
+self_sha=$(sha256sum <"${BASH_SOURCE[0]}" | cut -c1-16)
+keyhash=$(printf '%s' "$GUARD_VERSION|$self_sha|${STRIP[*]}|$INSTALL_CMD|$BUILD_CMD|$WORKER_CMD|$SKIP_WORKER" | sha256sum | cut -c1-8)
 cache=$repo/.cache/prague-base-$base-$keyhash.sha256
 if [[ -s $cache && ${GUARD_REFRESH:-0} != 1 ]]; then
   echo "base ${base:0:10}: cached ($cache)"
@@ -121,10 +126,12 @@ build_side "$head" head "$tmp/head.rec" 0
 
 if diff -u "$tmp/base.rec" "$tmp/head.rec" >"$tmp/final.diff"; then
   if [[ $SKIP_WORKER == 1 ]]; then
-    echo "PRAGUE UNCHANGED (PARTIAL: dist/ only — the wrangler dry-run was skipped, so the worker bundle is NOT verified)"
-  else
-    echo "PRAGUE UNCHANGED"
+    echo "PARTIAL: dist/ identical, but the wrangler dry-run was skipped so the worker bundle is NOT verified — this is not a pass (exit 4)"
+    exit 4
   fi
+  echo "PRAGUE UNCHANGED"
+  echo "scope: stripped Prague build identical; never deploy Prague from mesta/* branches"
+
 else
   cat "$tmp/final.diff"
   echo "PRAGUE CHANGED: the stripped Prague build differs between ${base:0:10} and HEAD" >&2

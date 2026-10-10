@@ -28,10 +28,12 @@ const commit = (msg) => {
     git('commit', '-q', '-m', msg);
 };
 
-// „Build“ závisí na celém stromu mimo vyříznuté cesty; kontroluje, že vyříznutí proběhlo.
+// „Build“ = hash celého nevyřazeného stromu (jména i obsah) do dist/: kdyby se z STRIP
+// vypustila jakákoli položka, hash se u mesta-only změny liší (viz test „every STRIP entry“).
 const BUILD = [
-    'test ! -e docs && test ! -e src/mesta && test ! -e scripts && test ! -e README.md && test ! -e vite.mesta.config.js',
-    'rm -rf dist && mkdir dist && cp -r src dist/src && cp index.html dist/ && cp vite.config.js dist/',
+    'rm -rf dist && mkdir dist',
+    "find . -type f -not -path './dist/*' -not -path './node_modules/*' -print0 | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum > dist/tree.sha",
+    'cp -r src dist/src && cp index.html dist/',
     `echo built >> "${'$'}{GUARD_COUNTER}"`,
 ].join(' && ');
 const WORKER = 'mkdir -p "$WORKER_OUT" && cp cloudflare/worker.js "$WORKER_OUT/worker.js"';
@@ -99,6 +101,27 @@ describe('allow-list', () => {
         const r = run(['base']);
         expect(out(r)).toContain('PRAGUE UNCHANGED');
         expect(r.status).toBe(0);
+    });
+
+    it('prints the scope of the guarantee on success', () => {
+        write('src/mesta/new.jsx', 'banner');
+        commit('mesta');
+        const r = run(['base']);
+        expect(r.status).toBe(0);
+        expect(out(r)).toMatch(/stripped Prague build identical; never deploy Prague from mesta\/\* branches/);
+    });
+
+    it('handles non-ASCII paths: allowed ones pass, forbidden ones are named unquoted', () => {
+        write('docs/příloha-Říčany.md', 'doc');
+        write('src/mesta/Říčany.jsx', 'x');
+        commit('allowed non-ascii');
+        expect(run(['base']).status).toBe(0);
+        write('src/Říčany.jsx', 'x');
+        commit('forbidden non-ascii');
+        const r = run(['base']);
+        expect(r.status).toBe(1);
+        expect(out(r)).toContain('src/Říčany.jsx');
+        expect(out(r)).not.toContain('\\305');
     });
 
     it.each([
@@ -170,17 +193,77 @@ describe('byte comparison (defense in depth)', () => {
         expect(out(r)).toContain('worker.js');
     });
 
-    it('skipping the worker step never prints the plain success line', () => {
+    it('skipping the worker step is PARTIAL: exit 4, first line PARTIAL:, never a pass', () => {
         write('src/mesta/new.jsx', 'banner');
         commit('mesta');
         const r = run(['base'], { GUARD_SKIP_WORKER: '1' });
-        expect(r.status).toBe(0);
-        expect(out(r)).toContain('PARTIAL');
-        expect(out(r)).not.toMatch(/^PRAGUE UNCHANGED$/m);
+        expect(r.status).toBe(4);
+        expect(r.stdout.split('\n')[0]).toMatch(/^PARTIAL:/);
+        expect(out(r)).not.toContain('PRAGUE UNCHANGED');
+    });
+
+    it('a real difference is still PRAGUE CHANGED (exit 1) when the worker step is skipped', () => {
+        write('src/app.js', 'export const a = 3');
+        commit('prague change');
+        const r = run(['base'], { GUARD_ALLOW_REGEX: '^src/', GUARD_SKIP_WORKER: '1' });
+        expect(r.status).toBe(1);
+        expect(out(r)).toContain('PRAGUE CHANGED');
+    });
+});
+
+describe('the strip list is load-bearing', () => {
+    const script = readFileSync(SCRIPT, 'utf8');
+    const block = /STRIP=\(([^)]*)\)/.exec(script)[1];
+    const entries = block.split(/\s+/).filter(Boolean);
+
+    const withoutEntry = (entry) => {
+        const copy = path.join(tmpRoot, `guard-no-${entry.replace(/\W/g, '_')}.sh`);
+        writeFileSync(copy, script.replace(block, block.split(/\s+/).filter((e) => e && e !== entry).join(' ')));
+        return copy;
+    };
+    const runScript = (file, args) => spawnSync('bash', [file, ...args], { cwd: repo, encoding: 'utf8', env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: tmpRoot, GUARD_INSTALL_CMD: 'true', GUARD_BUILD_CMD: BUILD, GUARD_WORKER_CMD: WORKER, GUARD_COUNTER: counter } });
+
+    beforeEach(() => {
+        for (const rel of ['src/mesta/a.jsx', 'public-mesta/data/x.json', 'tools/t.js', 'placeholder/p.html', 'cloudflare/mesta-worker.js', 'cloudflare/mestaWiring.js', 'cloudflare/mestaWiring.test.js', 'cloudflare/mestaWorker.drift.test.js', 'cloudflare/wrangler.mesta.jsonc', 'vite.mesta.config.js', '.github/workflows/mesta.yml', 'docs/new.md', 'docs/new.txt', 'scripts/new.sh', 'NOTES.md']) write(rel, `mesta ${rel}`);
+        commit('all mesta paths');
+    });
+
+    it('the unmodified script passes on a commit touching every allow-listed path', () => {
+        expect(runScript(SCRIPT, ['base']).status).toBe(0);
+    });
+
+    it('lists the expected entries', () => {
+        expect(entries).toContain('src/mesta');
+        expect(entries.length).toBeGreaterThanOrEqual(12);
+    });
+
+    it.each(entries)('dropping %s from STRIP makes the guard report a change', (entry) => {
+        const r = runScript(withoutEntry(entry), ['base']);
+        expect(r.status, `${r.stdout}${r.stderr}`).toBe(1);
+        expect(r.stdout + r.stderr).toContain('PRAGUE CHANGED');
+    });
+
+    it('dropping the *.md rule makes the guard report a change', () => {
+        const copy = path.join(tmpRoot, 'guard-no-md.sh');
+        writeFileSync(copy, script.replace(/ && find \. -name '\*\.md'[^)]*-delete/, ''));
+        expect(readFileSync(copy, 'utf8')).not.toContain("-name '*.md'");
+        const r = runScript(copy, ['base']);
+        expect(r.status).toBe(1);
     });
 });
 
 describe('base cache and determinism', () => {
+    it('the cache key includes the script itself (an edited guard does not reuse a stale base)', () => {
+        write('src/mesta/new.jsx', 'banner');
+        commit('mesta');
+        run(['base']);
+        const script = readFileSync(SCRIPT, 'utf8');
+        const copy = path.join(tmpRoot, 'guard-edited.sh');
+        writeFileSync(copy, `${script}\n# edited\n`);
+        spawnSync('bash', [copy, 'base'], { cwd: repo, encoding: 'utf8', env: { PATH: process.env.PATH, HOME: process.env.HOME, TMPDIR: tmpRoot, GUARD_INSTALL_CMD: 'true', GUARD_BUILD_CMD: BUILD, GUARD_WORKER_CMD: WORKER, GUARD_COUNTER: counter } });
+        expect(readdirSync(path.join(repo, '.cache')).filter((f) => f.startsWith('prague-base-'))).toHaveLength(2);
+    });
+
     it('builds the base twice on a first run, then reuses the cache', () => {
         write('src/mesta/new.jsx', 'banner');
         commit('mesta');
