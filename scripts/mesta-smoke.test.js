@@ -162,7 +162,14 @@ describe('checkKraj', () => {
         const problems = checkKraj({ shard, hidden: [3], nowMs: NOW, ...r });
         expect(problems).toContain('councils missing: 2');
         expect(problems).toContain('councils unexpected: 9');
-        expect(problems).toContain('hidden towns present: 3');
+        expect(problems.some((p) => p.startsWith('hidden towns leak'))).toBe(false);
+    });
+    it('allows a hidden town in the shard only with neutral (pirates null) data', () => {
+        const r = good();
+        r.payload.councils[3] = { ...summary(3), pirates: null };
+        expect(checkKraj({ shard, hidden: [3], nowMs: NOW, ...r })).toEqual([]);
+        r.payload.councils[3] = { ...summary(3), pirates: { pct: 8, seats: 2 } };
+        expect(checkKraj({ shard, hidden: [3], nowMs: NOW, ...r })).toContain('hidden towns leak Pirate figures: 3');
     });
     it('flags counted > total', () => {
         const r = good();

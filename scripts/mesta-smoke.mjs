@@ -146,8 +146,9 @@ export function checkKraj({ shard, hidden, status, headers = {}, payload, bytes,
     const extra = [...keys].filter((k) => !expected.has(k));
     if (missing.length) problems.push(`councils missing: ${missing.join(', ')}`);
     if (extra.length) problems.push(`councils unexpected: ${extra.join(', ')}`);
-    const hiddenPresent = hidden.map(String).filter((h) => keys.has(h));
-    if (hiddenPresent.length) problems.push(`hidden towns present: ${hiddenPresent.join(', ')}`);
+    // Skryté město je v shardu záměrně (neutrální souhrn); nesmí ale nést údaje o Piratech.
+    const hiddenLeaking = hidden.map(String).filter((h) => keys.has(h) && payload.councils[h]?.pirates != null);
+    if (hiddenLeaking.length) problems.push(`hidden towns leak Pirate figures: ${hiddenLeaking.join(', ')}`);
     for (const [z, s] of Object.entries(payload.councils)) {
         if (!isObject(s) || !Number.isFinite(s.counted) || !Number.isFinite(s.total)) problems.push(`council ${z}: summary lacks numeric counted/total`);
         else if (s.counted > s.total) problems.push(`council ${z}: counted ${s.counted} > total ${s.total}`);
