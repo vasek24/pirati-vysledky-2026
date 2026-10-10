@@ -8,7 +8,7 @@
 // datacenter a diváků). Serverové funkce z api/ zůstávají jen pro Vercel.
 //
 // Před DO je Cache API (per datacentrum) s TTL 1–5 s (a v pre/final fázi
-// 300/600 s) podle nextRefreshAt (cloudflare/edge.js), k tomu 10min záložní
+// 300/600 s) podle nextRefreshAt (cloudflare/edge.js), k tomu 20min záložní
 // kopie, kterou Worker vydá, když DO selže. Hlavička x-cache:
 // HIT/MISS/LASTRESORT/BYPASS slouží k ověření (obdoba x-vercel-cache).
 //
@@ -18,7 +18,7 @@ import { DurableObject } from 'cloudflare:workers';
 import volby from '../api/volby.js';
 import { createBugHandler } from '../api/bug.js';
 import { KV_BASE_URL, councilByZastup } from '../src/councils.js';
-import { LAST_RESORT_TTL, cacheControlFor, edgeTtl, lastResortRequest, markStale } from './edge.js';
+import { LAST_RESORT_TTL, cacheControlFor, edgeTtl, lastResortRequest, markStale, withTimeout } from './edge.js';
 import { FIRST_CLASS_KEYS, isFirstClass } from './feedClasses.js';
 import { buildFeed, feedKind, makeLog, phaseOfSnapshot } from './feedWiring.js';
 import { createRefresher } from './refresh.js';
@@ -168,22 +168,44 @@ function reply(request, { status, headers, body }, cacheState) {
     });
 }
 
-const unavailable = () => ({
-    status: 503,
-    headers: { 'content-type': 'application/json', 'cache-control': 'no-store' },
-    body: JSON.stringify({ error: 'unavailable' }),
-});
+const RPC_TIMEOUT_MS = 13000; // nad 12s lhůtou buildu v refresheru, pod 25s timeoutem klienta
+const FAIL_LOG_EVERY_MS = 10000;
+let failLoggedAt = 0;
 
-// DO selhal (výjimka nebo 5xx): poslední dobrá odpověď z 10min kopie jako
-// stale:true, jinak 503 JSON. Nic z toho se nevkládá do hlavní cache.
-async function lastResort(request, cache, lastResortKey) {
+// V poruše by log na každý požadavek diváka byl neomezený — nejvýš jednou za 10 s na isolate
+function logFeedFailure(key, reason) {
+    const t = Date.now();
+    if (t - failLoggedAt < FAIL_LOG_EVERY_MS) return;
+    failLoggedAt = t;
+    console.warn('feed-failed', key, reason);
+}
+
+// DO selhal (výjimka, timeout nebo 5xx): poslední dobrá odpověď ze záložní
+// kopie jako stale:true, jinak 503 JSON (necachuje se). Označená kopie se
+// vloží do HLAVNÍ cache na ≤ 5 s, aby se v poruše každý požadavek nevracel
+// do přetíženého DO (zpětná vazba blokující zotavení). Do záložního klíče se
+// označené tělo nevrací.
+async function lastResort(request, ctx, cache, cacheKey, lastResortKey) {
     const copy = await cache.match(lastResortKey).catch(() => null);
-    if (!copy) return reply(request, unavailable(), 'MISS');
-    return reply(request, {
+    if (!copy) {
+        return reply(request, {
+            status: 503,
+            headers: { 'content-type': JSON_TYPE, 'cache-control': 'no-store' },
+            body: JSON.stringify({ error: 'unavailable' }),
+        }, 'UNAVAILABLE');
+    }
+    const body = markStale(await copy.text());
+    const clientCache = 'public, max-age=0, s-maxage=5';
+    ctx.waitUntil(cache.put(cacheKey, new Response(body, {
         status: 200,
-        headers: { 'content-type': JSON_TYPE, 'cache-control': 'public, max-age=0, s-maxage=5' },
-        body: markStale(await copy.text()),
-    }, 'LASTRESORT');
+        headers: {
+            'content-type': JSON_TYPE,
+            'cache-control': 'public, max-age=5, s-maxage=5',
+            'x-client-cache-control': clientCache,
+            'x-lastresort': '1',
+        },
+    })).catch(() => {}));
+    return reply(request, { status: 200, headers: { 'content-type': JSON_TYPE, 'cache-control': clientCache, 'x-lastresort': '1' }, body }, 'LASTRESORT');
 }
 
 async function api(request, env, ctx, url) {
@@ -221,13 +243,17 @@ async function api(request, env, ctx, url) {
 
     let out = null;
     try {
-        out = await callFeed(env, key);
+        // zaseknuté DO nesmí držet diváky až do 25s timeoutu klienta
+        out = await withTimeout(callFeed(env, key), RPC_TIMEOUT_MS);
     } catch (error) {
-        console.warn('feed-failed', key, error?.message || error);
+        logFeedFailure(key, error?.message || error);
     }
     // klient po 503 nechá poslední snapshot a znovu zkouší náš server; 5xx se
     // nikdy necachuje
-    if (!out || out.status >= 500) return lastResort(request, cache, lastResortKey);
+    if (!out || out.status >= 500) {
+        if (out) logFeedFailure(key, `status ${out.status}`);
+        return lastResort(request, ctx, cache, cacheKey, lastResortKey);
+    }
 
     const headers = { 'content-type': JSON_TYPE, 'cache-control': out.cacheControl };
     const ttl = sMaxAge(out.cacheControl);
@@ -242,7 +268,7 @@ async function api(request, env, ctx, url) {
                 'x-client-cache-control': out.cacheControl,
             },
         })));
-        // 10min záložní kopie pod samostatným klíčem (C2: fragment by hlavní klíč přepsal)
+        // 20min záložní kopie pod samostatným klíčem (C2: fragment by hlavní klíč přepsal)
         ctx.waitUntil(cache.put(lastResortKey, new Response(out.body, {
             status: 200,
             headers: {

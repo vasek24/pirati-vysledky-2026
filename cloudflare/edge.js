@@ -2,7 +2,9 @@
 // TTL v Cache API, hlavička Cache-Control, záložní („last resort") kopie.
 // Pravidla: docs/superpowers/specs/2026-10-10-election-night-backup-design.md §3.3.
 
-export const LAST_RESORT_TTL = 600; // s
+// nad největším stropem TTL hlavní položky (600 s ve fázi final): selže-li DO
+// hned po vypršení hlavní položky, kopie musí ještě existovat
+export const LAST_RESORT_TTL = 1200; // s
 
 /**
  * TTL (s) v Cache API a pro CDN: clamp(ceil((nextRefreshAt − now)/1000), 1, cap).
@@ -44,4 +46,13 @@ export function markStale(body) {
 export function lastResortRequest(url) {
     const u = new URL(url);
     return new Request(new URL(`/__lastresort${u.pathname}${u.search}`, u.origin));
+}
+
+/** Závod `promise` s časovačem: po `ms` odmítne (jako výjimka); časovač se vždy zruší. */
+export function withTimeout(promise, ms) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`timeout ${ms} ms`)), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
