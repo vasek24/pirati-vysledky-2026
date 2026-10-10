@@ -23,13 +23,20 @@ export function fmtPragueTime(ms) {
     return t === null ? '–' : pragueTime.format(t);
 }
 
+// Kdy náš server tuhle verzi dat poprvé načetl: `firstSeenAt` (server ho drží
+// per `generated`); starší Worker ho nemá → `refreshedAt` (posouvá se při každé
+// obnově, takže je jen horní odhad). Nic použitelného = null.
+export function serverSeenAt({ firstSeenAt, refreshedAt } = {}) {
+    return finite(firstSeenAt) ?? finite(refreshedAt);
+}
+
 // generated = pražský čas bez zóny (vždy přes parseCsuTime)
 // skewValid === false: odpověď neměla použitelné `x-server-now`, hodiny klienta
 // jsou neověřené → krok „do prohlížeče“ se neukazuje (server část zůstává)
-export function latencyChain({ generated, refreshedAt, servedAt, receivedAt, renderedAt, skewValid } = {}) {
+export function latencyChain({ generated, refreshedAt, firstSeenAt, servedAt, receivedAt, renderedAt, skewValid } = {}) {
     const parsed = typeof generated === 'string' ? parseCsuTime(generated) : null;
     const g = parsed ? finite(parsed.getTime()) : null;
-    const refreshed = finite(refreshedAt);
+    const refreshed = serverSeenAt({ firstSeenAt, refreshedAt });
     const served = finite(servedAt);
     const received = finite(receivedAt);
     const rendered = finite(renderedAt);
@@ -68,14 +75,12 @@ export function formatLatencyLine(chain, { generatedLabel, refreshedLabel, rende
 // každém úspěšném načtení přepíše `refreshedAt`, i když ČSÚ data nezměnilo
 // (při sčítání +60 s, ve fázi final +15 min), takže pozdější odpovědi se stejným
 // `generated` by řetězec jen zkreslily. Bez `generated` se nic nemění.
-// TODO (Phase 2, cloudflare/refresh.js): server-side `firstSeenAt` (kdy server
-// dostal tuhle verzi poprvé) by udělal řetězec přesný i při čerstvém načtení
-// stránky — teď první odpověď po otevření stránky vidí data, která mohou být
-// už starší.
-export function nextLatency(prev, { generated, refreshedAt, servedAt, receivedAt, skewValid }) {
+// Čerstvě načtená stránka je vždy „první spatření“; server proto posílá
+// `firstSeenAt` (kdy sám verzi poprvé načetl) a řetězec je přesný i tam.
+export function nextLatency(prev, { generated, refreshedAt, firstSeenAt, servedAt, receivedAt, skewValid }) {
     if (typeof generated !== 'string' || generated === '') return prev;
     if (prev && prev.generated === generated) return prev;
-    return { generated, refreshedAt, servedAt, receivedAt, skewValid, renderedAt: null };
+    return { generated, refreshedAt, firstSeenAt, servedAt, receivedAt, skewValid, renderedAt: null };
 }
 
 // Řádek ukazovat jen při sčítání s čerstvými daty z nového serveru

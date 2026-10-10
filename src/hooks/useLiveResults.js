@@ -33,7 +33,7 @@ const PROXY_TIMEOUT_MS = 25e3;
 const arrivalsKey = (source) => `kv26.arrivals.${source.key}`;
 const SNAP_PREFIX = 'kv26.snap.';
 const MAX_CACHED_WAIT_MS = 15 * 60e3;
-const RESPONSE_META = ['stale', 'refreshedAt', 'nextRefreshAt', 'servedAt', 'complete', 'refreshing'];
+const RESPONSE_META = ['stale', 'refreshedAt', 'firstSeenAt', 'nextRefreshAt', 'servedAt', 'complete', 'refreshing'];
 
 // Zdroj = jedno zastupitelstvo; objekt je pro dané zastupitelstvo vždy
 // stejný (hook podle něj plánuje dotazy)
@@ -101,6 +101,7 @@ async function fetchProxy(source, view, onServerNow) {
         nextRefreshAt: Number.isFinite(body.nextRefreshAt) ? body.nextRefreshAt : undefined,
         // čas serveru z těla odpovědi (starší Worker je nemá) — řetězec zpoždění v hlavičce
         refreshedAt: body.refreshedAt,
+        firstSeenAt: body.firstSeenAt,
         servedAt: body.servedAt,
     };
 }
@@ -302,7 +303,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
             setSnapshot(stored.snapshot);
             if (!demoFeed) {
                 // jen první odpověď s novým `generated` (viz nextLatency)
-                const chain = { generated: snap.generated, refreshedAt: result.refreshedAt, servedAt: result.servedAt, receivedAt: serverNow(), skewValid };
+                const chain = { generated: snap.generated, refreshedAt: result.refreshedAt, firstSeenAt: result.firstSeenAt, servedAt: result.servedAt, receivedAt: serverNow(), skewValid };
                 setLatency((l) => nextLatency(l, chain));
             }
             setState((s) => ({

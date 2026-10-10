@@ -1059,3 +1059,127 @@ describe('second class bounded wait', () => {
         expect(parse(res)).toMatchObject({ refreshing: false, refreshedAt: T0 });
     });
 });
+
+// ---- firstSeenAt (P2-C) --------------------------------------------------------
+
+describe('firstSeenAt', () => {
+    // build vrací kandidáty postupně (poslední se opakuje)
+    const seq = (...cands) => {
+        let n = 0;
+        return async () => cands[Math.min(n++, cands.length - 1)]();
+    };
+
+    it('first install: firstSeenAt = now; in persisted meta, spliced body once, valid JSON, and get().meta', async () => {
+        const { r, st } = setup();
+        const res = await r.get();
+        expect(st.put.mock.calls[0][0].meta.firstSeenAt).toBe(T0);
+        expect(parse(res).firstSeenAt).toBe(T0);
+        expect(res.meta.firstSeenAt).toBe(T0);
+        expect(res.body.split('"firstSeenAt":')).toHaveLength(2); // přesně jednou
+        expect(() => JSON.parse(res.body)).not.toThrow();
+    });
+
+    it('spliced field is additive: all existing header fields keep their order, firstSeenAt after them', async () => {
+        const { r } = setup();
+        const { body } = await r.get();
+        const keys = ['refreshedAt', 'nextRefreshAt', 'servedAt', 'stale', 'complete', 'refreshing', 'firstSeenAt', 'v'];
+        const idx = keys.map((k) => body.indexOf(`"${k}":`));
+        expect(idx.every((i) => i >= 0)).toBe(true);
+        expect([...idx].sort((a, b) => a - b)).toEqual(idx);
+        // markStale() v Workeru hledá "stale" v prvních 300 znacích těla
+        expect(body.indexOf('"firstSeenAt":')).toBeLessThan(300);
+    });
+
+    it('same generated re-installed later keeps firstSeenAt while refreshedAt moves', async () => {
+        const g = csu(T0);
+        const { r, st } = setup({ build: seq(() => council({ generated: g, fetchId: 'a' }), () => council({ generated: g, fetchId: 'b' })) });
+        await r.get();
+        await advance(61 * S);
+        await poll(r);
+        const b = parse(await r.get());
+        expect(b.refreshedAt).toBe(T0 + 61 * S);
+        expect(b.firstSeenAt).toBe(T0);
+        expect(st.put).toHaveBeenCalledTimes(2);
+        expect(st.put.mock.calls[1][0].meta).toMatchObject({ refreshedAt: T0 + 61 * S, firstSeenAt: T0 });
+    });
+
+    it('new generated sets firstSeenAt = now', async () => {
+        const { r } = setup({ build: seq(() => council({ generated: csu(T0), fetchId: 'a' }), () => council({ generated: csu(T0 + 60 * S), fetchId: 'b' })) });
+        await r.get();
+        await advance(61 * S);
+        await poll(r);
+        const b = parse(await r.get());
+        expect(b.refreshedAt).toBe(T0 + 61 * S);
+        expect(b.firstSeenAt).toBe(T0 + 61 * S);
+    });
+
+    it('rehydrate keeps the stored firstSeenAt; a later same-generated install still keeps it', async () => {
+        const g = csu(T0);
+        const a = setup({ build: async () => council({ generated: g }) });
+        await a.r.get();
+        await advance(30 * S);
+        const b = setup({ storage: a.st, time: Date.now(), build: async () => council({ generated: g, fetchId: 'b' }) });
+        expect(parse(await b.r.get()).firstSeenAt).toBe(T0);
+        await advance(61 * S);
+        await poll(b.r);
+        const res = parse(await b.r.get());
+        expect(res.refreshedAt).toBeGreaterThan(T0);
+        expect(res.firstSeenAt).toBe(T0);
+    });
+
+    it('rehydrated old meta without firstSeenAt falls back to refreshedAt (also for later same-generated installs)', async () => {
+        const g = csu(T0);
+        const a = setup({ build: async () => council({ generated: g }) });
+        await a.r.get();
+        const { firstSeenAt, ...oldMeta } = a.st.data.get('meta');
+        expect(firstSeenAt).toBe(T0);
+        a.st.data.set('meta', { ...oldMeta, refreshedAt: T0 - 5 * S });
+        const b = setup({ storage: a.st, time: T0, build: async () => council({ generated: g, fetchId: 'b' }) });
+        const first = parse(await b.r.get());
+        expect(first.firstSeenAt).toBe(T0 - 5 * S);
+        await advance(61 * S);
+        await poll(b.r);
+        const after = parse(await b.r.get());
+        expect(after.refreshedAt).toBe(T0 + 61 * S);
+        expect(after.firstSeenAt).toBe(T0 - 5 * S);
+    });
+
+    it('older / rejected / incomplete / failed outcomes never change firstSeenAt', async () => {
+        const cands = [
+            () => council({ generated: csu(T0), fetchId: 'a' }),
+            () => council({ generated: csu(T0 - 10 * S), fetchId: 'older' }), // older
+            () => council({ generated: csu(T0 + 60 * S), parties: [], fetchId: 'rej' }), // rejected
+            () => council({ generated: csu(T0 + 70 * S), counted: 12, okrsky: { 1: { ...row(1111), votes: null }, 2: row(2000) }, fetchId: 'inc' }), // incomplete
+            async () => { throw new Error('boom'); }, // build failed
+        ];
+        const { r } = setup({ build: seq(...cands), random: () => 0 });
+        await r.get();
+        for (let i = 1; i < cands.length; i++) {
+            await advance(61 * S);
+            await poll(r);
+            const b = parse(await r.get());
+            expect(b.refreshedAt).toBe(T0);
+            expect(b.firstSeenAt).toBe(T0);
+        }
+    });
+
+    it('quarantine acceptance of a new generated sets firstSeenAt = now', async () => {
+        let n = 0;
+        const { r } = setup({
+            build: async () => (n++ === 0
+                ? council({ generated: csu(T0), counted: 20, fetchId: 'g' })
+                : council({ generated: csu(Date.now()), counted: 15, fetchId: `q${n}` })),
+            random: () => 0,
+        });
+        await r.get();
+        let guard = 0;
+        while (parse(await r.get()).precincts.counted === 20 && guard++ < 30) {
+            await advance(21 * S);
+            await poll(r);
+        }
+        const b = parse(await r.get());
+        expect(b.precincts.counted).toBe(15);
+        expect(b.firstSeenAt).toBe(b.refreshedAt);
+        expect(b.firstSeenAt).toBeGreaterThan(T0);
+    });
+});

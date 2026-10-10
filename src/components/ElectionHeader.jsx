@@ -13,7 +13,7 @@ import { COUNCILS, POLLS_CLOSE } from '../councils';
 import { activeCouncil } from '../volby/council';
 import { countdown, fmtPct, fmtTime, parseCsuTime, plural } from '../volby/format';
 import { ageSeconds, formatAge, liveState, nextCheckLabel } from '../lib/freshness';
-import { fmtPragueTime, formatLatencyLine, latencyChain, latencyVisible } from '../lib/latency';
+import { fmtPragueTime, formatLatencyLine, latencyChain, latencyVisible, serverSeenAt } from '../lib/latency';
 import { PrecinctStrip } from './Precincts';
 import { useChangesContext } from '../hooks/useChanges';
 
@@ -287,7 +287,7 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
     const latencyLine = hasCsuTime && latencyVisible({ demo, phase, stale: live.stale, latency: lat })
         ? formatLatencyLine(latencyChain(lat), {
             generatedLabel: fmtPragueTime(parseCsuTime(lat.generated)?.getTime()),
-            refreshedLabel: fmtPragueTime(lat.refreshedAt),
+            refreshedLabel: fmtPragueTime(serverSeenAt(lat)),
             // bez použitelných hodin serveru čas prohlížeče neukazujeme
             renderedLabel: lat.skewValid ? fmtPragueTime(lat.renderedAt) : undefined,
         })

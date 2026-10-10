@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fmtPragueTime, formatLatencyLine, latencyChain, latencyVisible, MAX_STEP_SECONDS, nextLatency } from './latency.js';
+import { fmtPragueTime, formatLatencyLine, latencyChain, latencyVisible, MAX_STEP_SECONDS, nextLatency, serverSeenAt } from './latency.js';
 
 // zone-less ČSÚ čas = pražský čas; 14:03:07 CEST = 12:03:07 UTC (testy běží s TZ=UTC)
 const GENERATED = '2026-10-10T14:03:07';
@@ -206,6 +206,44 @@ describe('nextLatency (record the chain only on the first sighting of a generate
         expect(nextLatency(chain, { ...first, generated: null })).toBe(chain);
         expect(nextLatency(null, { ...first, generated: undefined })).toBeNull();
         expect(nextLatency(null, { ...first, generated: '' })).toBeNull();
+    });
+});
+
+describe('firstSeenAt (server-side first pickup of this generated)', () => {
+    const input = { generated: GENERATED, refreshedAt: G + 72_000, servedAt: G + 73_000, receivedAt: G + 74_000, renderedAt: G + 74_100 };
+    it('is used instead of refreshedAt for the server step and the hop to the browser', () => {
+        const c = latencyChain({ ...input, firstSeenAt: G + 12_000 });
+        expect(c).toEqual({ csuToServer: 12, serverToClient: 62, receiveToRender: 0, total: 74 });
+    });
+    it('without firstSeenAt (old server) the chain is exactly as before', () => {
+        expect(latencyChain(input)).toEqual({ csuToServer: 72, serverToClient: 2, receiveToRender: 0, total: 74 });
+        expect(latencyChain({ ...input, firstSeenAt: undefined })).toEqual(latencyChain(input));
+    });
+    it('garbage firstSeenAt is ignored (falls back to refreshedAt)', () => {
+        for (const g of [NaN, Infinity, -Infinity, 'abc', '', '1700000000000', null, {}, [], true]) {
+            expect(latencyChain({ ...input, firstSeenAt: g })).toEqual(latencyChain(input));
+        }
+    });
+    it('cap and skew rules still apply', () => {
+        const capped = latencyChain({ ...input, firstSeenAt: G + 601_000 });
+        expect(capped.csuToServer).toBeNull();
+        expect(capped.total).toBeNull();
+        expect(latencyChain({ ...input, firstSeenAt: G + 12_000, skewValid: false })).toEqual({ csuToServer: 12, serverToClient: null, receiveToRender: null, total: null });
+        // firstSeenAt před generated (hodiny serveru) → 0, ne záporné
+        expect(latencyChain({ ...input, firstSeenAt: G - 5_000 }).csuToServer).toBe(0);
+    });
+    it('serverSeenAt gives the time the header labels: firstSeenAt when finite, else refreshedAt', () => {
+        expect(serverSeenAt({ firstSeenAt: G + 12_000, refreshedAt: G + 72_000 })).toBe(G + 12_000);
+        expect(serverSeenAt({ firstSeenAt: 'x', refreshedAt: G + 72_000 })).toBe(G + 72_000);
+        expect(serverSeenAt({ refreshedAt: G + 72_000 })).toBe(G + 72_000);
+        expect(serverSeenAt({})).toBeNull();
+        expect(serverSeenAt()).toBeNull();
+    });
+    it('nextLatency keeps firstSeenAt in the recorded chain (first sighting semantics unchanged)', () => {
+        const first = { generated: GENERATED, refreshedAt: G + 72_000, firstSeenAt: G + 12_000, servedAt: G + 73_000, receivedAt: G + 74_000, skewValid: true };
+        const chain = nextLatency(null, first);
+        expect(chain.firstSeenAt).toBe(G + 12_000);
+        expect(nextLatency(chain, { ...first, refreshedAt: G + 132_000, receivedAt: G + 134_000 })).toBe(chain);
     });
 });
 
