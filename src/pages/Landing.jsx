@@ -9,7 +9,7 @@ import { OVERVIEW_SOURCE, useLiveResults } from '../hooks/useLiveResults';
 import { createOverviewDemoFeed } from '../volby/overview';
 import { listLabels } from '../volby/council';
 import { countdown, fmtInt, fmtPct, fmtPp, fmtShortTime, fmtTime, parseCsuTime, plural } from '../volby/format';
-import { AutoRefreshNote, RefreshButton, StatusPill } from '../components/ElectionHeader';
+import { AutoRefreshNote, NoDataLinks, RefreshButton, StatusPill } from '../components/ElectionHeader';
 import { useNow } from '../hooks/useNow';
 import { APP_VERSION } from '../changelog';
 import { openChangelog } from '../utils/openChangelog';
@@ -358,10 +358,11 @@ function Hero({ snapshot, live, lists }) {
                 </div>
             </div>
             {live.error && (live.stale || live.status === 'error') && (
-                <div className="bg-orange-500/90 text-white text-[11px] px-4 py-1 text-center">
+                <div className="bg-orange-700 text-white text-[11px] px-4 py-1 text-center">
                     {live.stale
                         ? 'Zdroj teď neodpovídá — ukazuji poslední načtená data, zkouším to znovu.'
                         : 'Výsledky se nepodařilo načíst — zkouším to znovu.'}
+                    {!snapshot && live.status === 'error' && <> <NoDataLinks linkClass="text-white" /></>}
                 </div>
             )}
         </header>

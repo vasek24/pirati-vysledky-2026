@@ -23,7 +23,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { phaseOf, SNAPSHOT_VERSION } from '../volby/feed.js';
 import { OVERVIEW_VERSION } from '../volby/overview.js';
 import { POLLS_CLOSE } from '../councils.js';
-import { MIN_GAP_MS, backoffDelay, computeSkew, nextPollDelay, pickOffset, visibilityDelay } from './schedule.js';
+import { MIN_GAP_MS, backoffDelay, clampTimeout, nextPollDelay, nextSkew, pickOffset, visibilityDelay } from './schedule.js';
 
 const INTERVAL = { pre: 10 * 60e3, waiting: 60e3, counting: 60e3, final: 15 * 60e3 };
 const DEMO_INTERVAL = 4000;
@@ -85,7 +85,7 @@ async function fetchProxy(source, view, onServerNow) {
     const sent = Date.now();
     const res = await fetch(source.url, { headers: { Accept: 'application/json', 'X-Kv26-View': view }, signal });
     // hodiny serveru hned (i u chybové odpovědi); klient = střed mezi odesláním a příjmem
-    onServerNow(computeSkew(res.headers.get('x-server-now'), (sent + Date.now()) / 2));
+    onServerNow(res.headers.get('x-server-now'), (sent + Date.now()) / 2);
     const type = res.headers.get('content-type') || '';
     // Vite dev bez API / výpadek funkce vrátí HTML nebo chybu → chyba (poslední data zůstávají)
     if (!type.includes('application/json')) throw new Error('proxy-unavailable');
@@ -203,7 +203,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
         clearTimeout(timerRef.current);
         // mezi dotazy aspoň 5 s (ne v demu)
         const gap = demoFeed ? 0 : MIN_GAP_MS - (Date.now() - lastAttemptRef.current);
-        const wait = Math.max(ms, gap, 0);
+        const wait = clampTimeout(Math.max(ms, gap, 0));
         const at = serverNow() + wait;
         dueAtRef.current = at;
         if (document.hidden) {
@@ -240,8 +240,9 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
             } else {
                 const visit = visitRef.current;
                 visitRef.current = false;
-                result = await fetchProxy(target, viewHeader(viewSeconds, visit), (skew) => {
-                    // bez hlavičky 0 = hodiny klienta beze změny (starší Worker)
+                result = await fetchProxy(target, viewHeader(viewSeconds, visit), (header, clientNow) => {
+                    // chybí/nesmyslná hlavička → zůstává poslední platný skew (na začátku 0)
+                    const skew = nextSkew(skewRef.current, header, clientNow);
                     skewRef.current = skew;
                     setState((s) => (s.skew === skew ? s : { ...s, skew }));
                 });

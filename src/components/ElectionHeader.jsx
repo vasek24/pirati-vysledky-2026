@@ -19,6 +19,19 @@ import { PrecinctStrip } from './Precincts';
 const ORIGINAL_SITE_URL = 'https://pirati-vysledky-2026.pirati-vysledky-2026-cloudflare.workers.dev';
 const CSU_RESULTS_URL = 'https://volby.gov.cz/app/kv2026/';
 
+// Dva obyčejné odkazy, kam se podívat, když Worker nic použitelného nevrací
+export function NoDataLinks({ linkClass = 'text-[#FEC900]' }) {
+    const cls = `inline-block py-1 font-semibold underline ${linkClass}`;
+    return (
+        <>
+            Mezitím se můžeš podívat na{' '}
+            <a href={ORIGINAL_SITE_URL} target="_blank" rel="noopener noreferrer" className={cls}>původní web</a>
+            {' '}nebo na{' '}
+            <a href={CSU_RESULTS_URL} target="_blank" rel="noopener noreferrer" className={cls}>výsledky ČSÚ</a>.
+        </>
+    );
+}
+
 // `state` (live | pre | final | stale | offline z freshness.liveState) má
 // přednost; bez něj se stav odvodí z fáze (Landing)
 export function StatusPill({ phase, demo, stale, state }) {
@@ -326,21 +339,23 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                             </span>
                         )}
                         <span>
-                            {live.fetching ? 'načítám nová data…' : nextLabel ? <>další kontrola za <b className="font-semibold text-white">{nextLabel}</b></> : 'kontrola pozastavena'}
+                            {live.fetching
+                            ? 'načítám nová data…'
+                            : nextLabel
+                                ? <>další kontrola za <b className="font-semibold text-white">{nextLabel}</b></>
+                                // bez termínu: skrytá záložka = pauza; při prvním vykreslení zatím nic
+                                : document.hidden ? 'kontrola pozastavena' : null}
                         </span>
                     </div>
                 )}
-                {!demo && (
-                    <div className="mt-0.5 text-[11px] leading-snug text-white/65">
+                {!demo && pillState === 'live' && (
+                    <div className="mt-0.5 short:hidden text-[11px] leading-snug text-white/65">
                         ČSÚ zveřejňuje data zhruba jednou za minutu; stránka se obnovuje sama.
                     </div>
                 )}
                 {unavailable && (
                     <div className="mt-1.5 text-xs leading-snug text-white/85">
-                        Mezitím se můžeš podívat na{' '}
-                        <a href={ORIGINAL_SITE_URL} target="_blank" rel="noopener noreferrer" className="inline-block py-1 font-semibold text-[#FEC900] underline">původní web</a>
-                        {' '}nebo na{' '}
-                        <a href={CSU_RESULTS_URL} target="_blank" rel="noopener noreferrer" className="inline-block py-1 font-semibold text-[#FEC900] underline">výsledky ČSÚ</a>.
+                        <NoDataLinks />
                     </div>
                 )}
                 {snapshot && phase !== 'pre' && geoJson && (

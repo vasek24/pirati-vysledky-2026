@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { backoffDelay, computeSkew, nextPollDelay, pickOffset, visibilityDelay } from './schedule.js';
+import { MAX_TIMEOUT_MS, backoffDelay, clampTimeout, computeSkew, nextPollDelay, nextSkew, pickOffset, visibilityDelay } from './schedule.js';
 
 describe('pickOffset', () => {
     it('is uniform over [0, 25 s]', () => {
@@ -35,7 +35,7 @@ describe('nextPollDelay', () => {
     });
 
     it('client clock +120 s with x-server-now: normal delay, not 5-10 s (skew)', () => {
-        const serverNow = 5_000_000;
+        const serverNow = 1_790_000_000_000;
         const clientNow = serverNow + 120_000; // rychlé hodiny
         const skew = computeSkew(String(serverNow), clientNow);
         expect(skew).toBe(-120_000);
@@ -47,7 +47,7 @@ describe('nextPollDelay', () => {
     });
 
     it('client clock -120 s (slow) is also corrected', () => {
-        const serverNow = 5_000_000;
+        const serverNow = 1_790_000_000_000;
         const clientNow = serverNow - 120_000;
         const skew = computeSkew(String(serverNow), clientNow);
         expect(nextPollDelay({ nextRefreshAt: serverNow + 30_000, now: clientNow + skew, offset: 0, random: 0.5 })).toBe(30_000);
@@ -80,15 +80,81 @@ describe('visibilityDelay', () => {
 
 describe('computeSkew', () => {
     it('is serverNow - clientNow', () => {
-        expect(computeSkew('1000500', 1_000_000)).toBe(500);
-        expect(computeSkew(1_000_500, 1_001_000)).toBe(-500);
+        expect(computeSkew('1790000000500', 1_790_000_000_000)).toBe(500);
+        expect(computeSkew(1_790_000_000_500, 1_790_000_001_000)).toBe(-500);
     });
-    it('missing or invalid header means no correction', () => {
-        expect(computeSkew(null, 1_000_000)).toBe(0);
-        expect(computeSkew(undefined, 1_000_000)).toBe(0);
-        expect(computeSkew('', 1_000_000)).toBe(0);
-        expect(computeSkew('abc', 1_000_000)).toBe(0);
-        expect(computeSkew('NaN', 1_000_000)).toBe(0);
-        expect(computeSkew('0', 1_000_000)).toBe(0);
+    it('missing or invalid header means "no update" (null)', () => {
+        expect(computeSkew(null, 1_790_000_000_000)).toBeNull();
+        expect(computeSkew(undefined, 1_790_000_000_000)).toBeNull();
+        expect(computeSkew('', 1_790_000_000_000)).toBeNull();
+        expect(computeSkew('abc', 1_790_000_000_000)).toBeNull();
+        expect(computeSkew('NaN', 1_790_000_000_000)).toBeNull();
+        expect(computeSkew('0', 1_790_000_000_000)).toBeNull();
+    });
+    it('a header in seconds (< 1e12) is rejected', () => {
+        expect(computeSkew('1790000000', 1_790_000_000_000)).toBeNull();
+    });
+    it('a clock more than a day off is rejected', () => {
+        expect(computeSkew(String(1_790_000_000_000 + 86_400_001), 1_790_000_000_000)).toBeNull();
+        expect(computeSkew(String(1_790_000_000_000 - 86_400_001), 1_790_000_000_000)).toBeNull();
+        expect(computeSkew(String(1_790_000_000_000 + 86_400_000), 1_790_000_000_000)).toBe(86_400_000);
+    });
+});
+
+describe('nextSkew', () => {
+    const client = 1_790_000_000_000;
+    it('takes a valid header', () => {
+        expect(nextSkew(-5000, String(client + 300), client)).toBe(300);
+    });
+    it('keeps the last valid skew when the header is missing or invalid', () => {
+        expect(nextSkew(-120_000, null, client)).toBe(-120_000);
+        expect(nextSkew(-120_000, 'abc', client)).toBe(-120_000);
+        expect(nextSkew(-120_000, '1790000000', client)).toBe(-120_000);
+    });
+    it('starts from 0 for a header-less server', () => {
+        expect(nextSkew(0, null, client)).toBe(0);
+    });
+});
+
+describe('delays stay sane for garbage input (no tight loop, no timer overflow)', () => {
+    const now = 1_790_000_000_000;
+    const cases = {
+        'year 2100': Date.UTC(2100, 0, 1),
+        'seconds, not ms': 1.79e9,
+        'a year ahead': now + 365 * 86_400_000,
+        'a day behind': now - 86_400_000,
+        'Infinity': Infinity,
+        'negative': -1e15,
+        'huge': 1e300,
+    };
+    for (const [name, nextRefreshAt] of Object.entries(cases)) {
+        it(`nextRefreshAt ${name}: 5 s <= delay <= 15 min`, () => {
+            for (const random of [0, 0.5, 1]) {
+                const d = nextPollDelay({ nextRefreshAt, now, offset: 25_000, random });
+                expect(d).toBeGreaterThanOrEqual(5000);
+                expect(d).toBeLessThanOrEqual(900_000);
+            }
+        });
+    }
+    it('out-of-window nextRefreshAt falls back to 60 s +-15 %', () => {
+        expect(nextPollDelay({ nextRefreshAt: Date.UTC(2100, 0, 1), now, offset: 0, random: 0.5 })).toBeCloseTo(60_000);
+        expect(nextPollDelay({ nextRefreshAt: 1.79e9, now, offset: 0, random: 0 })).toBeCloseTo(51_000);
+        expect(nextPollDelay({ nextRefreshAt: now + 900_001, now, offset: 0, random: 1 })).toBeCloseTo(69_000);
+        expect(nextPollDelay({ nextRefreshAt: now - 3_600_001, now, offset: 0, random: 1 })).toBeCloseTo(69_000);
+    });
+    it('window edges are still honoured', () => {
+        expect(nextPollDelay({ nextRefreshAt: now + 900_000, now, offset: 25_000, random: 0.5 })).toBe(900_000);
+        expect(nextPollDelay({ nextRefreshAt: now - 3_600_000, now, offset: 0, random: 0.5 })).toBe(7500);
+    });
+    it('a far-future offset never exceeds 15 min', () => {
+        expect(nextPollDelay({ nextRefreshAt: now + 890_000, now, offset: 25_000, random: 0.5 })).toBe(900_000);
+    });
+    it('clampTimeout keeps setTimeout below 2^31-1', () => {
+        expect(MAX_TIMEOUT_MS).toBe(2_147_483_647);
+        expect(clampTimeout(1e15)).toBe(2_147_483_647);
+        expect(clampTimeout(Infinity)).toBe(2_147_483_647);
+        expect(clampTimeout(NaN)).toBe(5000);
+        expect(clampTimeout(-5)).toBe(0);
+        expect(clampTimeout(1234)).toBe(1234);
     });
 });

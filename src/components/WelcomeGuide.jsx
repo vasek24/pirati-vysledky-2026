@@ -63,7 +63,7 @@ export default function WelcomeGuide() {
                         )}
                     >
                         Během sčítání sama kontroluje nová data (ČSÚ je zveřejňuje zhruba jednou za minutu) a ukáže je — kdy to bude, vidíš nahoře u odpočtu.{' '}
-                        <b className="text-neutral-900">Ručně ji neobnovuj</b>: rychleji to nebude (ČSÚ data mění jednou za minutu) a zbytečně to zatěžuje server.
+                        <b className="text-neutral-900">Ručně ji neobnovuj</b>: rychleji to nebude (ČSÚ data mění zhruba jednou za minutu) a zbytečně to zatěžuje server.
                     </Step>
                     {before ? (
                         <Step
