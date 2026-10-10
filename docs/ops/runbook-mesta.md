@@ -35,6 +35,15 @@ bash scripts/mesta.sh deploy-prod      # totéž pro produkci (prázdné --env=)
 - Logy: `npx wrangler tail pirati-mesta --format json` — každou minutu `warmup-ok` pro všech klíčů první třídy do 2 min po nasazení.
 - Ověření proti ČSÚ po začátku sčítání (spec §8): Brno, Plzeň, Hradec Králové, Jablonec nad Nisou, Klatovy + Moravskoslezský kraj (2 shardy): stejné `generated`, počet sečtených okrsků, účast, hlasy a % prvních 5 kandidátek a pirátské kandidátky. Rozdíl jen při jiném `generated`; za minutu zopakovat. Karta na indexu bere čas a počet okrsků jen z výsledkového souboru, stránka města i z účasti — o minutu starší čas na kartě není chyba.
 
+## Mapa okrsků (12 největších měst)
+- Mapu a okrskové soubory ČSÚ mají jen zobrazená města s `featured` (`buildCouncils`: `map` = `precinctFiles`); ostatní jsou v lehkém režimu.
+- **Vypínač (kill switch) jednoho města:** `overrides.js` → `towns['<KODZASTUP>'] = { name, map: false }`, pak `node scripts/build-data.js --product=mesta --maps-only` (vyprázdní `okrsky.geojson` města; data check do té doby jen varuje), `bash scripts/mesta.sh build`, nasazení. Worker pak přestane stahovat okrskové soubory, stránka ukáže jen panely.
+- Hranice: `bash scripts/mesta.sh data --maps-only [slug…]` přegeneruje jen `okrsky.geojson` z `.cache/84a3c42833510b20.geojson` (celostátní vrstva ČSÚ 2025) a registru z `.cache`. Městská část, ve které je zaniklý polygon nebo okrsek 2026 bez polygonu, se z mapy vynechá celá (Plzeň 1, Ostrava-Jih, Brno-Medlánky); seznam je v `droppedDistricts` v geojsonu a stránka z něj složí větu. Výstup uvádí zahozené polygony a městské části. „Sečteno X z N“ se tím nemění (součty ČSÚ).
+- **Pravidlo pro nasazení: žádné produkční nasazení mezi 15:00 a vyhlášením výsledků, pokud to není kritické.** Nasazení restartuje všechny Durable Objecty a každý DO si znovu stáhne okrskové soubory všech sečtených okrsků (Brno až 353 × ~37 KB; souběžnost je omezená na 3 na město, tedy ≤ 36 dotazů naráz).
+- Sledování: `npx wrangler tail pirati-mesta --format json` a hledat `incomplete-persistent` (okrsek, kterému ČSÚ změnil řádek a jehož soubor je ještě starý, drží poslední dobrý snapshot; po 5 min se loguje jako error). Spustí-li se u města s mapou, použít vypínač výše. Zátěž a chování Workeru: `docs/analysis/mesta-maps-load.md`.
+- Náhled bez sítě: `bash scripts/mesta.sh build && node tools/mesta-map-mock.mjs --port=4173`, pak `http://127.0.0.1:4173/brno` (`--counted=0.3 --pending=0.1 --geo=empty|missing`).
+- Podkladové dlaždice mapy jdou z externího hostitele `tiles.openfreemap.org` (beze změny proti Praze).
+
 ## Poznámky
 - Města první třídy (feedy zahřívané cronem) jsou 12 největších (`featured`); ostatní se obnovují jen když je někdo otevře (shard feedy po krajích, max. 8 měst).
 - ČSÚ `generated` je pražský čas bez zóny — vždy přes `parseCsuTime`.

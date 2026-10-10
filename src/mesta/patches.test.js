@@ -10,15 +10,21 @@ const COUNCIL_APP = 'src/pages/CouncilApp.jsx';
 const WELCOME = 'src/components/WelcomeGuide.jsx';
 const HEADER = 'src/components/ElectionHeader.jsx';
 const COUNCILORS = 'src/components/Councilors.jsx';
+const RESULTS_MAP = 'src/components/ResultsMap.jsx';
+const PRECINCTS = 'src/components/Precincts.jsx';
+const MAP_MODES = 'src/volby/mapModes.js';
 
 describe('patch list (spec §5)', () => {
-    it('has CouncilApp x7, WelcomeGuide x2, ElectionHeader x2, Councilors x1', () => {
+    it('has CouncilApp x11, ResultsMap x5, Precincts x12, mapModes x1, WelcomeGuide x2, ElectionHeader x2, Councilors x1', () => {
         const per = (file) => PATCHES.filter((p) => p.file === file).length;
-        expect(per(COUNCIL_APP)).toBe(7);
+        expect(per(COUNCIL_APP)).toBe(11);
+        expect(per(RESULTS_MAP)).toBe(5);
+        expect(per(PRECINCTS)).toBe(12);
+        expect(per(MAP_MODES)).toBe(1);
         expect(per(WELCOME)).toBe(2);
         expect(per(HEADER)).toBe(2);
         expect(per(COUNCILORS)).toBe(1);
-        expect(PATCHES).toHaveLength(12);
+        expect(PATCHES).toHaveLength(34);
     });
 
     it('every anchor occurs exactly once in the real Prague file', () => {
@@ -55,6 +61,58 @@ describe('applyPatches on the real files', () => {
         const preCard = out.indexOf("model.snapshot.phase === 'pre'", i);
         expect(banner).toBeGreaterThan(i);
         expect(banner).toBeLessThan(preCard);
+    });
+
+    it('CouncilApp: map on town data — no 2022 precincts before counting, no map for an empty geojson', () => {
+        const out = applyPatches(COUNCIL_APP, read(COUNCIL_APP));
+        expect(out).not.toContain("fetchedAt: 'kv2022'");
+        expect(out).not.toContain('komunální volby 2022</b>');
+        expect(out).toContain('Ještě se nesčítá — okrsky se na mapě obarví, jakmile je sečte ČSÚ.');
+        expect(out).toContain('const mapData = !!council.map && !!statics?.geoJson?.features?.length;');
+        // mapSnapshot vždy vrací živý snapshot
+        const i = out.indexOf('const mapSnapshot = useMemo(');
+        const body = out.slice(i, out.indexOf('[snapshot, ready, statics, counted]', i));
+        expect(body).toContain('        return snapshot;');
+        expect(body).not.toContain('precincts2022');
+    });
+
+    it('ResultsMap: pending style, no per-precinct 2022 line in the tooltip, guard imports', () => {
+        const out = applyPatches(RESULTS_MAP, read(RESULTS_MAP));
+        expect(out).toContain("import { PENDING_FILL, isPending } from '../mesta/mapUi.js';");
+        expect(out).toContain('if (isPending(o, modeId)) return');
+        expect(out).toContain('fillColor: UNCOUNTED_FILL'); // nesečtené zůstávají šedé
+        expect(out).toContain("const then = base && !(activeCouncil().precinctHistory === false) ? baselineShare(");
+        expect(out).toContain("okrsek ? 'sečteno — hlasy se dotahují' : 'čeká na sečtení'");
+    });
+
+    it('Precincts: 2022 comparisons off for precinctHistory:false, Pirate mode named after a joint list', () => {
+        const out = applyPatches(PRECINCTS, read(PRECINCTS));
+        expect(out).toContain('const ourBaseline = () => (activeCouncil().precinctHistory === false ? null :');
+        expect(out).toContain('const r22 = activeCouncil().precinctHistory === false ? null :');
+        expect(out).toContain('meta.baseline && !(activeCouncil().precinctHistory === false) ?');
+        expect(out).toContain("{m.id === 'ours' ? oursButtonLabel(partyMeta(ourId()), m.label) : m.label}");
+        expect(out).toContain('PENDING_FILL');
+        // původní texty o 2022 zůstávají pro Prahu, jen podmíněně
+        expect(out).toContain('Změna = proti předchůdci kandidátky v KV 2022 v tomto okrsku.');
+        expect(out).toContain("{!(activeCouncil().precinctHistory === false) && <div");
+    });
+
+    it('CouncilApp/Precincts: pending legend only when needed, map note under the controls, progress bar for big towns', () => {
+        const app = applyPatches(COUNCIL_APP, read(COUNCIL_APP));
+        expect(app).toContain('showPending={hasPending(mapSnapshot, mapMode)}');
+        expect(app).toContain('<MestaMapNote geoJson={statics.geoJson} />');
+        expect(app).toContain("import MestaMapNote from '../mesta/MestaMapNote.jsx';");
+        // věta je uvnitř bloku ovládání (změřená výška zahrne i ji)
+        expect(app.indexOf('<MestaMapNote')).toBeGreaterThan(app.indexOf('<MapControls'));
+        expect(app.indexOf('<MestaMapNote')).toBeLessThan(app.indexOf('{counted === 0 && !selectedId && ('));
+        const pr = applyPatches(PRECINCTS, read(PRECINCTS));
+        expect(pr).toContain('showPending = false }) {');
+        expect(pr).toContain('{showPending && <><span');
+        expect(pr).toContain('{showPending && <span className="shrink-0');
+        expect(pr).toContain('if (ids.length > STRIP_MAX_CELLS) {');
+        expect(pr).toContain('role="progressbar"');
+        // pruh buněk pro malá města zůstává
+        expect(pr.indexOf('const cells = ids.map')).toBeGreaterThan(pr.indexOf('if (ids.length > STRIP_MAX_CELLS)'));
     });
 
     it('Councilors: coalition-neutral heading', () => {

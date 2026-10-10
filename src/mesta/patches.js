@@ -7,13 +7,21 @@
 // Kotvy ověřuje i patches.test.js proti skutečným souborům.
 
 const COUNCIL_APP = 'src/pages/CouncilApp.jsx';
+const RESULTS_MAP = 'src/components/ResultsMap.jsx';
+const PRECINCTS = 'src/components/Precincts.jsx';
+const MAP_MODES = 'src/volby/mapModes.js';
+
+// Mapa okrsků měst (T10). Příznaky měst z buildCouncils: `map`, `precinctFiles`, `precinctHistory`.
+// `precinctHistory: false` = okrsky 2022 se s okrsky 2026 nemusí krýt → mapa i detail okrsku
+// žádné srovnání s 2022 po okrscích neukazují (režim „vs 2022“ zmizí, tooltipy a detail bez „minule“).
+const NO_PRECINCT_HISTORY = "activeCouncil().precinctHistory === false";
 
 export const PATCHES = [
     // --- CouncilApp: banner „Jak tu kandidují Piráti“ nahoře v přehledovém sloupci
     {
         file: COUNCIL_APP,
         from: "import { POLLS_CLOSE } from '../councils';",
-        to: "import { POLLS_CLOSE } from '../councils';\nimport MestaArrangement from '../mesta/MestaArrangement.jsx';",
+        to: "import { POLLS_CLOSE } from '../councils';\nimport MestaArrangement from '../mesta/MestaArrangement.jsx';\nimport MestaMapNote from '../mesta/MestaMapNote.jsx';\nimport { hasPending } from '../mesta/mapUi.js';",
     },
     {
         file: COUNCIL_APP,
@@ -47,6 +55,126 @@ export const PATCHES = [
         file: COUNCIL_APP,
         from: 'výpočet ověřený na výsledcích 2022',
         to: 'výpočet ověřený na pražských výsledcích 2022',
+    },
+    // --- CouncilApp: mapa okrsků. Před sčítáním se NEukazují okrsky 2022 (jiná čísla kandidátek,
+    // jiné okrsky) — všechny okrsky jsou šedé, dokud je ČSÚ nesečte.
+    {
+        file: COUNCIL_APP,
+        from: "        if (counted > 0) return snapshot;\n        return { ...snapshot, fetchedAt: 'kv2022', okrsky: precincts2022(statics.results2022) };",
+        to: '        return snapshot;',
+    },
+    {
+        file: COUNCIL_APP,
+        from: 'Ještě se nesčítá — mapa zatím ukazuje <b className="text-[#FEC900]">komunální volby 2022</b> (předchůdci dnešních kandidátek).',
+        to: 'Ještě se nesčítá — okrsky se na mapě obarví, jakmile je sečte ČSÚ.',
+    },
+    // prázdná kolekce okrsků (výpadek dat, město bez polygonů) = žádná mapa, jen panely
+    {
+        file: COUNCIL_APP,
+        from: 'const mapData = !!council.map && !!statics?.geoJson;',
+        to: 'const mapData = !!council.map && !!statics?.geoJson?.features?.length;',
+    },
+    // ovládání mapy: legenda „hlasy se dotahují“ jen když takový okrsek je; pod ním věta o vynechaných částech
+    {
+        file: COUNCIL_APP,
+        from: '                <MapControls\n                    modeId={mapMode}\n                    onMode={setMapMode}\n                    partyId={mapParty ?? model.parties[0]?.id}\n                    onParty={setMapParty}\n                    parties={model.parties}\n                    compact={isMobile}\n                />\n',
+        to: '                <MapControls\n                    showPending={hasPending(mapSnapshot, mapMode)}\n                    modeId={mapMode}\n                    onMode={setMapMode}\n                    partyId={mapParty ?? model.parties[0]?.id}\n                    onParty={setMapParty}\n                    parties={model.parties}\n                    compact={isMobile}\n                />\n                <MestaMapNote geoJson={statics.geoJson} />\n',
+    },
+    // --- ResultsMap
+    {
+        file: RESULTS_MAP,
+        from: "import { reducedMotion } from '../utils/motion';",
+        to: "import { reducedMotion } from '../utils/motion';\nimport { PENDING_FILL, isPending } from '../mesta/mapUi.js';",
+    },
+    // L.geoJSON(prázdná kolekce).getBounds() je neplatné → fitBounds by hodil „Bounds are not valid“
+    {
+        file: RESULTS_MAP,
+        from: 'const bounds = L.geoJSON(data).getBounds();',
+        to: 'const bounds = L.geoJSON(data).getBounds();\n        if (!bounds.isValid()) return undefined;',
+    },
+    // sečtený okrsek, jehož hlasy se ještě dotahují, není „čeká na sečtení“
+    {
+        file: RESULTS_MAP,
+        from: "            return { ...base, fillColor: UNCOUNTED_FILL, fillOpacity: 0.6, dashArray: selected ? null : '4 4', color: selected ? '#000000' : '#78716C' };",
+        to: "            if (isPending(o, modeId)) return { ...base, fillColor: PENDING_FILL, fillOpacity: 0.7, dashArray: selected ? null : '2 3', color: selected ? '#000000' : '#B45309' };\n            return { ...base, fillColor: UNCOUNTED_FILL, fillOpacity: 0.6, dashArray: selected ? null : '4 4', color: selected ? '#000000' : '#78716C' };",
+    },
+    {
+        file: RESULTS_MAP,
+        from: '<div class="okt-s">čeká na sečtení</div>',
+        to: '<div class="okt-s">${okrsek ? \'sečteno — hlasy se dotahují\' : \'čeká na sečtení\'}</div>',
+    },
+    {
+        file: RESULTS_MAP,
+        from: 'const then = base ? baselineShare(results2022, base.ids, id) : null;',
+        to: `const then = base && !(${NO_PRECINCT_HISTORY}) ? baselineShare(results2022, base.ids, id) : null;`,
+    },
+    // --- mapModes: bez 2022 po okrscích není „Piráti vs 2022“
+    {
+        file: MAP_MODES,
+        from: "m.id === 'ours' || m.id === 'swing' ? !!council?.pirates",
+        to: "m.id === 'ours' || m.id === 'swing' ? !!council?.pirates && !(m.id === 'swing' && council?.precinctHistory === false)",
+    },
+    // --- Precincts: ovládání mapy a detail okrsku
+    {
+        file: PRECINCTS,
+        from: "import { scrollBehavior } from '../utils/motion';",
+        to: "import { scrollBehavior } from '../utils/motion';\nimport { PENDING_FILL, STRIP_MAX_CELLS, oursButtonLabel, oursLongLabel } from '../mesta/mapUi.js';",
+    },
+    // velké město (Brno 353 okrsků): místo pruhu buněk jeden ukazatel postupu podle součtů ČSÚ
+    {
+        file: PRECINCTS,
+        from: '    const fresh = new Set(freshIds || []);\n    const cells = ids.map((id) => {',
+        to: "    const fresh = new Set(freshIds || []);\n    if (ids.length > STRIP_MAX_CELLS) {\n        const done = snapshot?.precincts?.counted || 0;\n        const all = snapshot?.precincts?.total || ids.length;\n        const bar = (\n            <div className=\"h-2.5 rounded-[2px] bg-white/[0.18] overflow-hidden\" role=\"progressbar\" aria-label={`Sečteno ${done} z ${all} okrsků`} aria-valuenow={done} aria-valuemin={0} aria-valuemax={all}>\n                <div className=\"h-full bg-[#FEC900] transition-all duration-700\" style={{ width: `${Math.min(100, (done / all) * 100)}%` }} />\n            </div>\n        );\n        return onOpen ? <button type=\"button\" onClick={onOpen} aria-label={`Sečteno ${done} z ${all} okrsků — otevřít seznam`} className=\"block w-full py-3 -my-3\">{bar}</button> : bar;\n    }\n    const cells = ids.map((id) => {",
+    },
+    {
+        file: PRECINCTS,
+        from: 'export function MapControls({ modeId, onMode, partyId, onParty, parties, compact = false }) {',
+        to: 'export function MapControls({ modeId, onMode, partyId, onParty, parties, compact = false, showPending = false }) {',
+    },
+    {
+        file: PRECINCTS,
+        from: 'const ourBaseline = () => partyMeta(ourId()).baseline?.ids || null;',
+        to: `const ourBaseline = () => (${NO_PRECINCT_HISTORY} ? null : partyMeta(ourId()).baseline?.ids || null);`,
+    },
+    {
+        file: PRECINCTS,
+        from: 'const then = meta.baseline ? baselineShare(results2022, meta.baseline.ids, id) : null;',
+        to: `const then = meta.baseline && !(${NO_PRECINCT_HISTORY}) ? baselineShare(results2022, meta.baseline.ids, id) : null;`,
+    },
+    {
+        file: PRECINCTS,
+        from: 'const r22 = results2022?.okrsky?.[id];',
+        to: `const r22 = ${NO_PRECINCT_HISTORY} ? null : results2022?.okrsky?.[id];`,
+    },
+    {
+        file: PRECINCTS,
+        from: '<div className="mt-2 text-[11px] text-neutral-500">Změna = proti předchůdci kandidátky v KV 2022 v tomto okrsku.</div>',
+        to: `{!(${NO_PRECINCT_HISTORY}) && <div className="mt-2 text-[11px] text-neutral-500">Změna = proti předchůdci kandidátky v KV 2022 v tomto okrsku.</div>}`,
+    },
+    {
+        file: PRECINCTS,
+        from: "{ourId() ? 'Procento = Piráti, změna proti jejich výsledku v KV 2022 ve stejném okrsku.' : 'Procento = vítěz okrsku.'}",
+        to: `{ourId() ? (${NO_PRECINCT_HISTORY} ? 'Procento = podíl kandidátky s Piráty v okrsku.' : 'Procento = Piráti, změna proti jejich výsledku v KV 2022 ve stejném okrsku.') : 'Procento = vítěz okrsku.'}`,
+    },
+    {
+        file: PRECINCTS,
+        from: '{m.label}',
+        to: "{m.id === 'ours' ? oursButtonLabel(partyMeta(ourId()), m.label) : m.label}",
+    },
+    {
+        file: PRECINCTS,
+        from: '{MAP_MODES.find((m) => m.id === modeId)?.long}',
+        to: "{modeId === 'ours' ? oursLongLabel(partyMeta(ourId()), MAP_MODES.find((m) => m.id === modeId)?.long) : MAP_MODES.find((m) => m.id === modeId)?.long}",
+    },
+    {
+        file: PRECINCTS,
+        from: '<span className="w-3 h-3 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} /> čeká na sečtení',
+        to: '<span className="w-3 h-3 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} /> čeká na sečtení\n                    {showPending && <><span className="ml-1 w-3 h-3 rounded-sm border border-dashed border-amber-700" style={{ backgroundColor: PENDING_FILL }} /> sečteno, hlasy se dotahují</>}',
+    },
+    {
+        file: PRECINCTS,
+        from: '<span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} title="čeká na sečtení" />',
+        to: '<span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} title="čeká na sečtení" />\n                    {showPending && <span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-amber-700" style={{ backgroundColor: PENDING_FILL }} title="sečteno, hlasy se dotahují" />}',
     },
     // --- ElectionHeader: „Mezitím se můžeš podívat na původní web“ by u měst vedlo na pražský tracker
     {

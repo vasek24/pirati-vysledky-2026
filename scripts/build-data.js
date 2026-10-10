@@ -16,12 +16,13 @@
 //           npm run data -- --fresh        (ignorovat .cache/)
 //
 // Produkt „mesta“ (opt-in, Praha se nemění):
-//           node scripts/build-data.js --product=mesta [slug…] [--fresh]
+//           node scripts/build-data.js --product=mesta [slug…] [--fresh] [--maps-only]
 //   zapisuje do public-mesta/data/<slug>/ (lists, kandidati, results2022,
-//   prázdný okrsky.geojson) a public-mesta/media/<slug>/logos; bez fotek
+//   okrsky.geojson: hranice okrsků u měst s mapou (`map`), jinak prázdná kolekce;
+//   `--maps-only` přegeneruje jen ty hranice z cache, bez ostatních stahování) a public-mesta/media/<slug>/logos; bez fotek
 //   kandidátů a bez prehled.json; selhání jednoho města nezastaví ostatní
 import { createHash } from 'node:crypto';
-import { realpathSync } from 'node:fs';
+import { readFileSync, realpathSync } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import proj4 from 'proj4';
@@ -29,7 +30,8 @@ import simplify from '@turf/simplify';
 import sharp from 'sharp';
 import { pathToFileURL } from 'node:url';
 import { COUNCILS, KV_BASE_URL, PIRATES_CODE } from '../src/councils.js';
-import { ROOT, codes, csvFromZip, download, downloadJson, slugify, writeJson } from './lib/util.js';
+import { ROOT, cacheFile, codes, csvFromZip, download, downloadJson, slugify, writeJson } from './lib/util.js';
+import { precinctDistrictsOf, precinctIdsOf } from './mesta/registryCore.js';
 
 const URLS = {
     reg2026: 'https://volby.gov.cz/opendata/kv2026/KV2026reg20261002_csv.zip',
@@ -55,14 +57,17 @@ const toWgs = proj4('EPSG:5514', 'WGS84');
 export function parseArgs(argv) {
     const product = argv.find((a) => a.startsWith('--product='))?.slice('--product='.length);
     if (product !== undefined && product !== 'mesta') throw new Error(`Neznámý --product=${product} (jen mesta)`);
+    const mapsOnly = argv.includes('--maps-only');
+    if (mapsOnly && product !== 'mesta') throw new Error('--maps-only jen s --product=mesta');
     return {
         mesta: product === 'mesta',
         fresh: argv.includes('--fresh'),
+        mapsOnly,
         only: argv.filter((a) => !a.startsWith('--')),
     };
 }
 
-const { mesta: MESTA, fresh, only } = parseArgs(process.argv.slice(2));
+const { mesta: MESTA, fresh, mapsOnly: MAPS_ONLY, only } = parseArgs(process.argv.slice(2));
 const log = (...a) => console.log('·', ...a);
 // Kam se zapisuje: Praha public/…, produkt „mesta“ public-mesta/…
 export function outputDirs(council, mesta) {
@@ -89,6 +94,74 @@ export async function discardLogosDir(mediaDir) {
     await fs.rm(path.join(mediaDir, 'logos.tmp'), { recursive: true, force: true });
 }
 export const emptyGeo = () => ({ type: 'FeatureCollection', features: [] });
+
+// Produkt „mesta“: hranice okrsků jednoho města z celostátní vrstvy ČSÚ (kod_obec = KODZASTUP),
+// stejně převedené a zjednodušené jako u Prahy. `precinctIds` = okrsky 2026 ze seznamu v registru
+// (kvrzcoco), `districtOf` = Map okrsek → kod_mco jeho městské části (ze stejného seznamu).
+// Vrstva je z roku 2025 a některé okrsky se změnily (zaniklé polygony, nové okrsky 2026 bez polygonu).
+// Rozhodnutí majitele: městská část, ve které je zaniklý polygon NEBO okrsek 2026 bez polygonu, se
+// z mapy vynechá CELÁ (jinak by na mapě zůstaly navždy šedé okrsky, nebo díry); v součtech „sečteno X z N“
+// a v seznamu okrsků zůstávají. Vynechané části vrací `droppedDistricts` (do geojsonu, stránka z nich
+// složí větu). Bez spolehlivého seznamu okrsků (prázdný / chybí) se nic nevynechává a výsledek je
+// `verified: false`. Okrsek bez polygonu, který nejde přiřadit k městské části (bez `districtOf`),
+// jen skončí v `missing`.
+export function townMapFeatures(geo, council, precinctIds, districtOf = null) {
+    const known = precinctIds && precinctIds.size ? precinctIds : null;
+    const all = geo.features.filter((f) => String(f.properties.kod_obec) === String(council.zastup));
+    const layerIds = new Set(all.map((f) => Number(f.properties.cislo)));
+    if (layerIds.size !== all.length) {
+        const seen = new Set();
+        for (const f of all) {
+            const id = Number(f.properties.cislo);
+            if (seen.has(id)) throw new Error(`${council.slug}: okrsek ${id} je ve vrstvě hranic dvakrát`);
+            seen.add(id);
+        }
+    }
+    const mcoOf = (f) => String(f.properties.kod_mco ?? '');
+    const dropped = known ? all.filter((f) => !known.has(Number(f.properties.cislo))).map((f) => Number(f.properties.cislo)).sort((a, b) => a - b) : [];
+    const missing = known ? [...known].filter((id) => !layerIds.has(id)).sort((a, b) => a - b) : [];
+
+    // městské části k vynechání: s některým zaniklým polygonem, nebo s okrskem 2026 bez polygonu
+    const bad = new Map(); // kod_mco → reason
+    for (const f of all) if (known && !known.has(Number(f.properties.cislo))) bad.set(mcoOf(f), 'extinct');
+    for (const id of missing) {
+        const kod = districtOf?.get(id);
+        if (kod !== undefined && !bad.has(String(kod))) bad.set(String(kod), 'missing');
+    }
+
+    const droppedDistricts = [];
+    for (const [kod, reason] of bad) {
+        const polys = all.filter((f) => mcoOf(f) === kod);
+        const precincts = districtOf ? [...known].filter((id) => String(districtOf.get(id)) === kod).length : polys.filter((f) => known.has(Number(f.properties.cislo))).length;
+        droppedDistricts.push({ kod, name: polys[0]?.properties.naz_mco || kod, reason, polygons: polys.length, precincts });
+    }
+    droppedDistricts.sort((a, b) => Number(a.kod) - Number(b.kod) || a.name.localeCompare(b.name, 'cs'));
+
+    const features = all
+        .filter((f) => !bad.has(mcoOf(f)))
+        .map((f) => simplify({
+            type: 'Feature',
+            properties: { cislo: Number(f.properties.cislo), mco: f.properties.naz_mco || null },
+            geometry: reproject(f.geometry),
+        }, { tolerance: 0.00003, highQuality: true }));
+    if (!all.length) throw new Error(`${council.slug}: ve vrstvě hranic není žádný polygon okrsku (kod_obec ${council.zastup})`);
+    if (!features.length) throw new Error(`${council.slug}: po vynechání městských částí s neshodnými okrsky nezbyde žádný polygon`);
+    return { features, dropped, missing, droppedDistricts, verified: !!known };
+}
+
+// okrsky.geojson města: FeatureCollection (+ `droppedDistricts` jen když se něco vynechalo)
+export const mapGeoFile = (r) => ({
+    type: 'FeatureCollection',
+    features: r.features,
+    ...(r.droppedDistricts.length ? { droppedDistricts: r.droppedDistricts } : {}),
+});
+
+const mapWarnings = (r) => [
+    ...(r.verified ? [] : ['okrsky 2026 neznámé: mapa ponechala všechny polygony']),
+    ...(r.dropped.length ? [`mapa: ${r.dropped.length} zaniklých polygonů (${r.dropped.join(',')})`] : []),
+    ...(r.missing.length ? [`mapa: ${r.missing.length} okrsků 2026 bez polygonu (${r.missing.join(',')})`] : []),
+    ...r.droppedDistricts.map((d) => `mapa: vynechána městská část ${d.name} (${d.reason}, ${d.polygons} polygonů, ${d.precincts} okrsků 2026)`),
+];
 
 const pick = (data, key) => (data && Array.isArray(data[key]) && data[key][0]?.value) || null;
 
@@ -133,6 +206,10 @@ async function main() {
 
     log('Registry KV 2026…');
     const reg2026 = await download(MESTA ? URLS.reg2026mesta : URLS.reg2026, { fresh });
+    if (MAPS_ONLY) {
+        await mapsOnlyMain(councils, reg2026);
+        return;
+    }
     const ros2026 = csvFromZip(reg2026, 'kvros.csv');
     const rk2026 = csvFromZip(reg2026, 'kvrk.csv');
 
@@ -143,12 +220,13 @@ async function main() {
     const t3 = csvFromZip(data2022, 'kvt3.csv');
     const hl = csvFromZip(data2022, 'kvhl.csv', { raw: true });
 
-    // Produkt „mesta“ mapu nemá (map: false) → hranice se nestahují
+    // Produkt „mesta“: hranice jen když je v běhu aspoň jedno město s mapou (jinak se nestahují)
     let geo = null;
-    if (!MESTA) {
+    if (!MESTA || councils.some((c) => c.map)) {
         log('Hranice okrsků…');
         geo = JSON.parse((await download(URLS.okrsky, { fresh })).toString('utf8'));
     }
+    const rzc2026 = MESTA && geo ? csvFromZip(reg2026, 'kvrzcoco.csv') : null;
 
     const partyCache = new Map();
     const partyInfo = async (code) => {
@@ -165,7 +243,7 @@ async function main() {
         return partyCache.get(code);
     };
 
-    const shared = { ros2026, rk2026, ros2022, t3, hl, geo, partyInfo };
+    const shared = { ros2026, rk2026, ros2022, t3, hl, geo, rzc2026, partyInfo };
     if (MESTA) {
         const warnings = {};
         const res = await runMesta(councils, async (council) => {
@@ -189,6 +267,49 @@ async function main() {
         await buildCouncil(council, shared);
     }
     await buildOverview();
+}
+
+// `--maps-only` (jen mesta): přegeneruje okrsky.geojson z cache (celostátní vrstva + registr), ostatní
+// soubory měst ani média se nemění. Města s mapou dostanou polygony, města s `map: false` (vypínač,
+// overrides.js) prázdnou kolekci, pokud mají v souboru polygony. Závislosti jsou vstřikované kvůli testům.
+export async function buildMapsOnly(councils, { geo, rzc, read, write, log: out = log, error = console.error }) {
+    const res = await runMesta(councils, async (council) => {
+        if (!council.map) {
+            const existing = await read(council);
+            if (existing?.features?.length) {
+                await write(council, emptyGeo());
+                out(`${council.slug}: mapa vypnuta (map: false) — okrsky.geojson vyprázdněn`);
+            }
+            return;
+        }
+        const r = townMapFeatures(geo(), council, precinctIdsOf(rzc, council.zastup), precinctDistrictsOf(rzc, council.zastup));
+        await write(council, mapGeoFile(r));
+        out(`${council.slug}: ${r.features.length} polygonů z ${council.precincts} okrsků 2026${mapWarnings(r).map((w) => `; ${w}`).join('')}`);
+    }, { log: out, error });
+    return res;
+}
+
+async function mapsOnlyMain(councils, reg2026) {
+    const rzc = csvFromZip(reg2026, 'kvrzcoco.csv');
+    let layer = null;
+    const geo = () => {
+        layer ??= JSON.parse(readFileSync(cacheFile(URLS.okrsky), 'utf8'));
+        return layer;
+    };
+    if (councils.some((c) => c.map)) await download(URLS.okrsky, { fresh }); // jen kvůli cache; nic dalšího se nestahuje
+    const res = await buildMapsOnly(councils, {
+        geo,
+        rzc,
+        read: async (c) => {
+            try {
+                return JSON.parse(await fs.readFile(path.join(outputDirs(c, true).dataDir, 'okrsky.geojson'), 'utf8'));
+            } catch {
+                return null;
+            }
+        },
+        write: (c, data) => writeJson(path.join(outputDirs(c, true).dataDir, 'okrsky.geojson'), data),
+    });
+    process.exitCode = res.exitCode;
 }
 
 // Přehled (/) potřebuje za každé zastupitelstvo jen kandidátky (zkratky,
@@ -233,7 +354,7 @@ async function buildOverview() {
     log(`\npřehled: ${Object.keys(out).length} zastupitelstev`);
 }
 
-async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, partyInfo }) {
+async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, rzc2026, partyInfo }) {
     const z = String(council.zastup);
     const { dataDir, mediaDir } = outputDirs(council, MESTA);
     const warnings = []; // jen produkt „mesta“: co chybí / co se nahradilo
@@ -454,19 +575,27 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
     }
     log(`kandidáti: ${Object.values(parties).reduce((s, p) => s + p.candidates.length, 0)}, s fotkou ${photos}`);
 
-    // --- hranice okrsků (mesta: map false → prázdná kolekce, nic se nestahuje)
-    const features = MESTA ? [] : geo.features
-        .filter((f) => (council.magistrat
-            ? String(f.properties.kod_obec) === z
-            : String(f.properties.kod_mco) === z))
-        .map((f) => simplify({
-            type: 'Feature',
-            properties: { cislo: Number(f.properties.cislo), mco: f.properties.naz_mco || null },
-            geometry: reproject(f.geometry),
-        }, { tolerance: 0.00003, highQuality: true }));
+    // --- hranice okrsků (mesta: jen města s mapou, ostatní prázdná kolekce)
+    let mapResult = null;
+    let features;
+    if (MESTA) {
+        mapResult = council.map ? townMapFeatures(geo, council, precinctIdsOf(rzc2026, council.zastup), precinctDistrictsOf(rzc2026, council.zastup)) : null;
+        features = mapResult ? mapResult.features : [];
+    } else {
+        features = geo.features
+            .filter((f) => (council.magistrat
+                ? String(f.properties.kod_obec) === z
+                : String(f.properties.kod_mco) === z))
+            .map((f) => simplify({
+                type: 'Feature',
+                properties: { cislo: Number(f.properties.cislo), mco: f.properties.naz_mco || null },
+                geometry: reproject(f.geometry),
+            }, { tolerance: 0.00003, highQuality: true }));
+    }
     if (MESTA) {
         const n2022 = Object.keys(okrsky2022).length;
         if (n2022 && n2022 !== council.precincts) warnings.push(`okrsků 2022: ${n2022}, 2026: ${council.precincts}`);
+        if (mapResult) warnings.push(...mapWarnings(mapResult));
     } else {
         const missing = Object.keys(okrsky2022).length && council.precincts !== features.length
             ? ` (ČSÚ 2026 uvádí ${council.precincts})` : '';
@@ -486,7 +615,7 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
     });
     await writeJson(path.join(dataDir, 'kandidati.json'), { parties });
     await writeJson(path.join(dataDir, 'results2022.json'), { okrsky: okrsky2022 });
-    await writeJson(path.join(dataDir, 'okrsky.geojson'), MESTA ? emptyGeo() : { type: 'FeatureCollection', features });
+    await writeJson(path.join(dataDir, 'okrsky.geojson'), MESTA ? (mapResult ? mapGeoFile(mapResult) : emptyGeo()) : { type: 'FeatureCollection', features });
     return warnings;
 }
 

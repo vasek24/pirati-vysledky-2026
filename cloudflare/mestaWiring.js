@@ -147,8 +147,11 @@ export function createMestaWiring({ councils, shards, baseUrl = KV_BASE_URL }) {
         }
         const council = townByZastup.get(String(key));
         if (!council) throw new Error(`unknown mesta feed key: ${key}`);
-        // jen 2 soubory ČSÚ na obnovu: okrskové soubory se nestahují nikdy
-        return createKvFeed({ council: { ...council, precinctFiles: false }, ...common });
+        // 2 soubory ČSÚ na obnovu; okrskové soubory (hlasy po okrscích pro mapu) jen u měst s
+        // `precinctFiles` (= mapa, buildCouncils: featured + overrides `map`) a jen pro nově sečtené okrsky
+        // Souběžnost okrskových souborů 3 (výchozí 6): po vyhození DO / nasazení se stahují všechny sečtené okrsky
+        // znovu — 12 měst × 3 = nejvýš 36 souběžných dotazů na volby.gov.cz místo 72
+        return createKvFeed({ council, concurrency: 3, ...common });
     }
 
     return { route, feedTarget, buildFeed, feedKind, isFirstClass, firstClassKeys };

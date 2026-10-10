@@ -69,6 +69,10 @@ export function buildCouncils(towns, specifics, overrides) {
             ? { type, list, members: spec.members, others: spec.others, flags: spec.flags, note: o.note }
             : { type, list: null, members: [], others: [], flags: spec.flags, note: undefined };
 
+        // Mapa okrsků: největší města (`featured`, tedy 12 měst top-1/top-2), pokud jsou zobrazená;
+        // `map: false|true` v overrides rozhodne ručně. Okrskové soubory ČSÚ (hlasy po okrscích) jdou s mapou.
+        const map = o.map ?? (t.featured != null && shown);
+
         return {
             slug: t.slug,
             name: t.name,
@@ -95,8 +99,10 @@ export function buildCouncils(towns, specifics, overrides) {
             lists: Object.fromEntries(Object.entries(o.lists || {}).map(([id, l]) => [id, { ...l }])),
             photos: {},
             candidatePhotos: false,
-            map: false,
-            precinctFiles: false,
+            map,
+            precinctFiles: map,
+            // okrsky 2022 se s okrsky 2026 nemusí krýt → žádné srovnání po okrscích (mapa „vs 2022“, tooltipy)
+            precinctHistory: false,
             beta: false,
         };
     });

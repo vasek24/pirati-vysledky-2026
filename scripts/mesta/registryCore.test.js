@@ -3,7 +3,7 @@ import { parse } from 'csv-parse/sync';
 import {
     normName, parseOwnerList, wholeCouncils, matchOwnerTowns, classifyTown, borderlineReasons,
     decideInclusion, assignShards, assignFeatured, disambiguateSlugs, confidenceOf, buildExcluded,
-    excludedReason, validateOverrides, cleanName,
+    excludedReason, validateOverrides, cleanName, precinctIdsOf, precinctDistrictsOf,
 } from './registryCore.js';
 
 const csv = (header, lines) => parse([header, ...lines].join('\n'), { columns: true, skip_empty_lines: true });
@@ -48,6 +48,40 @@ describe('normName / parseOwnerList', () => {
             { region: 'Central Bohemia', name: 'Kladno' },
             { region: 'Zlín Region', name: 'Zlín' },
         ]);
+    });
+});
+
+describe('precinctIdsOf (2026 precinct numbers of one council, from the kvrzcoco ranges)', () => {
+    it('expands the ranges of all rows of the council (Plzeň 1001–1046 + 2001–2034)', () => {
+        const ids = precinctIdsOf(RZC, 554791);
+        expect(ids.size).toBe(80);
+        expect(ids.has(1001) && ids.has(1046) && ids.has(2001) && ids.has(2034)).toBe(true);
+        expect(ids.has(1047)).toBe(false);
+        expect(ids.has(1500)).toBe(false);
+    });
+
+    it('ignores TYPZASTUP 2 rows and other councils; unknown council = empty set', () => {
+        expect([...precinctIdsOf(RZC, 582786)].sort((a, b) => a - b)).toEqual(Array.from({ length: 95 }, (_, i) => i + 1));
+        expect(precinctIdsOf(RZC, 583000).size).toBe(0);
+        expect(precinctIdsOf(RZC, 1).size).toBe(0);
+    });
+
+    it('size equals wholeCouncils precincts for every council', () => {
+        for (const c of wholeCouncils(RZC).values()) expect(precinctIdsOf(RZC, c.zastup).size, c.name).toBe(c.precincts);
+    });
+});
+
+describe('precinctDistrictsOf (precinct number -> OBEC of its row = kod_mco of the district)', () => {
+    it('maps each precinct to the OBEC of the row that holds its range', () => {
+        const d = precinctDistrictsOf(RZC, 554791);
+        expect(d.size).toBe(80);
+        expect(d.get(1001)).toBe('545970'); // Plzeň 1
+        expect(d.get(2034)).toBe('545988'); // Plzeň 2-Slovany
+        expect(d.has(1047)).toBe(false);
+        expect(precinctDistrictsOf(RZC, 1).size).toBe(0);
+    });
+    it('keys are exactly precinctIdsOf', () => {
+        expect([...precinctDistrictsOf(RZC, 582786).keys()].sort((a, b) => a - b)).toEqual([...precinctIdsOf(RZC, 582786)].sort((a, b) => a - b));
     });
 });
 
@@ -537,6 +571,13 @@ describe('excluded.generated.json helpers', () => {
 });
 
 describe('validateOverrides (used by the generator and overrides.test.js)', () => {
+    it('accepts the boolean `map` switch (precinct map on/off) and rejects other values', () => {
+        const ov = (map) => ({ reviewedAt: null, towns: { 582786: { name: 'Brno', map } } });
+        expect(validateOverrides(ov(false))).toEqual([]);
+        expect(validateOverrides(ov(true))).toEqual([]);
+        expect(validateOverrides(ov('ano'))[0]).toMatch(/map must be boolean/);
+    });
+
     it('accepts the empty default', () => {
         expect(validateOverrides({ reviewedAt: null, towns: {} })).toEqual([]);
     });
