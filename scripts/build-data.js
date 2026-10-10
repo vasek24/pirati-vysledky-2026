@@ -86,7 +86,8 @@ async function main() {
         console.log(`\n=== ${council.name} (${council.zastup}) ===`);
         await buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, partyInfo });
     }
-    await buildOverview();
+    // --no-overview: nesahat na public/data/prehled.json (jen Praha)
+    if (!args.includes('--no-overview')) await buildOverview();
 }
 
 // Přehled (/) potřebuje za každé zastupitelstvo jen kandidátky (zkratky,
@@ -311,7 +312,7 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
 
     // --- hranice okrsků
     const features = geo.features
-        .filter((f) => (council.magistrat
+        .filter((f) => (council.magistrat || council.wholeObec
             ? String(f.properties.kod_obec) === z
             : String(f.properties.kod_mco) === z))
         .map((f) => simplify({

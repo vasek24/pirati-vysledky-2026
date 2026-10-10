@@ -17,7 +17,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import volby from '../api/volby.js';
 import { createBugHandler } from '../api/bug.js';
-import { KV_BASE_URL, councilByZastup } from '../src/councils.js';
+import { COUNCILS, KV_BASE_URL, councilByZastup } from '../src/councils.js';
 import { LAST_RESORT_TTL, cacheControlFor, edgeTtl, lastResortRequest, markStale, withTimeout } from './edge.js';
 import { FIRST_CLASS_KEYS, isFirstClass } from './feedClasses.js';
 import { buildFeed, feedKind, makeLog, phaseOfSnapshot } from './feedWiring.js';
@@ -27,8 +27,9 @@ import { feedTarget, runWarmup } from './warmup.js';
 // jen pro 400 na neznámé zastupitelstvo (DO se nezakládá) — feedy samotné
 // běží v Feed DO přes refresher
 const HANDLERS = { volby };
-// stejné jako rewrite ve vercel.json
-const APP_ROUTE = /^\/(praha|praha-[a-z0-9-]+)$/;
+// stejné jako rewrite ve vercel.json (tam je výčet ručně, tady z registru)
+const SLUGS = new Set(COUNCILS.map((c) => c.slug));
+const APP_ROUTE = { test: (pathname) => SLUGS.has(pathname.replace(/^\/+/, '')) };
 const JSON_TYPE = 'application/json; charset=utf-8';
 
 // Spustí Node-style handler z api/ (req.method, req.url, res.statusCode,

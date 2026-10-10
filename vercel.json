@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/:slug(praha|praha-[a-z0-9-]+)",
+      "source": "/:slug(praha|praha-[a-z0-9-]+|brno|ostrava|plzen)",
       "destination": "/index.html"
     }
   ],

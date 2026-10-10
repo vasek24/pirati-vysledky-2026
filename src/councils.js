@@ -85,6 +85,16 @@ const PRAHA = [
     ['praha-zlicin', 539899, 'Praha-Zličín', 15, 5, null],
 ];
 
+/**
+ * SPIKE: města mimo Prahu (jedno zastupitelstvo = jedno město, bez MČ).
+ *   [slug, okres (NUTS), kód zastupitelstva, název, mandátů, okrsků, pirátská kandidátka]
+ */
+const MESTA = [
+    ['brno', 6202, 582786, 'Brno', 55, 353, 15],
+    ['ostrava', 8106, 554821, 'Ostrava', 55, 246, 12],
+    ['plzen', 3203, 554791, 'Plzeň', 47, 174, 11],
+];
+
 const MAGISTRAT = 554782;
 
 /**
@@ -232,7 +242,7 @@ const DETAIL = {
 /**
  * slug        – adresa stránky (/praha-6)
  * zastup      – kód zastupitelstva (KODZASTUP) v datech ČSÚ
- * okres       – NUTS okresu v datech ČSÚ (Praha = 1100)
+ * okres       – NUTS okresu v datech ČSÚ (Praha = 1100, jinde viz MESTA)
  * seats       – počet mandátů 2026
  * precincts   – počet okrsků 2026
  * pirates     – číslo pirátské kandidátky (null = Piráti nekandidují)
@@ -240,24 +250,44 @@ const DETAIL = {
  * coalition   – viz DETAIL (null = neznámá / nezadaná)
  * magistrat   – Zastupitelstvo hl. m. Prahy (ne městská část)
  */
-export const COUNCILS = PRAHA.map(([slug, zastup, name, seats, precincts, pirates]) => ({
-    slug,
-    name,
-    title: `Zastupitelstvo městské části ${name}`,
-    zastup,
-    okres: 1100,
-    seats,
-    precincts,
-    pirates,
+const BASE = {
     pirateCandidates: [],
-    magistrat: zastup === MAGISTRAT,
     coalition: null,
     lists: {},
     photos: {},
     map: true,
     precinctFiles: true,
-    ...DETAIL[slug],
-}));
+};
+
+export const COUNCILS = [
+    ...PRAHA.map(([slug, zastup, name, seats, precincts, pirates]) => ({
+        ...BASE,
+        slug,
+        name,
+        title: `Zastupitelstvo městské části ${name}`,
+        zastup,
+        okres: 1100,
+        seats,
+        precincts,
+        pirates,
+        magistrat: zastup === MAGISTRAT,
+        ...DETAIL[slug],
+    })),
+    ...MESTA.map(([slug, okres, zastup, name, seats, precincts, pirates]) => ({
+        ...BASE,
+        slug,
+        name,
+        title: `Zastupitelstvo města ${name}`,
+        zastup,
+        okres,
+        seats,
+        precincts,
+        pirates,
+        magistrat: false,
+        wholeObec: true, // okrsky se hledají podle kod_obec (celé město), ne kod_mco
+        ...DETAIL[slug],
+    })),
+];
 
 export const councilBySlug = (slug) => COUNCILS.find((c) => c.slug === slug) || null;
 export const councilByZastup = (zastup) => COUNCILS.find((c) => c.zastup === Number(zastup)) || null;
