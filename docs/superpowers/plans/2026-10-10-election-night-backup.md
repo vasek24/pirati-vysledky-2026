@@ -64,7 +64,7 @@
   git remote set-url --push upstream DISABLED-never-push-upstream
   GH_TOKEN=$(gh auth token --user vasek24) gh repo set-default vasek24/pirati-vysledky-2026
   ```
-- [ ] **Step 1:** Edit `cloudflare/wrangler.jsonc`: `account_id` → `741febb7a315a409b83e5a9a1b62954d`; `name` → `pirati-volby-zaloha`; replace the author's KV namespace id in the `HLASENI` binding with the literal string `"CREATE-IN-TASK-5"` and add a comment saying Task 5 creates the namespace. Because that value is invalid, an accidental `wrangler deploy` before Task 5 fails instead of touching anything. Do not run any deploy.
+- [ ] **Step 1:** Edit `cloudflare/wrangler.jsonc`: `account_id` → `741febb7a315a409b83e5a9a1b62954d`; `name` → `pirati-volby-zaloha`; add an `env.staging` block (`name: "pirati-volby-zaloha-staging"`, `workers_dev: true`, no routes, no crons, its own `HLASENI` KV binding with id `"CREATE-IN-TASK-5"`, its own Durable Object binding/migration for `Feed`) so production and staging never share Durable Object storage; and replace the author's KV namespace id in the top-level `HLASENI` binding with the literal string `"CREATE-IN-TASK-5"` and add a comment saying Task 5 creates the namespace. Because that value is invalid, an accidental `wrangler deploy` before Task 5 fails instead of touching anything. Do not run any deploy.
 - [ ] **Step 2:** `npm i -D vitest@~3.2`; set `"test": "TZ=UTC vitest run"`. `vitest.config.js`:
   ```js
   import { defineConfig, configDefaults } from 'vitest/config';
@@ -103,15 +103,15 @@
 **Interfaces:** Produces `FIRST_CLASS_KEYS: string[]` (the Global Constraints list of 11 zastup codes + `'prehled'`), `isFirstClass(key: string) -> boolean`.
 
 - [ ] **Step 1:** Failing test: `FIRST_CLASS_KEYS` has 12 unique entries, includes `554782`, `500216`, `prehled`; `isFirstClass('500216') === true`, `isFirstClass('538531') === false`.
-- [ ] **Step 2:** FAIL. **Step 3:** Implement. `scheduled()`: for each key in `FIRST_CLASS_KEYS`, with concurrency 4 and a 15 s `AbortSignal.timeout`, call the DO stub for that key via `env.FEED.get(env.FEED.idFromName(<same name the HTTP route uses: 'volby?z=<code>' or 'prehled'>)).fetch(<same internal request the HTTP route builds>)` — the implementer reads `worker.js:121-149` and reuses the exact helper; catch and `console.warn` errors.
+- [ ] **Step 2:** FAIL. **Step 3:** Implement. Extract the existing HTTP route's DO call (`worker.js:121-149`: it derives the DO name `volby?z=<code>` / `prehled` and calls the RPC method `stub.run(name, path)` — the `Feed` class has **no `fetch()` handler**) into one shared helper `callFeed(env, key) -> Promise<{status, body, ...}>` used by **both** the HTTP route and `scheduled()`. `scheduled(controller, env, ctx)`: for each key in `FIRST_CLASS_KEYS`, with concurrency 4 and a 15 s timeout, `await callFeed(env, key)`; on a non-200 or throw, `console.warn('warmup-failed', key, reason)`; on success `console.log('warmup-ok', key, status)`. Task 9 must keep this helper as the single entry point when it changes the DO's internals.
 - [ ] **Step 4:** `npm test`, lint, build, `cd cloudflare && npm ci && npx wrangler deploy --dry-run` → PASS. Commit.
 
 ### Task 5: Deploy 1a (maintainer: the orchestrator, not a Sonnet task)
 
-- [ ] **Step 1:** After Tasks 1–4 are merged and Opus-reviewed: `cd cloudflare && npx wrangler kv namespace create HLASENI`; paste the new id into `wrangler.jsonc`; commit.
-- [ ] **Step 2:** `npm ci && npm ci --prefix cloudflare && (cd cloudflare && npm run build && npx wrangler deploy)` → staging on workers.dev. Record the version id in `docs/ops/runbook.md`.
-- [ ] **Step 3:** Smoke: `curl -fsS` `/version.json`, `/api/prehled`, Magistrát and Praha 9 council API URLs (take exact paths from the app's own requests), `/humans.txt`, `/kontakt.txt`, `/.well-known/security.txt`; confirm the cron appears in `wrangler deployments`/dashboard logs (`wrangler tail` shows the scheduled invocation within 2 min).
-- [ ] **Step 4:** Add `routes: [{ pattern: "volby.dg12.cz", custom_domain: true }]`, redeploy, `curl -sI https://volby.dg12.cz/` and the endpoints. If the custom-domain step errors because a DNS record exists, **do not delete anything**; stop and report to the owner.
+- [ ] **Step 1:** After Tasks 1–4 are merged and Opus-reviewed: `cd cloudflare && npx wrangler kv namespace create HLASENI` and `npx wrangler kv namespace create HLASENI --env staging`; paste the two ids into `wrangler.jsonc`; commit.
+- [ ] **Step 2:** `npm ci && npm ci --prefix cloudflare && (cd cloudflare && npm run build && npx wrangler deploy --env staging)` → staging Worker `pirati-volby-zaloha-staging` on workers.dev; run Step 3 against it. Only then deploy production `npx wrangler deploy` (no `--env`, workers.dev URL of `pirati-volby-zaloha`) and re-run the smoke. Record both version ids in `docs/ops/runbook.md`.
+- [ ] **Step 3 (run on staging first, then production):** Smoke: `curl -fsS` `/version.json`, `/api/prehled`, Magistrát and Praha 9 council API URLs (take exact paths from the app's own requests), `/humans.txt`, `/kontakt.txt`, `/.well-known/security.txt`; confirm with `wrangler tail` that within 2 minutes the log shows `warmup-ok` for **all 12** first-class keys (an invocation alone is not enough — `warmup-failed` for any key blocks go-live).
+- [ ] **Step 4:** Add `routes: [{ pattern: "volby.dg12.cz", custom_domain: true }]` to the **top-level (production) config only**, redeploy production, `curl -sI https://volby.dg12.cz/` and the endpoints. If the custom-domain step errors because a DNS record exists, **do not delete anything**; stop and report to the owner.
 - [ ] **Step 5:** Write `docs/ops/runbook.md` (deploy, rollback `wrangler rollback <id>`, logs, contact). Merge. **Phase 1a is live.**
 
 ---
@@ -194,7 +194,7 @@
 - [ ] **Step 1:** Merge Tasks 6–10 after each Opus diff review; run the full `npm test && npm run lint && npm run build` on `main`.
 - [ ] **Step 2:** **Codex review of the whole diff** vs upstream base `98d6bc6` (`CODEX_REVIEW_MODEL=gpt-5.6-sol tools/codex-review.sh --scope code --base 98d6bc6 --spec docs/superpowers/specs/2026-10-10-election-night-backup-design.md`); fix CRITICAL/HIGH; one confirming round only if a CRITICAL/HIGH was fixed.
 - [ ] **Step 3:** Local drills under `wrangler dev` with a mock ČSÚ (`counted > 0`, `generovano` advancing every 60 s): cadence ≈ 1 refresh/20–60 s under `scripts/burst.mjs` load (300 concurrent, 60 s); forced upstream failure → `stale:true`; empty body → unchanged; restart → snapshot survives. Failure drills **never** on `pirati-volby-zaloha`.
-- [ ] **Step 4:** Record the previous version id; `cd cloudflare && npm run build && npx wrangler deploy`; watch `wrangler tail` for the first refreshes of Magistrát, Praha 9 and `prehled`; staging checks: two consecutive `x-cache: HIT` responses never carry a `refreshedAt` > 65 s older than the preceding MISS; `x-server-now` present.
+- [ ] **Step 4:** **Staging first:** `cd cloudflare && npm run build && npx wrangler deploy --env staging`; run the staging checks there (two consecutive `x-cache: HIT` responses never carry a `refreshedAt` > 65 s older than the preceding MISS; `x-server-now` present; 503 JSON when the DO is forced to fail; `wrangler tail` shows refreshes for Magistrát, Praha 9 and `prehled`). **Only after those pass:** record the production previous version id (`wrangler deployments list`), `npx wrangler deploy` (production), repeat the same checks against `volby.dg12.cz`. Failure drills with a fake `CSU_BASE` run on the staging env or `wrangler dev`, never production.
 - [ ] **Step 5:** Update the runbook; merge. **Phase 1b is live.** Then Phase 2 (row flash, latency display, harness) in the quiet window.
 
 ---
