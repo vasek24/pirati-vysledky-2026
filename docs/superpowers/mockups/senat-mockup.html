@@ -85,6 +85,8 @@ section{padding-block:26px}
 .rel.ticket{background:var(--pirate);color:var(--pirate-fg)}
 .rel.endorsed{border:1.5px solid var(--pirate)}
 .cname{font:600 20px/1.2 var(--f-display)}
+.snt-why{font-size:13px;color:var(--ink-2);line-height:1.4}
+.big .rk{font-size:14px;font-weight:600;color:var(--ink);border:1.5px solid var(--ink);border-radius:6px;padding:1px 9px}
 .snt-lbl{font-size:12px;color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cname small{display:block;font:400 13px/1.4 var(--f-body);color:var(--ink-2);margin-top:3px}
 .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
@@ -304,7 +306,41 @@ function summarize(S){
 }
 let mode='pre',snap,sm,sel=30;
 const fullName=c=>[c.pre,c.first,c.last].filter(Boolean).join(' ');
-function chip(c){return `<span class="chip ${c.status}">${CHIP[c.status]}${c.official?'':' · předběžně'}</span>`}
+function outlook(o,c){
+  const vv=x=>o.cur===2?x.votes2:x.votes1,cur=o.rounds[o.cur],Z=cur.z,C=cur.c,v=vv(c);
+  const part=o.cands.filter(x=>vv(x)!=null),sorted=[...part].sort((a,b)=>vv(b)-vv(a));
+  const top=sorted[0]?vv(sorted[0]):0,valid=part.reduce((a,x)=>a+vv(x),0);
+  const n1=part.filter(x=>vv(x)===top).length,sec=n1>1?top:(sorted[1]?vv(sorted[1]):0);
+  const gap=(a,b)=>nf(Math.abs(a-b))+' hlasů';
+  const st=c.status;
+  if(c.official){
+    const W={elected:o.decidedRound===2?'Ve 2. kole nejvíce hlasů':'Nad 50 % platných hlasů, 2. kolo se nekoná',
+      advancing:'Nikdo nezískal přes 50 %: postupují dvě kandidatury s nejvíce hlasy',
+      notAdvancing:o.state==='elected'?'Mandát získala jiná kandidatura':'Mimo dvě kandidatury s nejvíce hlasy',
+      runoffLost:'Ve 2. kole měla kandidatura méně hlasů',runoffTie:'Shoda hlasů: nikdo mandát nezískal, konají se opakované volby'};
+    return {cls:st,chip:CHIP[st],why:W[st]||''};
+  }
+  if(Z===0)return {cls:'waiting',chip:CHIP.waiting,why:'Sčítání zatím nezačalo.'};
+  const pre=Z<C?'Předběžně: ':'Sečteno: ';
+  if(o.cur===2){
+    const other=sorted.find(x=>x!==c);const d=other?gap(v,vv(other)):'';
+    return st==='runoffLeading'?{cls:'leading',chip:pre+'vede 2. kolo',why:'Náskok '+d+'.'}:{cls:'behind',chip:pre+'zaostává ve 2. kole',why:'Ztráta '+d+'.'};
+  }
+  if(n1===1&&2*top>valid){
+    return v===top?{cls:'leading',chip:pre+'mandát',why:'Má '+pc(c.pct)+' sečtených hlasů, tedy nad 50 %: 2. kolo by odpadlo.'}
+      :{cls:'behind',chip:pre+'bez postupu',why:'Jiná kandidatura má nad 50 % sečtených hlasů.'};
+  }
+  const adv=c.rank===1||(c.rank===2&&n1===1);
+  if(adv){
+    let why;
+    if(c.rank===1&&n1===1)why='Vede s '+pc(c.pct)+', pod 50 %: do 2. kola jdou dvě kandidatury s nejvíce hlasy. Náskok '+gap(v,sec)+'.';
+    else if(c.rank===1)why='Shoda hlasů na 1. místě: do 2. kola jdou všechny kandidatury s nejvyšším počtem hlasů.';
+    else why='Nikdo nemá přes 50 %. Ztráta na 1. místo: '+gap(top,v)+'.';
+    return {cls:'second',chip:pre+'postup do 2. kola',why};
+  }
+  return {cls:'behind',chip:pre+'bez postupu',why:(n1>1?'Ztráta na 1. místo (shoda): ':'Ztráta na 2. místo: ')+gap(sec,v)+'.'};
+}
+function chip(o,c){const w=outlook(o,c);return `<span class="chip ${w.cls}">${w.chip}</span>`}
 function cardHtml(o,c){
   const cur=o.rounds[o.cur],v=o.cur===2?c.votes2:c.votes1;
   const prog=cur.c?Math.round(100*cur.z/cur.c):0;
@@ -313,9 +349,10 @@ function cardHtml(o,c){
     <div class="ctop"><span class="ob"><em>${o.n}</em>${o.name}</span><span class="rel ${c.pirate}">${REL[c.pirate]}</span></div>
     <div class="cname">${fullName(c)}<small>Navrhující strana: ${c.party} · č. ${c.no} na lístku · ${c.age} let</small></div>
     <div class="snt-lbl" title="${c.lbl}">Na lístku: ${c.lbl}</div>
-    <div class="big"><b class="num">${show?nf(v):'0'}</b><span class="num">${show&&cur.z>0?pc(c.pct):'0,0 %'}</span><span class="rk">${show&&cur.z>0?c.rank+'. místo':''}</span></div>
+    <div class="big"><b class="num">${show?nf(v):'0'}</b><span class="num">${show&&cur.z>0?pc(c.pct):'0,0 %'}</span><span class="rk">${show&&cur.z>0&&c.rank?c.rank+'. místo':'bez pořadí'}</span></div>
     <div class="bar" aria-hidden="true"><i style="width:${show?Math.min(100,c.pct):0}%"></i></div>
-    <div>${chip(c)}</div>
+    <div>${chip(o,c)}</div>
+    <div class="snt-why">${outlook(o,c).why}</div>
     <div class="prog num"><span>${o.cur===2?'2. kolo: ':''}sečteno ${nf(cur.z)} z ${nf(cur.c)} okrsků (${prog} %)</span><div class="bar" aria-hidden="true"><i style="width:${prog}%;background:var(--adv)"></i></div></div>
   </button>`;
 }
@@ -338,7 +375,7 @@ function detailHtml(o){
       <div><div class="nm"><span class="bn" title="Číslo na hlasovacím lístku">${c.no}</span>${fullName(c)}</div>
         <div class="pt">Navrhující strana: ${c.party}${c.member==='Bez politické příslušnosti'?'':' · členství: '+c.member}</div><div class="pt" style="font-size:13px">Na lístku: ${c.lbl}</div>
         <div class="bio">${c.age} let · ${c.job||'povolání neuvedeno'} · ${c.res}</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${c.pirate?`<span class="rel ${c.pirate}">${REL[c.pirate]}</span>`:''}${chip(c)}${c.majority&&!c.official&&cur.z>0?'<span class="pt">nad 50 % sečtených hlasů, čeká na potvrzení ČSÚ</span>':''}</div></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">${c.pirate?`<span class="rel ${c.pirate}">${REL[c.pirate]}</span>`:''}${chip(o,c)}${c.majority&&!c.official&&cur.z>0?'<span class="pt">nad 50 % sečtených hlasů, čeká na potvrzení ČSÚ</span>':''}</div><div class="snt-why" style="margin-top:6px">${outlook(o,c).why}</div></div>
       <div class="v num"><b>${hasR?nf(v):'0'}</b><span>${hasR&&cur.z>0?pc(c.pct,2):'0,00 %'}${o.cur===2?' ve 2. kole':''}</span>${o.cur===2&&c.votes1!=null?`<span class="r2">1. kolo: ${nf(c.votes1)} · ${pc(r1.valid?100*c.votes1/r1.valid:0,2)}</span>`:''}</div>
       <div class="bar rbar" aria-hidden="true"><i style="width:${hasR?Math.min(100,c.pct):0}%;${c.pirate?'background:var(--ink)':''}"></i></div></div>`;
   });
