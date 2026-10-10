@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "test": "TZ=UTC vitest run",
+    "test:senat": "TZ=UTC vitest run --config cloudflare-senat/vitest.config.js",
+    "build:senat": "vite build --config senat/vite.config.js",
     "data": "node scripts/build-data.js",
     "verify": "node scripts/verify-2022.js"
   },
