@@ -128,6 +128,7 @@ export const T = {
   roundOnePrefix: '1. kolo: ', // doplněno: kandidatura, která do 2. kola nepostoupila
   rankRound1: (r) => `1. kolo: ${r}. místo`,
   progress: (z, c, pct) => `sečteno ${z} z ${c} okrsků (${pct} %)`,
+  progressNone: 'sečteno –', // 2. kolo má hlasy, ale server k němu neposlal počty okrsků
 
   // detail
   eyebrowDetail: 'Detail obvodu',
@@ -135,6 +136,7 @@ export const T = {
   decidedIn: (r) => ` · ve ${r}. kole`,
   round1Progress: (z, c, pct) => `1. kolo: sečteno ${z} z ${c} okrsků (${pct})`,
   round2Progress: (z, c, pct) => `2. kolo: sečteno ${z} z ${c} okrsků (${pct})`,
+  round2ProgressNone: '2. kolo: sečteno –',
   otherDistrict: 'Jiný obvod',
   ballotNoTitle: 'Číslo na hlasovacím lístku',
   membership: (m) => ` · členství: ${m}`,

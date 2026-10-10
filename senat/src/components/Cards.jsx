@@ -1,14 +1,14 @@
 import { T } from '../text.js'
 import { fullName, nf, pc } from '../format.js'
-import { isOutOfRunoff, pctOf, pirateCards, progressOf, rankOf, roundOf, votesOf } from '../view.js'
+import { isCounted, isOutOfRunoff, pctOf, pirateCards, progressOf, rankOf, roundOf, roundStats, votesOf } from '../view.js'
 import { Chip, Relation, Why } from './Chip.jsx'
 
 function Card({ o, c, selected, onSelect }) {
   const round = roundOf(o, c)
-  const r = o.rounds[round]
+  const r = roundStats(o, round)
   const v = votesOf(o, c)
   const show = v != null
-  const counted = r.okrskyZprac > 0
+  const counted = isCounted(o, c)
   const pct = show ? pctOf(o, c) : 0
   const prog = Math.round(progressOf(r))
   const rank = rankOf(o, c)
@@ -39,7 +39,7 @@ function Card({ o, c, selected, onSelect }) {
       <div><Chip o={o} c={c} /></div>
       <Why o={o} c={c} />
       <div className="snt-prog snt-num">
-        <span>{roundPrefix}{T.progress(nf(r.okrskyZprac), nf(r.okrskyCelkem), prog)}</span>
+        <span>{roundPrefix}{r ? T.progress(nf(r.okrskyZprac), nf(r.okrskyCelkem), prog) : T.progressNone}</span>
         <div className="snt-bar" aria-hidden="true"><i style={{ width: `${prog}%`, background: 'var(--adv)' }} /></div>
       </div>
     </button>

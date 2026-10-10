@@ -382,12 +382,19 @@ describe('derive: outlook and gap (unofficial candidates only)', () => {
     expect(view(one(fin(500, 500)))).toEqual([['tie', 0], ['tie', 0], [null, null]])
   })
 
-  it('round 2: Z2 = 0 or any st2 flag -> no outlook', () => {
+  it('round 2: Z2 = 0 -> no outlook; both flagged -> no outlook', () => {
     expect(view(one(fin(0, 0, 0))).every(([o, g]) => o === null && g === null)).toBe(true)
-    const flagged = one({ ...fin(650, 350, 10), cands: [cand(1, 400, { st1: '2.KOLO', votes2: 650 }), cand(2, 300, { st1: '2.KOLO', votes2: 350, st2: 'NEZVOLEN' }), cand(3, 200, { st1: 'NEZVOLEN' })] })
-    expect(view(flagged)).toEqual([[null, null], [null, null], [null, null]])
     const done = one({ ...fin(650, 350, 10), cands: [cand(1, 400, { st1: '2.KOLO', votes2: 650, st2: 'ZVOLEN' }), cand(2, 300, { st1: '2.KOLO', votes2: 350, st2: 'NEZVOLEN' }), cand(3, 200, { st1: 'NEZVOLEN' })] })
     expect(view(done)).toEqual([[null, null], [null, null], [null, null]])
+  })
+
+  it('round 2: a rival\'s official flag does not suppress the unflagged finalist (provisional by counted votes)', () => {
+    // loser flagged NEZVOLEN first, winner not yet: the winner keeps lead + gap, the loser is official (null)
+    const loserFlagged = one({ ...fin(650, 350, 10), cands: [cand(1, 400, { st1: '2.KOLO', votes2: 650 }), cand(2, 300, { st1: '2.KOLO', votes2: 350, st2: 'NEZVOLEN' }), cand(3, 200, { st1: 'NEZVOLEN' })] })
+    expect(view(loserFlagged)).toEqual([['lead', 300], [null, null], [null, null]])
+    // winner flagged ZVOLEN, loser not yet: the loser keeps trail + gap
+    const winnerFlagged = one({ ...fin(650, 350, 10), cands: [cand(1, 400, { st1: '2.KOLO', votes2: 650, st2: 'ZVOLEN' }), cand(2, 300, { st1: '2.KOLO', votes2: 350 }), cand(3, 200, { st1: 'NEZVOLEN' })] })
+    expect(view(winnerFlagged)).toEqual([[null, null], ['trail', 300], [null, null]])
   })
 
   it('every derived candidate carries outlook and gap (null by default)', () => {

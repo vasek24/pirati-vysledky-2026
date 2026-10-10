@@ -9,6 +9,8 @@ import Banner from './components/Banner.jsx'
 import { CHIP, REL, STATE, T } from './text.js'
 import { counting, finalR2, runoff, runoffEliminatedPirate, waiting } from './fixtures/scenarios.js'
 import { nf, pc } from './format.js'
+import { derive } from '../../cloudflare-senat/src/derive.js'
+import { currentRound } from './view.js'
 
 const html = (s, selected) =>
   renderToStaticMarkup(h(Board, { snapshot: s, selected, onSelect: () => {} })) +
@@ -118,6 +120,50 @@ describe('render', () => {
     // finalists first, then the rest by round-1 votes
     const order = [...out.matchAll(/class="snt-bn"[^>]*>(\d)</g)].map((m) => Number(m[1]))
     expect(order).toEqual([2, 6, 1, 5, 4, 3])
+  })
+
+  // obvod 30 jako ČSÚ ho může poslat: HLASY_2KOLO u finalistek, ale bez UCAST 2. kola (rounds[2] chybí)
+  const withoutUcast2 = (s, n) => {
+    const x = structuredClone(s)
+    delete x.obvody.find((o) => o.n === n).rounds[2]
+    return { ...derive(x), phase: s.phase, round: s.round }
+  }
+
+  test('round 2 votes without a round-2 UCAST: card and detail show round-2 numbers, no crash', () => {
+    const s = withoutUcast2(runoff(), 30)
+    const o = s.obvody.find((x) => x.n === 30)
+    expect(o.rounds[2]).toBeUndefined()
+    expect(currentRound(o)).toBe(2)
+    const sucharda = o.candidates.find((c) => c.no === 2)
+    const out = html(s, 30).replace(/\s/g, ' ')
+
+    const card = out.split('class="snt-card').slice(1).find((x) => x.includes('Sucharda'))
+    expect(card).toContain(`<b class="snt-num">${sp(nf(2000))}</b>`) // round-2 votes, not the 3 600 of round 1
+    expect(card).not.toContain(`<b class="snt-num">${sp(nf(3600))}</b>`)
+    expect(card).toContain(`<span class="snt-num">${sp(pc(sucharda.pct2))}</span>`)
+    expect(card).toContain('class="snt-rk">1. místo<') // the server rank (from round-2 votes) next to round-2 votes
+    expect(card).toContain(`${T.roundTwoPrefix}${T.progressNone}`)
+
+    const row = out.split('class="snt-row').slice(1).find((x) => x.includes('Sucharda'))
+    expect(row).toContain(`<b>${sp(nf(2000))}</b>`)
+    expect(row).toContain(sp(pc(sucharda.pct2, 2)))
+    expect(row).toContain(T.inRound2.trim())
+    expect(out).toContain(T.round2ProgressNone)
+    expect(out).toContain(T.round1Progress(nf(150), nf(150), '100 %').replace(/\s/g, ' '))
+    // the strip and the overall header render too
+    expect(out).toMatch(/class="snt-cell /)
+  })
+
+  test('round 2 without a UCAST: outlook text does not crash', () => {
+    const s = withoutUcast2(runoff(), 30)
+    const o = s.obvody.find((x) => x.n === 30)
+    for (const kind of ['lead', 'trail', 'tie']) {
+      const x = structuredClone(s)
+      const c = x.obvody.find((q) => q.n === 30).candidates.find((q) => q.no === 2)
+      Object.assign(c, { official: false, outlook: kind, gap: 100 })
+      expect(() => html(x, 30)).not.toThrow()
+    }
+    expect(o.candidates.length).toBeGreaterThan(0)
   })
 
   test('idle round 2 with no counted precinct: header shows the waiting pill', () => {

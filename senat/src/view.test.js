@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest'
 import { counting, finalR2, runoff, runoffEliminatedPirate, waiting } from './fixtures/scenarios.js'
-import { currentRound, defaultObvod, isOutOfRunoff, pctOf, pirateCards, pirateTally, progressOf, rankOf, roundOf, sortRows, votesOf } from './view.js'
+import { currentRound, defaultObvod, isCounted, isOutOfRunoff, pctOf, pirateCards, pirateTally, progressOf, rankOf, roundOf, roundStats, sortRows, votesOf } from './view.js'
 
 describe('view selectors', () => {
   test('18 Pirate cards sorted by obvod number (waiting fixture)', () => {
@@ -28,6 +28,20 @@ describe('view selectors', () => {
     }
     const t = pirateTally(runoff().summary)
     expect(t).toMatchObject({ elected: 1, advancing: 3, top: 4, out: 3 })
+  })
+
+  test('current round is 2 with rounds[2] OR any votes2 (same rule as the server)', () => {
+    const o = { rounds: { 1: { okrskyCelkem: 10, okrskyZprac: 10 } }, candidates: [{ no: 1, votes1: 5, votes2: null }, { no: 2, votes1: 4, votes2: null }] }
+    expect(currentRound(o)).toBe(1)
+    expect(currentRound({ ...o, rounds: { ...o.rounds, 2: { okrskyCelkem: 10, okrskyZprac: 0 } } })).toBe(2)
+    const noUcast = { ...o, candidates: [{ no: 1, votes1: 5, votes2: 0, pct2: 0 }, { no: 2, votes1: 4, votes2: 7, pct2: 100 }] }
+    expect(currentRound(noUcast)).toBe(2)
+    expect(votesOf(noUcast, noUcast.candidates[1])).toBe(7)
+    expect(pctOf(noUcast, noUcast.candidates[1])).toBe(100)
+    expect(roundStats(noUcast, 2)).toBeNull()
+    expect(isCounted(noUcast, noUcast.candidates[1])).toBe(true)
+    expect(isCounted(noUcast, noUcast.candidates[0])).toBe(false) // 0 votes, round-2 stats unknown
+    expect(progressOf(roundStats(noUcast, currentRound(noUcast)))).toBe(0)
   })
 
   test('current round and votes follow rounds[2]', () => {

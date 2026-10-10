@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 
-// worker.js imports the Cloudflare runtime module; only readConfig is exercised here
+// worker.js imports the Cloudflare runtime module; only readConfig and the stateless routes are exercised here
 vi.mock('cloudflare:workers', () => ({ DurableObject: class {} }))
-const { readConfig } = await import('./worker.js')
+const { default: worker, readConfig, withServerNow } = await import('./worker.js')
 
 const R1 = Date.parse('2026-10-10T14:00:00+02:00')
 
@@ -47,5 +47,62 @@ describe('readConfig: POLLS_CLOSE_R2 override (M2)', () => {
 
   it('CSU_BASE is trimmed of trailing slashes', () => {
     expect(readConfig({ CSU_BASE: 'https://x.test/senat//' }).base).toBe('https://x.test/senat')
+  })
+})
+
+describe('x-server-now on every reply (§2)', () => {
+  const NOW = Date.parse('2026-10-10T16:00:00Z')
+  // assets answer with immutable headers, as the real ASSETS binding does
+  const frozen = (res) => {
+    for (const m of ['set', 'append', 'delete']) {
+      res.headers[m] = () => {
+        throw new TypeError('immutable')
+      }
+    }
+    return res
+  }
+  const env = {
+    ASSETS: {
+      fetch: vi.fn(async (req) => {
+        const { pathname } = new URL(req.url)
+        if (pathname === '/') return frozen(new Response('<html></html>', { status: 200, headers: { 'Cache-Control': 'public, max-age=60', 'Content-Type': 'text/html' } }))
+        return frozen(new Response('nope', { status: 404, headers: { 'Cache-Control': 'no-store' } }))
+      }),
+    },
+  }
+  const call = (path, init) => worker.fetch(new Request(`https://senat.test${path}`, init), env, { waitUntil() {} })
+
+  it.each([
+    ['405 on the API', '/api/senat', { method: 'POST' }, 405],
+    ['/healthz', '/healthz', undefined, 200],
+    ['an asset', '/', undefined, 200],
+    ['a 404 from the assets', '/missing', undefined, 404],
+  ])('%s', async (_name, path, init, status) => {
+    vi.useFakeTimers()
+    vi.setSystemTime(NOW)
+    try {
+      const res = await call(path, init)
+      expect(res.status).toBe(status)
+      expect(res.headers.get('x-server-now')).toBe(String(NOW))
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('asset replies keep the body, status and cache headers', async () => {
+    const res = await call('/')
+    expect(await res.text()).toBe('<html></html>')
+    expect(res.headers.get('cache-control')).toBe('public, max-age=60')
+    expect(res.headers.get('content-type')).toBe('text/html')
+    const nf = await call('/missing')
+    expect(nf.status).toBe(404)
+    expect(nf.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('withServerNow does not mutate the original response', () => {
+    const orig = new Response('x', { status: 200 })
+    const out = withServerNow(orig)
+    expect(out.headers.has('x-server-now')).toBe(true)
+    expect(orig.headers.has('x-server-now')).toBe(false)
   })
 })

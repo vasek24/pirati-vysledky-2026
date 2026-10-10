@@ -69,6 +69,14 @@ describe('freshness', () => {
     expect(headerModel({ snapshot: snap({ round: 2, obvody: r1 }), serverNow: G, nextAt: null }).pill).toBe(T.pillLive(2))
   })
 
+  test('round-2 votes without a round-2 UCAST count as counted (no waiting pill); without votes still waiting', () => {
+    const runoff = (votes2) => [{ state: 'runoff', rounds: { 1: { okrskyZprac: 5 } }, candidates: [{ votes2 }, { votes2: null }] }]
+    const pill = (obvody) => headerModel({ snapshot: snap({ phase: 'idle', round: 2, obvody }), serverNow: G, nextAt: null }).pill
+    expect(pill(runoff(120))).toBe(T.pillDone(2))
+    expect(pill(runoff(0))).toBe(T.pillWaitingR2)
+    expect(pill(runoff(null))).toBe(T.pillWaitingR2)
+  })
+
   test('junk generatedMs drops the time and age but keeps the countdown', () => {
     const m = headerModel({ snapshot: snap({ generatedMs: null }), serverNow: G, nextAt: G + 5000 })
     expect(m.fresh).toBe('další kontrola za 0:05')

@@ -1,16 +1,15 @@
 import { T, STATE } from '../text.js'
 import { fullName, nf, pc } from '../format.js'
-import { isOutOfRunoff, pctOf, progressOf, rankOf, roundOf, sortRows, votesOf } from '../view.js'
+import { currentRound, isCounted, isOutOfRunoff, pctOf, progressOf, rankOf, roundOf, sortRows, votesOf } from '../view.js'
 import { Chip, Relation, Why } from './Chip.jsx'
 
 function Row({ o, c }) {
   const round = roundOf(o, c)
   const out = isOutOfRunoff(o, c)
   const rank = rankOf(o, c)
-  const r = o.rounds[round]
   const v = votesOf(o, c)
   const has = v != null
-  const counted = r.okrskyZprac > 0
+  const counted = isCounted(o, c)
   const pct = has ? pctOf(o, c) : 0
   const bio = [c.age != null && `${c.age} let`, c.job || (c.age != null ? T.noJob : null), c.residence].filter(Boolean)
   return (
@@ -65,7 +64,7 @@ export default function Detail({ snapshot, selected, onSelect }) {
         <div className="snt-meta snt-num">
           <span>{STATE[o.state]}{o.decidedRound ? T.decidedIn(o.decidedRound) : ''}</span>
           <span>{T.round1Progress(nf(r1.okrskyZprac), nf(r1.okrskyCelkem), prog(r1))}</span>
-          {r2 && <span>{T.round2Progress(nf(r2.okrskyZprac), nf(r2.okrskyCelkem), prog(r2))}</span>}
+          {r2 ? <span>{T.round2Progress(nf(r2.okrskyZprac), nf(r2.okrskyCelkem), prog(r2))}</span> : currentRound(o) === 2 && <span>{T.round2ProgressNone}</span>}
         </div>
         <label style={{ fontSize: 13, color: 'var(--ink-2)', display: 'grid', gap: 4 }}>
           {T.otherDistrict}

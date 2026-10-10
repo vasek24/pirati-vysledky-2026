@@ -3,7 +3,7 @@
 // Jediné, co se formátuje z dat, je podíl `c.pct` a počet hlasů.
 import { CHIP, T } from './text.js'
 import { nf, pc } from './format.js'
-import { currentRound } from './view.js'
+import { currentRound, roundStats } from './view.js'
 
 // „1 hlas“, „2 hlasy“, „5 hlasů“ (22 → hlasy, 12 → hlasů)
 export function votesText(n) {
@@ -30,8 +30,8 @@ export function outlookView(o, c) {
     const waiting = c.status === 'waiting'
     return { cls: c.status, chip: CHIP[c.status] + (waiting ? '' : T.provisional), why: waiting ? T.whyWaiting : '' }
   }
-  const r = o.rounds[currentRound(o)]
-  const pre = r.okrskyZprac < r.okrskyCelkem ? T.prelim : T.counted
+  const r = roundStats(o, currentRound(o))
+  const pre = !r || r.okrskyZprac < r.okrskyCelkem ? T.prelim : T.counted // bez počtů okrsků kola vždy „Předběžně“
   const gap = votesText(c.gap ?? 0)
   switch (kind) {
     case 'lead':

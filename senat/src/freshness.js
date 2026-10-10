@@ -10,7 +10,10 @@ export const countdown = (nextAt, serverNow) =>
 
 // -> { pill, live, fresh }: text štítku, zda pulzuje, řádek „ČSÚ data z … · před … · další kontrola za …“
 // Neukončený obvod bez jediného sečteného okrsku 2. kola (ve fázi idle jsou takové všechny neukončené)
-const awaitsRound2 = (o) => o.state !== 'elected' && o.state !== 'tie' && (o.rounds?.[2]?.okrskyZprac ?? 0) === 0
+// (bez UCAST 2. kola, ale s hlasy 2. kola se už sčítá)
+const counted2 = (o) =>
+  o.rounds?.[2] ? o.rounds[2].okrskyZprac > 0 : (o.candidates ?? []).some((c) => (c.votes2 ?? 0) > 0)
+const awaitsRound2 = (o) => o.state !== 'elected' && o.state !== 'tie' && !counted2(o)
 const waitingForRound2 = (snapshot) =>
   snapshot.phase === 'idle' && snapshot.round === 2 && (snapshot.obvody ?? []).some(awaitsRound2)
 

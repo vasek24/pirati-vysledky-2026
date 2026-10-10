@@ -55,6 +55,13 @@ export function baselineApplies(good, ctx) {
 
 const bad = (x) => !num(x) || x < 0;
 const badOpt = (x) => x != null && bad(x);
+const badPct = (x) => x != null && (bad(x) || x > 100);
+
+// Optional numeric fields of an UCAST / country round: counts non-negative, percentages in 0..100
+const ROUND_COUNTS = ['platneHlasy', 'zapsaniVolici', 'odevzdaneObalky'];
+const ROUND_PCTS = ['okrskyZpracProc', 'ucastProc'];
+const badRound = (r) => bad(r.okrskyCelkem) || bad(r.okrskyZprac)
+    || ROUND_COUNTS.some((k) => badOpt(r[k])) || ROUND_PCTS.some((k) => badPct(r[k]));
 
 function hardReason(s) {
     if (!s || !num(s.generatedMs)) return 'generated-invalid';
@@ -64,12 +71,15 @@ function hardReason(s) {
         if (!o.rounds?.[1]) return 'obvod-no-ucast';
         for (const r of [o.rounds[1], o.rounds[2]]) {
             if (!r) continue;
-            if (bad(r.okrskyCelkem) || bad(r.okrskyZprac) || badOpt(r.platneHlasy)) return 'negative-or-invalid-number';
+            if (badRound(r)) return 'negative-or-invalid-number';
             if (r.okrskyZprac > r.okrskyCelkem) return 'counted-out-of-range';
         }
         for (const c of o.candidates) {
-            if (bad(c.votes1) || badOpt(c.votes2)) return 'negative-or-invalid-number';
+            if (bad(c.votes1) || badOpt(c.votes2) || badPct(c.pct1) || badPct(c.pct2)) return 'negative-or-invalid-number';
         }
+    }
+    for (const r of [s.country?.[1], s.country?.[2]]) {
+        if (r && badRound(r)) return 'negative-or-invalid-number';
     }
     return null;
 }

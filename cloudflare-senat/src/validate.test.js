@@ -68,6 +68,58 @@ describe('validateCandidate: hard rejects (never quarantinable)', () => {
         expect(validateCandidate(bad, null)).toEqual(rej(reason, false)); // i bez good
     });
 
+    const NEG = 'negative-or-invalid-number';
+    const ROUND_FIELDS = ['okrskyZpracProc', 'ucastProc', 'zapsaniVolici', 'odevzdaneObalky', 'platneHlasy', 'okrskyCelkem', 'okrskyZprac'];
+    const PCT_ROUND_FIELDS = ['okrskyZpracProc', 'ucastProc'];
+
+    it.each(ROUND_FIELDS)('obvod round 1 %s: negative / non-finite is rejected', (k) => {
+        for (const v of [-1, -0.5, NaN, Infinity]) {
+            const bad = edit(good, (s) => { ob(s, 3).rounds[1][k] = v; });
+            expect(validateCandidate(bad, good, ctx())).toEqual(rej(NEG, false));
+            expect(validateCandidate(bad, null)).toEqual(rej(NEG, false));
+        }
+    });
+
+    it.each(ROUND_FIELDS)('obvod round 2 %s: negative is rejected', (k) => {
+        const withR2 = mk({ obvody: [{ n: 3, z2: 5, cands: [{ no: 1 }, { no: 2 }] }] });
+        const bad = edit(withR2, (s) => { ob(s, 3).rounds[2][k] = -1; });
+        expect(validateCandidate(bad, null)).toEqual(rej(NEG, false));
+    });
+
+    it.each(PCT_ROUND_FIELDS)('obvod round %s > 100 is rejected, 100 and null are fine', (k) => {
+        expect(validateCandidate(edit(good, (s) => { ob(s, 3).rounds[1][k] = 100.01; }), null)).toEqual(rej(NEG, false));
+        expect(validateCandidate(edit(good, (s) => { ob(s, 3).rounds[1][k] = 100; }), null).outcome).toBe('ok');
+        expect(validateCandidate(edit(good, (s) => { ob(s, 3).rounds[1][k] = null; }), null).outcome).toBe('ok');
+    });
+
+    it.each(['pct1', 'pct2'])('candidate %s: negative, non-finite and > 100 are rejected; 0, 100 and null are fine', (k) => {
+        for (const v of [-0.01, NaN, Infinity, 100.5]) {
+            const bad = edit(good, (s) => { cand(s, 3, 1)[k] = v; });
+            expect(validateCandidate(bad, good, ctx())).toEqual(rej(NEG, false));
+            expect(validateCandidate(bad, null)).toEqual(rej(NEG, false));
+        }
+        for (const v of [0, 100, null]) {
+            expect(validateCandidate(edit(good, (s) => { cand(s, 3, 1)[k] = v; }), null).outcome).toBe('ok');
+        }
+    });
+
+    it.each(['votes1', 'votes2'])('candidate %s non-finite is rejected', (k) => {
+        expect(validateCandidate(edit(good, (s) => { cand(s, 3, 1)[k] = NaN; }), null)).toEqual(rej(NEG, false));
+    });
+
+    it.each([1, 2])('country round %i: every numeric field is checked (negative; percentages > 100)', (n) => {
+        const base = edit(good, (s) => { s.country = { [n]: { okrskyCelkem: 100, okrskyZprac: 50, okrskyZpracProc: 50, ucastProc: 40, platneHlasy: 10 } }; });
+        expect(validateCandidate(base, null).outcome).toBe('ok');
+        for (const k of ['okrskyCelkem', 'okrskyZprac', 'okrskyZpracProc', 'ucastProc', 'platneHlasy', 'zapsaniVolici', 'odevzdaneObalky']) {
+            const bad = edit(base, (s) => { s.country[n][k] = -1; });
+            expect(validateCandidate(bad, null)).toEqual(rej(NEG, false));
+        }
+        for (const k of ['okrskyZpracProc', 'ucastProc']) {
+            const bad = edit(base, (s) => { s.country[n][k] = 101; });
+            expect(validateCandidate(bad, null)).toEqual(rej(NEG, false));
+        }
+    });
+
     it('round 2 out of range is rejected too', () => {
         const bad = mk({ obvody: [{ n: 3, z2: 12, c2: 10, cands: [{ no: 1 }, { no: 2 }] }] });
         expect(validateCandidate(bad, null).reason).toBe('counted-out-of-range');

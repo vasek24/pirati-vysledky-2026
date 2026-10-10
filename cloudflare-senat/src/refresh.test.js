@@ -388,6 +388,39 @@ describe('304 and validators (H3)', () => {
     expect(events(log, 'not-modified')).toHaveLength(1)
   })
 
+  it('attribution-mismatch warnings: one error log each per install, none on a 304', async () => {
+    const warned = (w, extra = {}) => snap({ extra: { warnings: w }, ...extra })
+    const { r, log } = setup({
+      build: script(
+        ok(warned(['attribution-mismatch:30:2', 'sum-mismatch:30:1', 'attribution-mismatch:6:1']), 1, '"e1"'),
+        { notModified: true },
+        { notModified: true },
+        ok(warned(['attribution-mismatch:30:2'], { generated: csu(T0 + 90 * S), votes: [110, 50] }), 2, '"e2"'),
+      ),
+    })
+    await r.get()
+    const logged = () => events(log, 'attribution-mismatch').map(([, d]) => d)
+    expect(logged()).toEqual([
+      { level: 'error', obvod: 30, no: 2, warning: 'attribution-mismatch:30:2' },
+      { level: 'error', obvod: 6, no: 1, warning: 'attribution-mismatch:6:1' },
+    ])
+    await advance(61 * S)
+    await poll(r) // 304
+    await advance(21 * S)
+    await poll(r) // 304
+    expect(logged()).toHaveLength(2)
+    await advance(21 * S)
+    await poll(r) // a new install with the same warning: logged once more
+    expect(logged()).toHaveLength(3)
+    expect(logged()[2]).toMatchObject({ obvod: 30, no: 2 })
+  })
+
+  it('a snapshot without attribution warnings logs none', async () => {
+    const { r, log } = setup({ build: script(ok(snap({ extra: { warnings: ['sum-mismatch:3:1'] } }), 1)) })
+    await r.get()
+    expect(events(log, 'attribution-mismatch')).toHaveLength(0)
+  })
+
   it('304 keeps the phase: waiting stays +60 s, idle +5 min, final +10 min', async () => {
     const cases = [
       [snap({ z: 0 }), 60 * S],

@@ -205,6 +205,13 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
     quarantine = null
     olderSince = null
 
+    // Pirate attribution dropped by normalize (spec §5): one error per warning and per install
+    // (a 304 never gets here, so an unchanged snapshot is not logged again on every poll)
+    for (const w of snapshot.warnings ?? []) {
+      const m = /^attribution-mismatch:(\d+):(\d+)$/.exec(w)
+      if (m) emit('error', 'attribution-mismatch', { obvod: Number(m[1]), no: Number(m[2]), warning: w })
+    }
+
     if (good.tooBig) {
       if (!sizeLogged) {
         sizeLogged = true

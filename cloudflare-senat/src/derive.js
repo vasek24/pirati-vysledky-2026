@@ -52,13 +52,14 @@ function statusOf(c, rank, rd, z) {
 
 // Unofficial outlook + gap (votes) for one candidate; [null, null] when there is nothing to say.
 // Round 1: 'mandate' (sole top with > 50 % of the summed votes) | 'advance' | 'out'.
-// Round 2: 'lead' | 'tie' | 'trail'. Never set for official candidates.
+// Round 2: 'lead' | 'tie' | 'trail' (by counted votes; a rival's official flag does not suppress it).
+// Never set for the candidate's own official flag.
 function outlookOf(o, rd, key, ranks, i, z) {
   const cs = o.candidates
   const k = cs[i]
   if (k.official || z <= 0) return [null, null]
   if (rd === 2) {
-    if (cs.some((c) => c.st2 != null) || ranks[i] == null) return [null, null]
+    if (ranks[i] == null) return [null, null]
     const others = cs.filter((c, j) => j !== i && ranks[j] != null).map((c) => c.votes2)
     if (ranks[i] === 1) {
       if (ranks.filter((r) => r === 1).length > 1) return ['tie', 0]
