@@ -23,7 +23,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { phaseOf, SNAPSHOT_VERSION } from '../volby/feed.js';
 import { OVERVIEW_VERSION } from '../volby/overview.js';
 import { POLLS_CLOSE } from '../councils.js';
-import { MIN_GAP_MS, backoffDelay, clampTimeout, nextPollDelay, nextSkew, pickOffset, visibilityDelay } from './schedule.js';
+import { MIN_GAP_MS, backoffDelay, clampTimeout, computeSkew, nextPollDelay, nextSkew, pickOffset, visibilityDelay } from './schedule.js';
+import { nextLatency } from '../lib/latency.js';
 
 const INTERVAL = { pre: 10 * 60e3, waiting: 60e3, counting: 60e3, final: 15 * 60e3 };
 const DEMO_INTERVAL = 4000;
@@ -182,8 +183,8 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     // okrsek → čas, kdy ho tenhle prohlížeč poprvé viděl sečtený (null = už při otevření)
     const [arrivals, setArrivals] = useState(() => (demo ? {} : readArrivals(target)));
     const [freshIds, setFreshIds] = useState([]);
-    // řetězec zpoždění posledního snapshotu (časy serveru); renderedAt doplní
-    // efekt po vykreslení. Po reloadu ze sessionStorage null = řádek se nezobrazí.
+    // řetězec zpoždění první odpovědi s aktuálním `generated` (časy serveru);
+    // renderedAt doplní efekt po vykreslení. Po reloadu ze sessionStorage null.
     const [latency, setLatency] = useState(null);
 
     const timerRef = useRef(null);
@@ -244,6 +245,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
         const source = demoFeed ? 'demo' : 'proxy';
         let error = null;
         let stored = null;
+        let skewValid = false; // měla odpověď použitelné x-server-now?
         try {
             if (demoFeed) {
                 result = await demoFeed.snapshot();
@@ -252,6 +254,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
                 visitRef.current = false;
                 result = await fetchProxy(target, viewHeader(viewSeconds, visit), (header, clientNow) => {
                     // chybí/nesmyslná hlavička → zůstává poslední platný skew (na začátku 0)
+                    skewValid = computeSkew(header, clientNow) !== null;
                     const skew = nextSkew(skewRef.current, header, clientNow);
                     skewRef.current = skew;
                     setState((s) => (s.skew === skew ? s : { ...s, skew }));
@@ -297,7 +300,11 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
                 lastAttempt: lastAttemptRef.current,
             };
             setSnapshot(stored.snapshot);
-            setLatency(demoFeed ? null : { refreshedAt: result.refreshedAt, servedAt: result.servedAt, receivedAt: serverNow(), renderedAt: null });
+            if (!demoFeed) {
+                // jen první odpověď s novým `generated` (viz nextLatency)
+                const chain = { generated: snap.generated, refreshedAt: result.refreshedAt, servedAt: result.servedAt, receivedAt: serverNow(), skewValid };
+                setLatency((l) => nextLatency(l, chain));
+            }
             setState((s) => ({
                 ...s,
                 status: 'ok',

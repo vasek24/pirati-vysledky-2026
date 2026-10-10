@@ -6,8 +6,14 @@
 import { parseCsuTime } from '../volby/format.js';
 
 const finite = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
-// rozdíl ms → celé sekundy ≥ 0; null, když některý konec chybí
-const seconds = (from, to) => (from === null || to === null ? null : Math.max(0, Math.round((to - from) / 1000)));
+// Krok delší než 10 min nedává smysl (jiný refresh, špatné hodiny) → raději nic
+export const MAX_STEP_SECONDS = 600;
+// rozdíl ms → celé sekundy ≥ 0; null, když některý konec chybí nebo je krok nad stropem
+const seconds = (from, to) => {
+    if (from === null || to === null) return null;
+    const s = Math.max(0, Math.round((to - from) / 1000));
+    return s > MAX_STEP_SECONDS ? null : s;
+};
 
 const pragueTime = new Intl.DateTimeFormat('cs-CZ', { timeZone: 'Europe/Prague', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' });
 
@@ -18,7 +24,9 @@ export function fmtPragueTime(ms) {
 }
 
 // generated = pražský čas bez zóny (vždy přes parseCsuTime)
-export function latencyChain({ generated, refreshedAt, servedAt, receivedAt, renderedAt } = {}) {
+// skewValid === false: odpověď neměla použitelné `x-server-now`, hodiny klienta
+// jsou neověřené → krok „do prohlížeče“ se neukazuje (server část zůstává)
+export function latencyChain({ generated, refreshedAt, servedAt, receivedAt, renderedAt, skewValid } = {}) {
     const parsed = typeof generated === 'string' ? parseCsuTime(generated) : null;
     const g = parsed ? finite(parsed.getTime()) : null;
     const refreshed = finite(refreshedAt);
@@ -28,8 +36,9 @@ export function latencyChain({ generated, refreshedAt, servedAt, receivedAt, ren
     const csuToServer = seconds(g, refreshed); // generated po refreshedAt → 0
     // do prohlížeče: od načtení serverem po příchod odpovědi (včetně čekání na
     // další dotaz); bez `receivedAt` aspoň do chvíle, kdy ji server vydal
-    const serverToClient = seconds(refreshed, received ?? served);
-    const receiveToRender = seconds(received, rendered);
+    const clientOk = skewValid !== false;
+    const serverToClient = clientOk ? seconds(refreshed, received ?? served) : null;
+    const receiveToRender = clientOk ? seconds(received, rendered) : null;
     const total = csuToServer === null || serverToClient === null || receiveToRender === null
         ? null
         : csuToServer + serverToClient + receiveToRender;
@@ -53,4 +62,25 @@ export function formatLatencyLine(chain, { generatedLabel, refreshedLabel, rende
     if (steps.length < 2) return null;
     const line = steps.join(' → ');
     return Number.isFinite(chain.total) && chain.total >= 0 ? `${line} · celkem ${Math.round(chain.total)} s` : line;
+}
+
+// Řetězec se zaznamená jen při PRVNÍM spatření nového `generated`: server po
+// každém úspěšném načtení přepíše `refreshedAt`, i když ČSÚ data nezměnilo
+// (při sčítání +60 s, ve fázi final +15 min), takže pozdější odpovědi se stejným
+// `generated` by řetězec jen zkreslily. Bez `generated` se nic nemění.
+// TODO (Phase 2, cloudflare/refresh.js): server-side `firstSeenAt` (kdy server
+// dostal tuhle verzi poprvé) by udělal řetězec přesný i při čerstvém načtení
+// stránky — teď první odpověď po otevření stránky vidí data, která mohou být
+// už starší.
+export function nextLatency(prev, { generated, refreshedAt, servedAt, receivedAt, skewValid }) {
+    if (typeof generated !== 'string' || generated === '') return prev;
+    if (prev && prev.generated === generated) return prev;
+    return { generated, refreshedAt, servedAt, receivedAt, skewValid, renderedAt: null };
+}
+
+// Řádek ukazovat jen při sčítání s čerstvými daty z nového serveru
+export function latencyVisible({ demo, phase, stale, latency } = {}) {
+    if (demo || stale || !latency) return false;
+    if (phase === 'pre' || phase === 'final') return false;
+    return finite(latency.refreshedAt) !== null;
 }

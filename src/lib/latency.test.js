@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fmtPragueTime, formatLatencyLine, latencyChain } from './latency.js';
+import { fmtPragueTime, formatLatencyLine, latencyChain, latencyVisible, MAX_STEP_SECONDS, nextLatency } from './latency.js';
 
 // zone-less ČSÚ čas = pražský čas; 14:03:07 CEST = 12:03:07 UTC (testy běží s TZ=UTC)
 const GENERATED = '2026-10-10T14:03:07';
@@ -137,5 +137,93 @@ describe('fmtPragueTime', () => {
         expect(fmtPragueTime(NaN)).toBe('–');
         expect(fmtPragueTime(null)).toBe('–');
         expect(fmtPragueTime('x')).toBe('–');
+    });
+});
+
+describe('sanity cap', () => {
+    it('a step above the cap is null and so is total', () => {
+        expect(MAX_STEP_SECONDS).toBe(600);
+        const c = latencyChain({ generated: GENERATED, refreshedAt: G + 601_000, receivedAt: G + 610_000, renderedAt: G + 610_100 });
+        expect(c.csuToServer).toBeNull();
+        expect(c.serverToClient).toBe(9);
+        expect(c.receiveToRender).toBe(0);
+        expect(c.total).toBeNull();
+    });
+    it('exactly at the cap is kept', () => {
+        expect(latencyChain({ generated: GENERATED, refreshedAt: G + 600_000 }).csuToServer).toBe(600);
+    });
+    it('a +3600 s server step (final phase) is dropped', () => {
+        const c = latencyChain({ generated: GENERATED, refreshedAt: G + 5_000, receivedAt: G + 3_605_000, renderedAt: G + 3_605_100 });
+        expect(c.csuToServer).toBe(5);
+        expect(c.serverToClient).toBeNull();
+        expect(c.total).toBeNull();
+    });
+    it('formatLatencyLine degrades to fewer steps when a step is capped', () => {
+        const chain = { csuToServer: null, serverToClient: 10, receiveToRender: 2, total: null };
+        expect(formatLatencyLine(chain, LABELS)).toBe(
+            'ČSÚ vygenerovalo 14:03:07 → náš server načetl 14:03:19 → váš prohlížeč zobrazil 14:03:31 (+12 s)',
+        );
+    });
+});
+
+describe('skewValid', () => {
+    const input = { generated: GENERATED, refreshedAt: G + 12_000, servedAt: G + 13_000, receivedAt: G + 300_000, renderedAt: G + 300_100 };
+    it('without a valid skew the browser step is dropped (client clock unusable)', () => {
+        const c = latencyChain({ ...input, skewValid: false });
+        expect(c).toEqual({ csuToServer: 12, serverToClient: null, receiveToRender: null, total: null });
+    });
+    it('valid or unspecified skew keeps the chain subject to the cap', () => {
+        expect(latencyChain({ ...input, skewValid: true }).serverToClient).toBe(288);
+        expect(latencyChain(input).serverToClient).toBe(288);
+    });
+    it('line shows only the ČSÚ and server steps when browser label is withheld', () => {
+        const c = latencyChain({ ...input, skewValid: false });
+        expect(formatLatencyLine(c, { generatedLabel: '14:03:07', refreshedLabel: '14:03:19' })).toBe(
+            'ČSÚ vygenerovalo 14:03:07 → náš server načetl 14:03:19 (+12 s)',
+        );
+    });
+});
+
+describe('nextLatency (record the chain only on the first sighting of a generated)', () => {
+    const first = { generated: GENERATED, refreshedAt: G + 12_000, servedAt: G + 13_000, receivedAt: G + 14_000, skewValid: true };
+    it('first response starts a chain with renderedAt pending', () => {
+        expect(nextLatency(null, first)).toEqual({ ...first, renderedAt: null });
+    });
+    it('same generated with a later refreshedAt keeps the FIRST chain', () => {
+        const chain = { ...nextLatency(null, first), renderedAt: G + 14_100 };
+        const again = nextLatency(chain, { ...first, refreshedAt: G + 72_000, servedAt: G + 73_000, receivedAt: G + 74_000 });
+        expect(again).toBe(chain);
+        expect(again.refreshedAt).toBe(G + 12_000);
+        expect(again.renderedAt).toBe(G + 14_100);
+    });
+    it('a new generated starts a new chain', () => {
+        const chain = { ...nextLatency(null, first), renderedAt: G + 14_100 };
+        const next = nextLatency(chain, { ...first, generated: '2026-10-10T14:04:07', refreshedAt: G + 72_000, receivedAt: G + 74_000 });
+        expect(next).toEqual({ generated: '2026-10-10T14:04:07', refreshedAt: G + 72_000, servedAt: G + 13_000, receivedAt: G + 74_000, skewValid: true, renderedAt: null });
+    });
+    it('a response without generated keeps what we have', () => {
+        const chain = nextLatency(null, first);
+        expect(nextLatency(chain, { ...first, generated: null })).toBe(chain);
+        expect(nextLatency(null, { ...first, generated: undefined })).toBeNull();
+        expect(nextLatency(null, { ...first, generated: '' })).toBeNull();
+    });
+});
+
+describe('latencyVisible', () => {
+    const lat = { generated: GENERATED, refreshedAt: G };
+    const base = { demo: false, phase: 'counting', stale: false, latency: lat };
+    it('shows while counting with fresh data', () => {
+        expect(latencyVisible(base)).toBe(true);
+        expect(latencyVisible({ ...base, phase: 'waiting' })).toBe(true);
+    });
+    it('hides in final, pre, demo, stale and without refreshedAt or latency', () => {
+        expect(latencyVisible({ ...base, phase: 'final' })).toBe(false);
+        expect(latencyVisible({ ...base, phase: 'pre' })).toBe(false);
+        expect(latencyVisible({ ...base, demo: true })).toBe(false);
+        expect(latencyVisible({ ...base, stale: true })).toBe(false);
+        expect(latencyVisible({ ...base, latency: { generated: GENERATED } })).toBe(false);
+        expect(latencyVisible({ ...base, latency: { generated: GENERATED, refreshedAt: NaN } })).toBe(false);
+        expect(latencyVisible({ ...base, latency: null })).toBe(false);
+        expect(latencyVisible()).toBe(false);
     });
 });
