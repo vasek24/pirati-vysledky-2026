@@ -425,6 +425,9 @@ export default function CouncilApp({ council }) {
                     Záložní kopie originálu jsemfast/pirati-vysledky-2026 · správce kopie: Václav Vislous ·{' '}
                     <a href="tel:+420777954389" className="underline">777 954 389</a>
                 </div>
+                <div className="mt-1">
+                    <a href="https://volby.dg12.cz" className="inline-block py-2 font-semibold text-neutral-500 underline">← Všechny volby 2026 (volby.dg12.cz)</a>
+                </div>
             </div>
         </div>
     );
