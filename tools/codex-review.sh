@@ -141,11 +141,13 @@ if [ "$SCOPE" = "code" ]; then
   MERGE_BASE="$(git merge-base "$BASE" HEAD)" || die "no merge-base between $BASE and HEAD"
   RANGE="$MERGE_BASE..$HEAD_BEFORE"
   if [ -n "$PATHS" ]; then
-    # shellcheck disable=SC2086 # the pathspec is meant to word-split
-    DIFFSTAT="$(git diff --stat "$RANGE" -- $PATHS)"
+    # Split on whitespace into an array: `read -ra` neither glob-expands nor
+    # re-splits, so a pattern like 'src/*.js' reaches git as a literal pathspec.
+    # Consequence: a path containing a space is not supported.
+    read -ra _pathspec <<<"$PATHS"
+    DIFFSTAT="$(git diff --stat "$RANGE" -- "${_pathspec[@]}")"
     [ -n "$DIFFSTAT" ] || die "empty diff for $RANGE limited to: $PATHS"
-    # shellcheck disable=SC2086
-    FILES="$(git diff --name-only "$RANGE" -- $PATHS)"
+    FILES="$(git diff --name-only "$RANGE" -- "${_pathspec[@]}")"
   else
     DIFFSTAT="$(git diff --stat "$RANGE")"
     [ -n "$DIFFSTAT" ] || die "empty diff for $RANGE — nothing to review"
@@ -187,10 +189,11 @@ fi
 # A review that came back with a verdict is a spend. Fixing what it found is
 # ordinary work; paying for a second opinion on the fix is another spend, and
 # that is the operator's call, not the agent's. Counted from completed outputs in
-# this out-dir, so a --dry-run, a truncated run (exit 6) and a tree-moved run
+# this out-dir FOR THIS SCOPE (a completed plan/spec pass must not block the later
+# code pass: one pass on spec+plan and one on the diff are both in budget), so a --dry-run, a truncated run (exit 6) and a tree-moved run
 # (exit 5) — none of which produced a usable review — do not consume the budget.
 DONE_ROUNDS=0
-for _prev in "$OUTDIR"/codex-review-*-r*.md; do
+for _prev in "$OUTDIR"/codex-review-"$SCOPE"-r*.md; do
   # The prompt files live here too and match the glob — and every one of them
   # quotes the VERDICT trailer verbatim, so an unfiltered count reads each
   # commissioned round as a completed one.
@@ -202,7 +205,7 @@ for _prev in "$OUTDIR"/codex-review-*-r*.md; do
 done
 if [ "$DONE_ROUNDS" -gt 0 ] && [ "${CODEX_ROUND_APPROVED:-}" != "1" ]; then
   [ "$AUTO_ROUND" = "1" ] && rm -f -- "$OUTDIR/codex-review-$SCOPE-r$ROUND.md"
-  echo "codex-review: $DONE_ROUNDS review(s) already completed in $OUTDIR." >&2
+  echo "codex-review: $DONE_ROUNDS $SCOPE review(s) already completed in $OUTDIR." >&2
   echo "codex-review: one round is the budget — fix what it found and move on." >&2
   echo "codex-review: another round needs the operator's express go-ahead, then:" >&2
   echo "codex-review:   CODEX_ROUND_APPROVED=1 $0 ... --settled <file>" >&2

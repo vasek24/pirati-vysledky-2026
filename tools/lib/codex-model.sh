@@ -11,14 +11,19 @@
 #     explains itself on stderr, prefixed with <tag>
 #
 # Precedence: explicit override (CODEX_REVIEW_MODEL / CODEX_IDEATE_MODEL) > newest of the
-# line > nothing (codex falls back to config.toml). The line is CODEX_MODEL_LINE
+# line > CODEX_FALLBACK_MODEL (empty by default) > nothing (codex falls back to config.toml).
+# LOCAL CHANGE vs the zradlo original (a3ec3db8): CODEX_FALLBACK_MODEL added; nothing else. The line is CODEX_MODEL_LINE
 # (sol | terra | luna | ...). A model qualifies only when the catalog marks it
 # visibility=list and supported_in_api=true. Never fatal: a resolver failure must not block
 # a review someone is waiting on.
 codex_resolve_model() {
   local override="${1:-}" tag="${2:-codex}" line="${CODEX_MODEL_LINE:-sol}" json picked
   if [ -n "$override" ]; then printf '%s' "$override"; return 0; fi
-  command -v python3 >/dev/null 2>&1 || { echo "$tag: python3 missing, model left to config.toml" >&2; return 0; }
+  command -v python3 >/dev/null 2>&1 || {
+    if [ -n "${CODEX_FALLBACK_MODEL:-}" ]; then echo "$tag: python3 missing, using CODEX_FALLBACK_MODEL" >&2; printf '%s' "$CODEX_FALLBACK_MODEL"
+    else echo "$tag: python3 missing, model left to config.toml" >&2; fi
+    return 0
+  }
   # Live catalog first (refreshes the cache); the cached copy if the live call fails.
   json="$(timeout 30 codex debug models 2>/dev/null || true)"
   if ! printf '%s' "$json" | python3 -c 'import json,sys; json.load(sys.stdin)' >/dev/null 2>&1; then
@@ -46,6 +51,9 @@ if best:
   if [ -n "$picked" ]; then
     echo "$tag: model=$picked (newest of the '$line' line available to this account)" >&2
     printf '%s' "$picked"
+  elif [ -n "${CODEX_FALLBACK_MODEL:-}" ]; then
+    echo "$tag: no '$line' model found in the Codex catalog — using CODEX_FALLBACK_MODEL=$CODEX_FALLBACK_MODEL" >&2
+    printf '%s' "$CODEX_FALLBACK_MODEL"
   else
     echo "$tag: no '$line' model found in the Codex catalog — leaving the model to ~/.codex/config.toml" >&2
   fi
