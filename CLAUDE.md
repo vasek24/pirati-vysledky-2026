@@ -34,6 +34,18 @@ not the author of the original tracker. Never call him "the author".
   until Task 5 creates the namespaces.
 - Drills with a fake `CSU_BASE` run only under `wrangler dev` or on the `-drill` Worker.
 
+## Senate Worker (senat.dg12.cz) — separate deploy location
+- The Senate results page is its own Worker **`pirati-senat-zaloha`** (staging `pirati-senat-zaloha-staging`),
+  deployed from **`cloudflare-senat/`** (`cloudflare-senat/wrangler.jsonc`, same `account_id`
+  `741febb7a315a409b83e5a9a1b62954d`), client in `senat/`. This is the one exception to "only from `cloudflare/`";
+  it never shares config, KV or Durable Objects with `pirati-volby-zaloha` and must not edit `cloudflare/` or `src/`.
+- Staging first (`npx wrangler deploy --env staging`), production with `npx wrangler deploy --env=""`
+  (custom domain `senat.dg12.cz`). Record the previous version id in `docs/ops/senat-deployments.md`
+  before every deploy; rollback `npx wrangler rollback <id> --env=""`.
+- Gates before any Senate deploy: `TZ=UTC npm run test:senat`, `npm run lint`, `npm run build:senat`,
+  `! grep -rE "volby\.gov\.cz/appdata|appdata/senat" senat/dist/assets`. Senate tests do not run in `npm test`.
+- UI copy is gender-neutral (no gendered nouns/participles for people); owner/maintainer wording as above.
+
 ## Conventions
 - Plain JS ESM, no TypeScript. UI copy in Czech.
 - ČSÚ `generated` is zone-less Prague time: always use `parseCsuTime`
