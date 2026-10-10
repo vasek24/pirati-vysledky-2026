@@ -58,7 +58,9 @@ Konfigurace); jinde se karta koalice a režim mapy „Koalice" neukazují.
   preferenční hlasy a odhad mandátu naší kandidátky), a ostatní MČ s tím,
   kdo vede. Čerstvě změněné MČ krátce zablikají. Demo `/?demo`.
 - **Živé výsledky** — sečtené okrsky, účast, hlasy a procenta stran, automatické
-  obnovení každou minutu (ČSÚ data stejně cachuje 60 s), odpočet do další
+  obnovení (ČSÚ zveřejňuje data zastupitelstev zhruba jednou za minutu, ale
+  frekvenci nezaručuje; aplikace se ptá podle plánu, který jí dá server —
+  nejdřív 20 s po poslední obnově, s rozptylem mezi diváky), odpočet do další
   kontroly („obnoví se samo za 0:45"). Obnovit ručně (tlačítkem i reloadem
   stránky) jde až po jeho vypršení. Při první návštěvě krátký průvodce
   ([`WelcomeGuide`](src/components/WelcomeGuide.jsx), jednou na prohlížeč):
@@ -100,6 +102,38 @@ Konfigurace); jinde se karta koalice a režim mapy „Koalice" neukazují.
 | Desktop (Praha 6, demo) | Mobil (Praha 3, demo) |
 |---|---|
 | ![Praha 6](docs/img/praha-6-desktop.webp) | ![Praha 3 mobil](docs/img/praha-3-mobil.webp) ![Zastupitelé](docs/img/praha-3-zastupitele-mobil.webp) |
+
+## Záložní kopie (praha.dg12.cz)
+
+Tenhle repozitář je **záložní zrcadlo** (`vasek24/pirati-vysledky-2026`) původní
+aplikace [jsemfast/pirati-vysledky-2026](https://github.com/jsemfast/pirati-vysledky-2026),
+které ve volební noci poslouží stejné výsledky z Cloudflare, kdyby originál
+neunesl zátěž. Spravuje ho **Václav Vislous** (spravuje tuto fork a její úpravy;
+**není autorem** originálu), kontakt tel. +420 777 954 389.
+
+Architektura ([`cloudflare/`](cloudflare/), spec v `docs/superpowers/specs/`):
+
+1. Worker obsluhuje statiku (`dist/`) a `/api/*`.
+2. Každý feed (zastupitelstvo, `prehled`) má vlastní Durable Object, který drží stav a slučuje souběžné dotazy.
+3. Refresher stahuje ČSÚ podmíněně (ETag), validuje odpověď a při nesmyslu ponechá poslední dobrou (last-good).
+4. Odpovědi jdou přes edge cache (`x-cache: HIT`) s poslední záchrannou kopií, když zdroj i DO selžou.
+5. Cron každou minutu zahřívá 12 prvotřídních feedů (11 zastupitelstev + přehled).
+6. Server přidá `x-server-now` a `nextRefreshAt`; klient podle nich plánuje další dotaz.
+7. Klientský scheduler opravuje rozdíl hodin (clock-skew) a rozptyluje záložky 0–25 s.
+8. Prohlížeč nikdy nesahá na `volby.gov.cz` (CI hlídá `appdata/kv2026` v `dist/assets`).
+
+Adresy: **praha.dg12.cz** = tracker (tento Worker), **volby.dg12.cz** = rozcestník
+(front door, Worker `pirati-rozcestnik`, složka `placeholder/`), **mesta.dg12.cz**
+a **senat.dg12.cz** jsou plánované.
+
+Dokumentace: `docs/superpowers/{specs,plans,reviews}` (návrhy, plány, review),
+[`docs/ops/runbook.md`](docs/ops/runbook.md) (provoz a nasazení),
+[`docs/ops/codex-review.md`](docs/ops/codex-review.md) (Codex wrappery),
+`docs/analysis/` (rozbory).
+
+Příkazy: `npm test`, `npm run lint`, `npm run build`; nasazení ručně
+`cd cloudflare && npx wrangler deploy --env staging`, po kontrolách bez
+`--env` (produkce) — postup, kontroly a rollback v runbooku.
 
 ## Rychlý start (lokálně)
 
@@ -155,7 +189,7 @@ a z každého pošle stav sčítání, hlasy a mandáty stran (oficiální, nebo
 odhad) a výsledek Pirátů — celá odpověď má ~15 KB (~3–4 KB komprimovaně).
 
 ```
-prohlížeče ──(1×/min)──▶ CDN Vercelu ──(~2×/min/zastupitelstvo)──▶ api/volby.js ──(ETag, 304)──▶ volby.gov.cz
+prohlížeče ──(dle plánu serveru)──▶ CDN Vercelu ──(~2×/min/zastupitelstvo)──▶ api/volby.js ──(ETag, 304)──▶ volby.gov.cz
      │                        └─────────(~2×/min)──────────────────▶ api/prehled.js ─(58 souborů)─┘   ▲
      └──────────────── záloha, když naše API 2× po sobě selže (CORS povolen) ───────────────────────┘
 ```
@@ -171,7 +205,8 @@ Záloha přehledu přímo z prohlížeče čte jen 26 zastupitelstev s Piráty
   ohledu na počet lidí. Před 14:00 s-maxage až 5 min, po vyhlášení 10 min.
 - **Klient podle fáze** ([`useLiveResults`](src/hooks/useLiveResults.js)):
   před 14:00 jednou za 10 min (a probudí se přesně na uzavření místností),
-  při sčítání 60 s ± 15 % jitter, po vyhlášení 15 min. Ve skryté záložce
+  při sčítání podle `nextRefreshAt` ze serveru (nejméně 20 s po obnově + 0–25 s
+  rozptyl záložky; bez něj 60 s ± 15 % jitter), po vyhlášení 15 min. Ve skryté záložce
   nic, při chybách backoff až na 10 min. **Ruční obnovení až po vypršení
   odpočtu** do další kontroly: tlačítko je do té doby ztlumené a po kliknutí
   jen řekne, za kolik to půjde. Reload stránky před koncem odpočtu nic
