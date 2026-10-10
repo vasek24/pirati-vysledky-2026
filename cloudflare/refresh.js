@@ -52,6 +52,13 @@ export function retryDelay(failures, random) {
  */
 export function computeNextRefreshAt({ phase, refreshedAt, generatedMs, now, failures = 0, random = Math.random, pollsClose = REFRESH.POLLS_CLOSE }) {
     if (failures > 0) return now + retryDelay(failures, random);
+    const floor = refreshedAt + REFRESH.FLOOR_MS;
+    // globální dolní mez: i kdyby injektovaná phaseOf vrátila `pre` po 14:00
+    // (strop 14:00 by byl v minulosti), není splatné dřív než za 20 s
+    return Math.max(floor, byPhase(phase, refreshedAt, generatedMs, floor, pollsClose));
+}
+
+function byPhase(phase, refreshedAt, generatedMs, floor, pollsClose) {
     switch (phase) {
         case 'pre':
             return Math.min(refreshedAt + REFRESH.PRE_MS, pollsClose);
@@ -60,7 +67,6 @@ export function computeNextRefreshAt({ phase, refreshedAt, generatedMs, now, fai
         case 'final':
             return refreshedAt + REFRESH.FINAL_MS;
         default: { // counting
-            const floor = refreshedAt + REFRESH.FLOOR_MS;
             if (!Number.isFinite(generatedMs) || generatedMs > refreshedAt + REFRESH.GENERATED_SKEW_MS) return floor;
             return Math.min(Math.max(generatedMs + 60_000, floor), refreshedAt + REFRESH.COUNTING_MAX_MS);
         }
@@ -107,7 +113,6 @@ export function createRefresher({
     let good = null;
     let nextRefreshAt = 0; // v paměti; po older/nekompletním pokusu odlišné od meta.nextRefreshAt
     let stale = false;
-    let complete = true;
     let failures = 0;
     let quarantine = null;
     let olderSince = null;
@@ -121,50 +126,60 @@ export function createRefresher({
     const emit = (level, event, data) => log(event, { level, ...data });
 
     // ---- rehydrate (single-flight) ------------------------------------------
-    function load() {
-        loadPromise ||= (async () => {
-            let snapshotStr;
-            let meta;
-            try {
-                [snapshotStr, meta] = await Promise.all([storage.get('snapshot'), storage.get('meta')]);
-            } catch (error) {
-                emit('error', 'rehydrate-failed', { error: String(error?.message || error) });
-                return;
-            }
-            if (snapshotStr === undefined && meta === undefined) return;
-            if (!meta || typeof snapshotStr !== 'string' || meta.schema !== REFRESH.SCHEMA || meta.base !== base
-                || !Number.isFinite(meta.refreshedAt) || !Number.isFinite(meta.nextRefreshAt)) {
-                emit('warn', 'rehydrate-discarded', { reason: !meta ? 'no-meta' : meta.schema !== REFRESH.SCHEMA ? 'schema' : meta.base !== base ? 'base' : 'invalid' });
-                return;
-            }
-            let snapshot;
+    // Vrací false jen při chybě čtení z úložiště (pak se příští get() pokusí
+    // znovu a do úspěšného načtení se nestaví ani nepřepisuje persistovaný snapshot).
+    async function doLoad() {
+        let snapshotStr;
+        let meta;
+        try {
+            [snapshotStr, meta] = await Promise.all([storage.get('snapshot'), storage.get('meta')]);
+        } catch (error) {
+            emit('error', 'rehydrate-failed', { error: String(error?.message || error) });
+            return false;
+        }
+        if (snapshotStr === undefined && meta === undefined) return true;
+        if (!meta || typeof snapshotStr !== 'string' || meta.schema !== REFRESH.SCHEMA || meta.base !== base
+            || !Number.isFinite(meta.refreshedAt) || !Number.isFinite(meta.nextRefreshAt)) {
+            emit('warn', 'rehydrate-discarded', { reason: !meta ? 'no-meta' : meta.schema !== REFRESH.SCHEMA ? 'schema' : meta.base !== base ? 'base' : 'invalid' });
+            return true;
+        }
+        let snapshot = null;
+        if (snapshotStr.length > 2 && snapshotStr[0] === '{') {
             try {
                 snapshot = JSON.parse(snapshotStr);
             } catch {
-                emit('warn', 'rehydrate-discarded', { reason: 'corrupt' });
-                return;
+                snapshot = null;
             }
-            if (!snapshot || typeof snapshot !== 'object' || snapshotStr.length < 3) {
-                emit('warn', 'rehydrate-discarded', { reason: 'corrupt' });
-                return;
-            }
-            good = { snapshot, str: snapshotStr, meta };
-            nextRefreshAt = meta.nextRefreshAt;
-            failures = meta.failures || 0;
-            stale = failures > 0;
-            quarantine = meta.quarantine || null;
-            emit('info', 'rehydrated', { refreshedAt: meta.refreshedAt });
-        })();
+        }
+        if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
+            emit('warn', 'rehydrate-discarded', { reason: 'corrupt' });
+            return true;
+        }
+        // failures / stale / quarantine jsou záměrně jen v paměti: po obnově
+        // z úložiště začínají od nuly (persistují se jen publikace)
+        good = { snapshot, str: snapshotStr, meta };
+        nextRefreshAt = meta.nextRefreshAt;
+        emit('info', 'rehydrated', { refreshedAt: meta.refreshedAt });
+        return true;
+    }
+
+    function load() {
+        if (!loadPromise) {
+            const p = doLoad().then((ok) => {
+                if (!ok && loadPromise === p) loadPromise = null;
+                return ok;
+            });
+            loadPromise = p;
+        }
         return loadPromise;
     }
 
     // ---- publikace -------------------------------------------------------------
-    async function install(snapshot, isComplete, t) {
+    function install(snapshot, t) {
         const generatedMs = genMs(snapshot);
-        let next = computeNextRefreshAt({
+        const next = computeNextRefreshAt({
             phase: phaseOf(snapshot, t), refreshedAt: t, generatedMs, now: t, failures: 0, random, pollsClose,
         });
-        if (!isComplete) next = Math.min(next, t + REFRESH.FLOOR_MS);
         const meta = {
             refreshedAt: t, generatedMs, nextRefreshAt: next, failures: 0, quarantine: null, base, schema: REFRESH.SCHEMA,
         };
@@ -172,24 +187,30 @@ export function createRefresher({
         good = { snapshot, str, meta };
         nextRefreshAt = next;
         stale = false;
-        complete = isComplete;
         failures = 0;
         quarantine = null;
         olderSince = null;
-        if (isComplete) incompleteSince = null;
+        incompleteSince = null;
 
-        if (utf8Bytes(str) > REFRESH.MAX_BYTES) {
+        const bytes = utf8Bytes(str);
+        if (bytes > REFRESH.MAX_BYTES) {
             if (!sizeLogged) {
                 sizeLogged = true;
-                emit('warn', 'size-guard', { bytes: utf8Bytes(str), max: REFRESH.MAX_BYTES });
+                emit('warn', 'size-guard', { bytes, max: REFRESH.MAX_BYTES });
             }
             return;
         }
+        // put se nečeká: zaseknutý zápis nesmí zablokovat refresher ani odpovědi
+        // (publikace v paměti platí i při selhání zápisu)
         try {
-            await storage.put({ snapshot: str, meta });
+            Promise.resolve(storage.put({ snapshot: str, meta })).catch(onPutError);
         } catch (error) {
-            emit('error', 'persist-failed', { error: String(error?.message || error) });
+            onPutError(error);
         }
+    }
+
+    function onPutError(error) {
+        emit('error', 'storage-put-failed', { error: String(error?.message || error) });
     }
 
     function fail(t, event, data, { invalidate = false } = {}) {
@@ -216,7 +237,10 @@ export function createRefresher({
 
         // Nekompletní (po sloučení chybí data, která good měl): neinstaluje se,
         // není stale, nepočítá se do karantény, další pokus za 20 s.
-        if (!isComplete && prev) {
+        if (!isComplete) {
+            // upstream odpověděl platnými daty (jen s dírou) → už není stale
+            stale = false;
+            failures = 0;
             incompleteSince ??= t;
             nextRefreshAt = t + REFRESH.FLOOR_MS;
             emit('info', 'incomplete', { fetchId: candidate.fetchId });
@@ -233,6 +257,9 @@ export function createRefresher({
 
         if (verdict.outcome === 'older') {
             // zpožděná replika ČSÚ: good zůstává, bez stale a bez zpětného odstupu
+            // zpožděná replika odpověděla platnými daty → není stale; karanténa se nemění
+            stale = false;
+            failures = 0;
             olderSince ??= t;
             nextRefreshAt = t + REFRESH.FLOOR_MS;
             emit('info', 'older', { generated: merged.generated, good: prev.snapshot.generated });
@@ -258,7 +285,7 @@ export function createRefresher({
             if (QUARANTINABLE.has(reason) && prev
                 && quarantine.count >= REFRESH.QUARANTINE_COUNT && t - quarantine.firstAt >= REFRESH.QUARANTINE_SPAN_MS) {
                 emit('warn', 'quarantine-accepted', { reason, count: quarantine.count, spanMs: t - quarantine.firstAt });
-                await install(merged, true, t);
+                install(merged, t);
                 return;
             }
             fail(t, 'rejected', { reason, quarantineCount: quarantine.count }, { invalidate: true });
@@ -269,7 +296,7 @@ export function createRefresher({
             && snapshotHash(merged) === snapshotHash(prev.snapshot)) {
             emit('info', 'overview-all-lagging', { councils: Object.keys(merged.councils).length });
         }
-        await install(merged, isComplete, t);
+        install(merged, t);
     }
 
     // mergeOverview kopíruje souhrny z good stejnou referencí
@@ -307,7 +334,7 @@ export function createRefresher({
             nextRefreshAt,
             servedAt: now(),
             stale,
-            complete,
+            complete: true,
             refreshing: !!refreshPromise,
         };
         const body = `{"refreshedAt":${meta.refreshedAt},"nextRefreshAt":${meta.nextRefreshAt},"servedAt":${meta.servedAt},`
@@ -316,9 +343,11 @@ export function createRefresher({
     }
 
     async function get() {
-        await load();
+        const loaded = await load();
         const t = now();
         if (!good) {
+            // rehydrate selhal: nic nestavět ani nepřepisovat, příští get() zkusí načíst znovu
+            if (!loaded) return respond();
             // studený start: čeká se na obnovu (12 s lhůta); po neúspěchu 503
             // a v okně zpětného odstupu se build neopakuje na každý požadavek
             if (refreshPromise || t >= nextRefreshAt) await startRefresh();

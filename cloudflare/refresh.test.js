@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { POLLS_CLOSE } from '../src/councils.js';
 import { phaseOf } from '../src/volby/feed.js';
 import { parseCsuTime } from '../src/volby/format.js';
@@ -9,6 +9,12 @@ import { REFRESH, computeNextRefreshAt, createRefresher } from './refresh.js';
 // Testy běží s TZ=UTC jako Worker (npm test) — zone-less `generated` se
 // proto musí číst přes parseCsuTime (+02:00), ne přes bare Date.parse.
 const at = (iso) => Date.parse(iso);
+// `npm test` nastavuje TZ=UTC jako ve Workeru; bez toho (holé `npx vitest` v pražském
+// čase) by C1 testy prošly i s chybným parsováním zone-less času
+beforeAll(() => {
+    expect(new Date().getTimezoneOffset()).toBe(0);
+});
+
 const T0 = at('2026-10-10T15:00:00+02:00'); // po 14:00, sčítá se
 const S = 1000;
 const MIN = 60 * S;
@@ -55,7 +61,7 @@ function memStorage(initial = {}) {
 }
 
 // build vrací postupně zadané kandidáty; funkce se volá při každém buildu
-function setup({ build, random = () => 0.5, firstClass = true, kind = 'council', base = 'https://csu.test', storage, pollsClose, time = T0 } = {}) {
+function setup({ build, random = () => 0.5, firstClass = true, kind = 'council', base = 'https://csu.test', storage, pollsClose, time = T0, phaseOfFn = phaseOfSnap } = {}) {
     vi.setSystemTime(time);
     const st = storage ?? memStorage();
     const feed = { build: vi.fn(build ?? (async () => council())), invalidate: vi.fn() };
@@ -67,7 +73,7 @@ function setup({ build, random = () => 0.5, firstClass = true, kind = 'council',
         storage: st,
         feed,
         kind,
-        phaseOf: phaseOfSnap,
+        phaseOf: phaseOfFn,
         firstClass,
         base,
         log,
@@ -151,6 +157,11 @@ describe('computeNextRefreshAt', () => {
         const f = (failures, random) => computeNextRefreshAt({ phase: 'counting', refreshedAt: T0, generatedMs: null, now: T0, failures, random: () => random }) - T0;
         expect([1, 2, 3, 4, 9].map((n) => f(n, 1))).toEqual([20 * S, 40 * S, 60 * S, 60 * S, 60 * S]);
         expect([1, 2, 3, 4].map((n) => f(n, 0))).toEqual([20 * S, 20 * S, 20 * S, 20 * S]);
+    });
+
+    it('global floor: never earlier than refreshedAt+20 s, even if phase is pre after 14:00 (injected phaseOf)', () => {
+        const t1405 = at('2026-10-10T14:05:00+02:00');
+        expect(computeNextRefreshAt({ ...base, phase: 'pre', refreshedAt: t1405, generatedMs: null, now: t1405 })).toBe(t1405 + 20 * S);
     });
 
     it('exports the constants', () => {
@@ -339,6 +350,102 @@ describe('failures', () => {
         const b = parse(await r.get());
         expect(b.stale).toBe(false);
         expect(b.precincts.counted).toBe(13);
+    });
+
+    it('build throws, then 3 older results → served stale:false, failures reset', async () => {
+        let n = 0;
+        const { r } = setup({
+            random: () => 0,
+            build: async () => {
+                n++;
+                if (n === 1) return council({ generated: csu(T0 + 10 * S), fetchId: 'a' });
+                if (n === 2) throw new Error('boom');
+                return council({ generated: csu(T0 + 5 * S), fetchId: `old${n}` });
+            },
+        });
+        await r.get();
+        await dueAndRun(r, 61 * S);
+        expect(parse(await r.get()).stale).toBe(true);
+        for (let i = 0; i < 3; i++) {
+            await dueAndRun(r, 20 * S);
+            expect(parse(await r.get())).toMatchObject({ stale: false, nextRefreshAt: Date.now() + 20 * S });
+        }
+    });
+
+    it('build throws, then incomplete merge → served stale:false', async () => {
+        let n = 0;
+        const { r } = setup({
+            random: () => 0,
+            build: async () => {
+                n++;
+                if (n === 1) return council();
+                if (n === 2) throw new Error('boom');
+                return council({ generated: csu(Date.now()), counted: 12, okrsky: { 1: { ...row(1111), votes: null }, 2: row(2000) }, fetchId: 'x' });
+            },
+        });
+        await r.get();
+        await dueAndRun(r, 61 * S);
+        expect(parse(await r.get()).stale).toBe(true);
+        await dueAndRun(r, 20 * S);
+        expect(parse(await r.get())).toMatchObject({ stale: false, nextRefreshAt: Date.now() + 20 * S });
+    });
+
+    it('a build resolving AFTER the 12 s deadline is discarded and cannot overwrite a newer snapshot', async () => {
+        let n = 0;
+        let late;
+        const { r } = setup({
+            random: () => 0,
+            build: () => {
+                n++;
+                if (n === 1) return Promise.resolve(council({ counted: 10, generated: csu(T0), fetchId: 'a' }));
+                if (n === 2) return new Promise((resolve) => { late = () => resolve(council({ counted: 99, generated: csu(Date.now()), fetchId: 'late' })); });
+                return Promise.resolve(council({ counted: 20, generated: csu(Date.now()), fetchId: 'c' }));
+            },
+        });
+        await r.get();
+        await advance(61 * S);
+        await r.get(); // build #2 visí
+        await advance(12 * S + 1);
+        expect(parse(await r.get()).stale).toBe(true);
+        await advance(20 * S);
+        await poll(r); // build #3
+        expect(parse(await r.get())).toMatchObject({ stale: false });
+        late();
+        await settle();
+        await settle();
+        const b = parse(await r.get());
+        expect(b.precincts.counted).toBe(20);
+    });
+
+    it('a storage.put that never settles blocks neither the next refresh nor serving', async () => {
+        const st = memStorage();
+        st.put.mockImplementation(() => new Promise(() => {}));
+        let n = 0;
+        const { r, feed } = setup({ storage: st, build: async () => council({ counted: 10 + n++, generated: csu(Date.now()), fetchId: `f${n}` }) });
+        const first = await r.get(); // nevisí
+        expect(first.status).toBe(200);
+        expect(parse(first).refreshing).toBe(false);
+        await advance(61 * S);
+        await poll(r);
+        expect(feed.build).toHaveBeenCalledTimes(2);
+        expect(parse(await r.get()).precincts.counted).toBe(11);
+    });
+
+    it('a rejecting storage.put is logged as storage-put-failed and the in-memory publish stays', async () => {
+        const st = memStorage();
+        st.put.mockRejectedValue(new Error('disk'));
+        const { r, log } = setup({ storage: st });
+        expect((await r.get()).status).toBe(200);
+        await settle();
+        expect(events(log, 'storage-put-failed')).toHaveLength(1);
+        expect(events(log, 'storage-put-failed')[0][1]).toMatchObject({ level: 'error' });
+    });
+
+    it('phaseOf returning pre after 14:00 can never schedule in the past', async () => {
+        const t1405 = at('2026-10-10T14:05:00+02:00');
+        const { r } = setup({ time: t1405, phaseOfFn: () => 'pre', build: async () => council({ generated: csu(t1405) }) });
+        const b = parse(await r.get());
+        expect(b.nextRefreshAt).toBeGreaterThanOrEqual(t1405 + 20 * S);
     });
 
     it('unexpected exception in merge/validate counts as a failure (never throws out of get)', async () => {
@@ -729,6 +836,35 @@ describe('rehydrate', () => {
         expect(feed.build).toHaveBeenCalledTimes(1);
     });
 
+    it('discards a stored snapshot string that does not start with {', async () => {
+        const st = memStorage({ snapshot: '[1,2,3]', meta: { refreshedAt: T0, nextRefreshAt: T0 + 60 * S, base: 'https://csu.test', schema: 1 } });
+        const { r, feed } = setup({ storage: st });
+        expect((await r.get()).status).toBe(200);
+        expect(feed.build).toHaveBeenCalledTimes(1);
+    });
+
+    it('storage.get error: 503 for that call, no build and no put; next get() retries the rehydrate', async () => {
+        const a = setup();
+        await a.r.get();
+        const st = a.st;
+        const realGet = st.get.getMockImplementation();
+        st.get.mockRejectedValueOnce(new Error('storage down'));
+        const b = setup({ storage: st, time: T0 + 5 * S });
+        st.put.mockClear();
+        const res = await b.r.get();
+        expect(res.status).toBe(503);
+        expect(b.feed.build).not.toHaveBeenCalled();
+        expect(st.put).not.toHaveBeenCalled();
+        const err = events(b.log, 'rehydrate-failed');
+        expect(err).toHaveLength(1);
+        expect(err[0][1]).toMatchObject({ level: 'error' });
+        st.get.mockImplementation(realGet);
+        const ok = await b.r.get();
+        expect(ok.status).toBe(200);
+        expect(parse(ok).refreshedAt).toBe(T0);
+        expect(b.feed.build).not.toHaveBeenCalled();
+    });
+
     it('post-14:00 base switch: good from another base is ignored (counted reset accepted)', async () => {
         const a = setup({ base: 'https://test-data.test', build: async () => council({ counted: 80 }) });
         await a.r.get();
@@ -779,14 +915,6 @@ describe('size guard', () => {
         const { r, st } = setup({ build: async () => council({ extra: { note: 'ě'.repeat(700_000) } }) });
         await r.get();
         expect(st.put).toHaveBeenCalledTimes(1);
-    });
-
-    it('storage.put failure does not break serving', async () => {
-        const st = memStorage();
-        st.put.mockRejectedValue(new Error('disk'));
-        const { r, log } = setup({ storage: st });
-        expect((await r.get()).status).toBe(200);
-        expect(events(log, 'persist-failed')).toHaveLength(1);
     });
 });
 
