@@ -23,4 +23,6 @@ const write = (name, snap, phase) => {
 }
 
 write('snapshot-waiting.json', build(read('se2026-frozen.xml'), manifest), 'waiting')
-write('snapshot-r2.json', build(read('se2024-final.xml'), NONE), 'final')
+// soubor 2024 nese datum generování před uzávěrkami voleb 2026 -> přerazítkovat za 2. uzávěrku, jinak ho brány potlačí
+const final2024 = read('se2024-final.xml').replace(/DATUM_CAS_GENEROVANI="[^"]*"/, 'DATUM_CAS_GENEROVANI="2026-10-18T10:00:00"')
+write('snapshot-r2.json', build(final2024, NONE), 'final')
