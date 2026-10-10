@@ -67,7 +67,8 @@ export function createPoller({
   }
 
   return {
-    start: () => arm(0),
+    // první načtení proběhne i v záložce na pozadí (otevřená v novém panelu), další dotazy až po zobrazení
+    start: () => run(),
     stop() {
       stopped = true
       clearTimeout(timer)

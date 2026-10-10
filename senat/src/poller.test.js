@@ -75,16 +75,16 @@ describe('poller', () => {
     poller.stop()
   })
 
-  test('a hidden tab does not poll until it becomes visible', async () => {
+  test('a hidden tab loads once, then does not poll until it becomes visible', async () => {
     const { poller, calls, setHidden, events } = setup({ responses: [json({ ...waiting(), nextRefreshAt: T0 + 60000 })], hidden: true })
     poller.start()
     await vi.advanceTimersByTimeAsync(120000)
-    expect(calls).toHaveLength(0)
+    expect(calls).toHaveLength(1) // the first load happens even in a background tab
     expect(events.schedules.at(-1)).toBeNull()
     setHidden(false)
     poller.onVisibility()
     await vi.advanceTimersByTimeAsync(1000)
-    expect(calls).toHaveLength(1)
+    expect(calls).toHaveLength(2)
     poller.stop()
   })
 

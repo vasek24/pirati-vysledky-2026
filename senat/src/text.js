@@ -76,6 +76,13 @@ export const T = {
   legendPirate: 'obvod s kandidaturou Pirátů',
   cellAria: (n, name, state, hasPirate) => `Obvod ${n} ${name}, ${state}${hasPirate ? ', kandidatura Pirátů' : ''}`,
   cellTitle: (n, name, state) => `${n} ${name} · ${state}`,
+  // popisek pod pásem na mobilu (buňky tam ukazují jen číslo): „30 · Kladno · sčítá se 64 %“; pct jen u obvodu, který se sčítá
+  cellCaption: (n, name, state, pct, hasPirate) => {
+    const s = String(state)
+    return [n, name, `${s.charAt(0).toLowerCase()}${s.slice(1)}${pct == null ? '' : ` ${pct} %`}`, hasPirate && 'kandidatura Pirátů']
+      .filter(Boolean)
+      .join(' · ')
+  },
 
   // kandidatury Pirátů
   eyebrowPirates: (n) => `Kandidatury Pirátů a kandidatury s jejich podporou · ${n}`,

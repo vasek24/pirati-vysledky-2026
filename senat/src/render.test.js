@@ -6,6 +6,7 @@ import Board from './components/Board.jsx'
 import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import Banner from './components/Banner.jsx'
+import { readFileSync } from 'node:fs'
 import { CHIP, REL, STATE, T } from './text.js'
 import { counting, finalR2, runoff, runoffEliminatedPirate, waiting } from './fixtures/scenarios.js'
 import { nf, pc } from './format.js'
@@ -92,6 +93,33 @@ describe('render', () => {
   test('board sections carry the classes the mobile CSS `order` relies on', () => {
     const out = html(waiting(), 3)
     for (const c of ['snt-s-over', 'snt-s-strip', 'snt-s-pir', 'snt-s-det', 'snt-s-how']) expect(out).toContain(`class="${c}"`)
+  })
+
+  test('mobile CSS: strip comes before the Pirate section; jump row is sticky and clears the anchors', () => {
+    const css = readFileSync(new URL('./styles.css', import.meta.url), 'utf8')
+    const mobile = css.slice(css.indexOf('@media (max-width:520px)'))
+    const order = (c) => Number(mobile.match(new RegExp(`\\.${c}\\{order:(\\d)\\}`))[1])
+    expect([order('snt-s-over'), order('snt-s-strip'), order('snt-s-pir'), order('snt-s-det'), order('snt-s-how')]).toEqual([1, 2, 3, 4, 5])
+    expect(mobile).toMatch(/\.snt-jump\{[^}]*position:sticky;top:env\(safe-area-inset-top,0px\);z-index:20;height:44px/)
+    expect(mobile).toMatch(/\.snt-eyebrow\{scroll-margin-top:56px\}/)
+    expect(mobile).toMatch(/\.snt-cell i\{display:none\}/)
+  })
+
+  test('jump row is a sibling of <header> (sticky needs the page-wide parent)', () => {
+    const out = renderToStaticMarkup(h(Header, { snapshot: waiting(), serverNow: 0, nextAt: null }))
+    expect(out).toMatch(/<\/header><nav class="snt-jump"/)
+  })
+
+  test('strip caption names the selected obvod: number, name, state, progress only while counting, Pirate mark', () => {
+    const s = counting()
+    const o = s.obvody.find((x) => x.state === 'counting' && x.hasPirate)
+    const cap = (n) => html(s, n).match(/<p class="snt-cap"[^>]*>(.*?)<\/p>/)[1]
+    expect(cap(o.n)).toMatch(new RegExp(`^${o.n} · .+ · sčítá se \\d+ % · kandidatura Pirátů$`))
+    const w = s.obvody.find((x) => x.state === 'waiting')
+    if (w) expect(cap(w.n)).toContain('čeká na sčítání')
+    expect(html(s, o.n)).toContain(`<i>${o.name}</i>`) // desktop still shows the name; mobile hides it in CSS
+    expect(T.cellCaption(30, 'Kladno', 'Sčítá se', 64, false)).toBe('30 · Kladno · sčítá se 64 %')
+    expect(T.cellCaption(5, 'Karlovy Vary', 'Mandát získán', null, true)).toBe('5 · Karlovy Vary · mandát získán · kandidatura Pirátů')
   })
 
   test('runoff scenario shows round-2 progress, round-1 line and a tie', () => {
