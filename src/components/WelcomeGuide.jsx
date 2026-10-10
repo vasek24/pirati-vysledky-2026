@@ -51,7 +51,7 @@ export default function WelcomeGuide() {
                     <h2 id="welcome-title" className="font-display text-3xl leading-none tracking-wide">
                         Jak to tu <span className="text-[#FEC900]">funguje</span>
                     </h2>
-                    <p className="mt-1 text-xs text-white/60">Živé výsledky komunálních voleb 2026 v Praze přímo z ČSÚ.</p>
+                    <p className="mt-1 text-xs text-white/60">Živé výsledky komunálních voleb 2026 v Praze z ČSÚ přes náš server.</p>
                 </div>
                 <ul className="p-4 space-y-4">
                     <Step
