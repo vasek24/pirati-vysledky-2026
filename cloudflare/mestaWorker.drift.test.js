@@ -84,7 +84,12 @@ describe.skipIf(!existsSync(MESTA_REGISTRY))('mesta registry and bundle', () => 
         const { ALL_COUNCILS, SHARDS } = await import(/* @vite-ignore */ MESTA_REGISTRY.href);
         const prague = new Set(PRAGUE_COUNCILS.map((c) => c.zastup));
         expect(ALL_COUNCILS.filter((c) => prague.has(c.zastup)).map((c) => c.zastup)).toEqual([]);
-        expect(ALL_COUNCILS.every((c) => c.precinctFiles === false && c.map === false)).toBe(true);
+        // mapa okrsků (a s ní okrskové soubory ČSÚ) jen u 12 největších měst, jinak lehký režim
+        expect(ALL_COUNCILS.every((c) => c.precinctFiles === c.map)).toBe(true);
+        const mapped = ALL_COUNCILS.filter((c) => c.map);
+        expect(mapped.map((c) => c.slug).sort()).toEqual(ALL_COUNCILS.filter((c) => c.featured && c.shown).map((c) => c.slug).sort());
+        expect(mapped).toHaveLength(12);
+        expect(ALL_COUNCILS.filter((c) => !c.featured).every((c) => !c.map && !c.precinctFiles)).toBe(true);
         const wiring = createMestaWiring({ councils: ALL_COUNCILS, shards: SHARDS });
         expect(ALL_COUNCILS.filter((c) => c.featured)).toHaveLength(12);
         expect(wiring.firstClassKeys).toHaveLength(SHARDS.length + 12);

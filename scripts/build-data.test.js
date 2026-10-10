@@ -3,15 +3,19 @@ import os from 'node:os';
 import path from 'node:path';
 import { describe, it, expect, vi } from 'vitest';
 import { ROOT } from './lib/util.js';
-import { parseArgs, outputDirs, runMesta, loadMestaCouncils, emptyGeo, stageLogosDir, commitLogosDir, discardLogosDir } from './build-data.js';
+import { parseArgs, outputDirs, runMesta, loadMestaCouncils, emptyGeo, stageLogosDir, commitLogosDir, discardLogosDir, townMapFeatures } from './build-data.js';
 
 describe('parseArgs', () => {
     it('Praha: bez --product, slugy a --fresh', () => {
-        expect(parseArgs(['praha-6', '--fresh'])).toEqual({ mesta: false, fresh: true, only: ['praha-6'] });
-        expect(parseArgs([])).toEqual({ mesta: false, fresh: false, only: [] });
+        expect(parseArgs(['praha-6', '--fresh'])).toEqual({ mesta: false, fresh: true, mapsOnly: false, only: ['praha-6'] });
+        expect(parseArgs([])).toEqual({ mesta: false, fresh: false, mapsOnly: false, only: [] });
     });
     it('--product=mesta [slug…]', () => {
-        expect(parseArgs(['--product=mesta', 'brno', 'plzen'])).toEqual({ mesta: true, fresh: false, only: ['brno', 'plzen'] });
+        expect(parseArgs(['--product=mesta', 'brno', 'plzen'])).toEqual({ mesta: true, fresh: false, mapsOnly: false, only: ['brno', 'plzen'] });
+    });
+    it('--maps-only (jen mesta): přegeneruje jen okrsky.geojson měst s mapou', () => {
+        expect(parseArgs(['--product=mesta', '--maps-only', 'brno'])).toEqual({ mesta: true, fresh: false, mapsOnly: true, only: ['brno'] });
+        expect(() => parseArgs(['--maps-only'])).toThrow(/maps-only/);
     });
     it('neznámý produkt je chyba', () => {
         expect(() => parseArgs(['--product=senat'])).toThrow(/product/);
@@ -81,6 +85,61 @@ describe('emptyGeo', () => {
     });
 });
 
+describe('townMapFeatures (hranice okrsků města ze celostátní vrstvy ČSÚ)', () => {
+    // čtverec 400 × 400 m v S-JTSK (EPSG:5514) kolem Brna, posunutý o (dx, 0)
+    const sq = (dx) => {
+        const x = -598000 + dx;
+        const y = -1160000;
+        return { type: 'Polygon', coordinates: [[[x, y], [x + 400, y], [x + 400, y + 400], [x, y + 400], [x, y]]] };
+    };
+    const f = (kod_obec, cislo, dx, naz_mco = 'Brno-střed') => ({ type: 'Feature', properties: { kod_obec, cislo, naz_mco, kod_mco: 1 }, geometry: sq(dx) });
+    const layer = {
+        type: 'FeatureCollection',
+        features: [
+            f(582786, 1, 0), f(582786, 2, 500), f(582786, 999, 1000), f(554791, 1, 1500), f('582786', 16005, 2000),
+        ],
+    };
+    const brno = { slug: 'brno', zastup: 582786 };
+
+    it('filtruje podle kod_obec, převede na WGS84, ponechá cislo (číslo) a mco', () => {
+        const r = townMapFeatures(layer, brno, new Set([1, 2, 999, 16005]));
+        expect(r.features.map((x) => x.properties.cislo).sort((a, b) => a - b)).toEqual([1, 2, 999, 16005]);
+        const [lon, lat] = r.features[0].geometry.coordinates[0][0];
+        expect(lon).toBeGreaterThan(16.4);
+        expect(lon).toBeLessThan(16.8);
+        expect(lat).toBeGreaterThan(49.0);
+        expect(lat).toBeLessThan(49.4);
+        expect(r.features[0].properties).toEqual({ cislo: 1, mco: 'Brno-střed' });
+    });
+
+    it('zahodí polygony, které nejsou okrsky 2026 (zaniklé), a hlásí okrsky 2026 bez polygonu', () => {
+        const r = townMapFeatures(layer, brno, new Set([1, 2, 3, 16005]));
+        expect(r.features.map((x) => x.properties.cislo).sort((a, b) => a - b)).toEqual([1, 2, 16005]);
+        expect(r.dropped).toEqual([999]);
+        expect(r.missing).toEqual([3]);
+        expect(r.verified).toBe(true);
+    });
+
+    it('bez spolehlivého seznamu okrsků 2026 ponechá všechny polygony a označí je za neověřené', () => {
+        for (const ids of [new Set(), null, undefined]) {
+            const r = townMapFeatures(layer, brno, ids);
+            expect(r.features).toHaveLength(4);
+            expect(r.verified).toBe(false);
+            expect(r.dropped).toEqual([]);
+        }
+    });
+
+    it('město bez jediného polygonu je chyba (mapa nesmí zůstat prázdná)', () => {
+        expect(() => townMapFeatures(layer, { slug: 'x', zastup: 1 }, new Set([1]))).toThrow(/x: .*polygon/);
+        expect(() => townMapFeatures(layer, brno, new Set([123456]))).toThrow(/polygon/); // seznam okrsků a vrstva se vůbec neshodují
+    });
+
+    it('jedno cislo víckrát: sloučeno do jednoho polygonu nelze → chyba (jednoznačné cislo je podmínka mapy)', () => {
+        const dup = { type: 'FeatureCollection', features: [f(582786, 1, 0), f(582786, 1, 500)] };
+        expect(() => townMapFeatures(dup, brno, new Set([1]))).toThrow(/dvakrát|duplic/i);
+    });
+});
+
 describe('runMesta', () => {
     const councils = [{ slug: 'a' }, { slug: 'b' }, { slug: 'c' }];
     const quiet = { log: vi.fn(), error: vi.fn() };
@@ -117,7 +176,7 @@ describe('loadMestaCouncils', () => {
         const all = await loadMestaCouncils();
         expect(all.length).toBeGreaterThan(70);
         const plzen = all.find((c) => c.slug === 'plzen');
-        expect(plzen).toMatchObject({ zastup: 554791, map: false, candidatePhotos: false, pirates: 11 });
+        expect(plzen).toMatchObject({ zastup: 554791, map: true, precinctFiles: true, candidatePhotos: false, pirates: 11 });
     });
     it('filtr slugů; neznámý slug je chyba', async () => {
         expect((await loadMestaCouncils(['brno'])).map((c) => c.slug)).toEqual(['brno']);

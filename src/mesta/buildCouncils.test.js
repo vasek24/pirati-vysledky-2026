@@ -54,7 +54,7 @@ describe('buildCouncils', () => {
     expect(build().map((c) => c.slug)).toEqual(['plzen', 'skrytov', 'sokolov', 'jablonec-nad-nisou', 'hradec-kralove'])
   })
 
-  it('builds Plzeň: type a, Pirate list 11, title, no map/precinct files', () => {
+  it('builds Plzeň: type a, Pirate list 11, title, featured => map + precinct files', () => {
     const c = bySlug(build(), 'plzen')
     expect(c).toMatchObject({
       slug: 'plzen',
@@ -73,8 +73,9 @@ describe('buildCouncils', () => {
       pirateCandidates: [],
       confidence: 'high',
       shown: true,
-      map: false,
-      precinctFiles: false,
+      map: true,
+      precinctFiles: true,
+      precinctHistory: false,
       beta: false,
       candidatePhotos: false,
       magistrat: false,
@@ -84,6 +85,26 @@ describe('buildCouncils', () => {
     })
     expect(c.arrangement.type).toBe('a')
     expect(c.arrangement.list.id).toBe(11)
+  })
+
+  it('map set = featured && shown; `map: false` / `map: true` overrides decide, precinctFiles follows map', () => {
+    const flags = (all, slug) => ({ map: bySlug(all, slug).map, precinctFiles: bySlug(all, slug).precinctFiles })
+    const all = build()
+    expect(flags(all, 'plzen')).toEqual({ map: true, precinctFiles: true })
+    expect(flags(all, 'hradec-kralove')).toEqual({ map: true, precinctFiles: true })
+    expect(flags(all, 'sokolov')).toEqual({ map: false, precinctFiles: false })
+    expect(flags(all, 'jablonec-nad-nisou')).toEqual({ map: false, precinctFiles: false })
+    // skryté město (i kdyby bylo featured) mapu nemá
+    const hiddenFeatured = buildCouncils(clone(towns).map((t) => (t.slug === 'skrytov' ? { ...t, featured: 'top-3' } : t)), clone(specifics), NO_OVERRIDES)
+    expect(flags(hiddenFeatured, 'skrytov')).toEqual({ map: false, precinctFiles: false })
+    const off = build({ reviewedAt: null, towns: { 554791: { name: 'Plzeň', map: false } } })
+    expect(flags(off, 'plzen')).toEqual({ map: false, precinctFiles: false })
+    const on = build({ reviewedAt: null, towns: { 560286: { name: 'Sokolov', map: true } } })
+    expect(flags(on, 'sokolov')).toEqual({ map: true, precinctFiles: true })
+  })
+
+  it('every mesta town opts out of per-precinct 2022 comparisons (ids of 2022 precincts do not match)', () => {
+    for (const c of build()) expect(c.precinctHistory, c.slug).toBe(false)
   })
 
   it('builds a coalition and an association (list id = pirates)', () => {

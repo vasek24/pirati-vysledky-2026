@@ -9,6 +9,7 @@
 //     list?: { short?, kind?, partners? },    // oprava kandidátky (reason nebo note povinné); `pirates` se odvodí z list.id
 //     pirateCandidates?: [{ list, n, name }], // (reason nebo note povinné)
 //     note?: '…', title?: '…',
+//     map?: boolean,                          // mapa okrsků (výchozí: true u `featured` zobrazených měst); false ji vypne i s okrskovými soubory
 //     lists?: { '<číslo>': { short?, tiny?, color?, note? } },
 //     confidence?: 'low', reviewed?: true,    // low jen s `note`; takto skryté město odemkne jen vlastní `reviewed: true`
 //   }

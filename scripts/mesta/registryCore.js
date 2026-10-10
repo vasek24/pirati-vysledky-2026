@@ -79,6 +79,21 @@ export function wholeCouncils(rows, { includePrague = false } = {}) {
     return out;
 }
 
+// kvrzcoco -> Set čísel okrsků jednoho zastupitelstva (TYPZASTUP 1) z rozsahů MIN/MAXOKRSEK1..10 — seznam okrsků 2026
+export function precinctIdsOf(rows, zastup) {
+    const ids = new Set();
+    for (const r of rows) {
+        if (r.TYPZASTUP !== '1' || Number(r.KODZASTUP) !== Number(zastup)) continue;
+        for (let i = 1; i <= 10; i++) {
+            const suffix = i < 10 ? `EK${i}` : 'E10';
+            const min = Number(r[`MINOKRS${suffix}`]);
+            const max = Number(r[`MAXOKRS${suffix}`]);
+            if (max > 0) for (let k = min; k <= max; k++) ids.add(k);
+        }
+    }
+    return ids;
+}
+
 export function matchOwnerTowns(owner, councils) {
     const byName = new Map();
     for (const c of councils.values()) {
@@ -322,7 +337,7 @@ export function buildExcluded(entries) {
         .sort((a, b) => czechCompare(a.name, b.name) || a.zastup - b.zastup);
 }
 
-const OVERRIDE_KEYS = ['name', 'include', 'reason', 'borderlineReason', 'type', 'pirates', 'list', 'pirateCandidates', 'note', 'lists', 'title', 'confidence', 'reviewed'];
+const OVERRIDE_KEYS = ['name', 'include', 'reason', 'borderlineReason', 'type', 'pirates', 'list', 'pirateCandidates', 'note', 'lists', 'title', 'confidence', 'reviewed', 'map'];
 const NEEDS_WHY = ['include', 'type', 'list', 'pirateCandidates'];
 const ISO = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})?)?$/;
 const filled = (v) => typeof v === 'string' && v.trim() !== '';
@@ -344,6 +359,7 @@ export function validateOverrides(overrides, { councils } = {}) {
         for (const k of Object.keys(o)) if (!OVERRIDE_KEYS.includes(k)) errors.push(`${at}: unknown key ${k}`);
         if ('pirates' in o) errors.push(`${at}: pirates must not be set (derived from list.id)`);
         if ('include' in o && typeof o.include !== 'boolean') errors.push(`${at}: include must be boolean`);
+        if ('map' in o && typeof o.map !== 'boolean') errors.push(`${at}: map must be boolean`);
         if ('reviewed' in o && typeof o.reviewed !== 'boolean') errors.push(`${at}: reviewed must be boolean`);
         if ('borderlineReason' in o && !filled(o.borderlineReason)) errors.push(`${at}: borderlineReason must be a non-empty string`);
         if ('type' in o && !['a', 'b', 'c', 'd'].includes(o.type)) errors.push(`${at}: type must be a, b, c or d`);

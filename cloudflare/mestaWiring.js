@@ -147,8 +147,9 @@ export function createMestaWiring({ councils, shards, baseUrl = KV_BASE_URL }) {
         }
         const council = townByZastup.get(String(key));
         if (!council) throw new Error(`unknown mesta feed key: ${key}`);
-        // jen 2 soubory ČSÚ na obnovu: okrskové soubory se nestahují nikdy
-        return createKvFeed({ council: { ...council, precinctFiles: false }, ...common });
+        // 2 soubory ČSÚ na obnovu; okrskové soubory (hlasy po okrscích pro mapu) jen u měst s
+        // `precinctFiles` (= mapa, buildCouncils: featured + overrides `map`) a jen pro nově sečtené okrsky
+        return createKvFeed({ council, ...common });
     }
 
     return { route, feedTarget, buildFeed, feedKind, isFirstClass, firstClassKeys };

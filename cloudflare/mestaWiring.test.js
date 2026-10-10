@@ -160,7 +160,7 @@ describe('buildFeed: town', () => {
     });
     afterEach(() => vi.useRealTimers());
 
-    it('fetches only the two summary files (no precinct files), sends the mesta User-Agent', async () => {
+    it('fetches only the two summary files for a town without a map, sends the mesta User-Agent', async () => {
         const { fetchImpl, calls } = fakeCsu({
             'vysled/3203/554791.json': withParties(),
             'ucast/obec/3203/554791.json': turnoutNext,
@@ -172,13 +172,30 @@ describe('buildFeed: town', () => {
         for (const c of calls) expect(c.init.headers['User-Agent']).toBe(MESTA_USER_AGENT);
         expect(MESTA_USER_AGENT).toBe('pirati-mesta/1.0 (+https://mesta.dg12.cz/kontakt.txt)');
     });
-    it('never fetches precinct files, even when the council claims them', async () => {
-        const { fetchImpl, calls } = fakeCsu({
-            'vysled/3203/554791.json': withParties(),
-            'ucast/obec/3203/554791.json': turnoutNext,
-        });
-        const w = createMestaWiring({ councils: [{ ...plzen, precinctFiles: true }], shards: [] });
-        await w.buildFeed('554791', {}, { fetchImpl }).build();
+    // okrskový soubor ČSÚ: vysledky = [kandidátka, název, hlasy], součet hlasů musí sedět s řádkem účasti
+    const precinctFile = (a, b) => ({ generovano: '2026-10-10T15:01:00', prehled: [], vysledky: [[1, 'A', a], [2, 'B', b]] });
+    const MAP_FILES = {
+        'vysled/3203/554791.json': withParties(),
+        'ucast/obec/3203/554791.json': turnoutNext,
+        'vysled/okrsek/3203/554791_1.json': precinctFile(600, 400),
+        'vysled/okrsek/3203/554791_2.json': precinctFile(250, 750),
+        'vysled/okrsek/3203/554791_3.json': precinctFile(500, 300),
+    };
+    it('a town with precinctFiles (map set) fetches the precinct files of the counted precincts only, with the mesta User-Agent', async () => {
+        const { fetchImpl, calls } = fakeCsu(MAP_FILES);
+        const w = createMestaWiring({ councils: [{ ...plzen, map: true, precinctFiles: true }], shards: [] });
+        const snap = await w.buildFeed('554791', {}, { fetchImpl }).build();
+        expect(calls.map((c) => c.path).filter((p) => p.startsWith('vysled/okrsek/')).sort()).toEqual([
+            'vysled/okrsek/3203/554791_1.json', 'vysled/okrsek/3203/554791_2.json', 'vysled/okrsek/3203/554791_3.json',
+        ]); // okrsek 4 (voličů 0) není sečtený → žádný soubor
+        for (const c of calls) expect(c.init.headers['User-Agent']).toBe(MESTA_USER_AGENT);
+        expect(Object.keys(snap.okrsky).sort()).toEqual(['1', '2', '3']);
+        expect(snap.okrsky[1].votes).toEqual({ 1: 600, 2: 400 });
+        expect(snap.okrsky[3].votes).toEqual({ 1: 500, 2: 300 });
+    });
+    it('a town without precinctFiles (no map) still fetches only the two summary files', async () => {
+        const { fetchImpl, calls } = fakeCsu(MAP_FILES);
+        await wiring().buildFeed('554791', {}, { fetchImpl }).build(); // plzen: map false, precinctFiles false
         expect(calls.some((c) => c.path.startsWith('vysled/okrsek/'))).toBe(false);
         expect(calls).toHaveLength(2);
     });
