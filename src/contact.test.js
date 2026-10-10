@@ -46,6 +46,10 @@ describe('kontakt na správce kopie', () => {
         expect(html).not.toMatch(/autor/i);
     });
 
+    it('menu hlavičky odkazuje na rozcestník', () => {
+        expect(read('src/components/ElectionHeader.jsx')).toContain('href="https://volby.dg12.cz"');
+    });
+
     for (const file of ['src/pages/Landing.jsx', 'src/pages/CouncilApp.jsx']) {
         it(`${file} má patičku se správcem`, () => {
             const code = read(file);
