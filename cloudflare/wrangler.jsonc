@@ -3,8 +3,8 @@
 // main; ručně: npm run deploy (v této složce). Secret: GITHUB_TOKEN (brouk).
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "pirati-vysledky-2026",
-  "account_id": "9650f76e575cebc9f0eb22a0dfdfe58b",
+  "name": "pirati-volby-zaloha",
+  "account_id": "741febb7a315a409b83e5a9a1b62954d",
   "main": "worker.js",
   "compatibility_date": "2026-10-01",
   "assets": {
@@ -12,7 +12,9 @@
     "binding": "ASSETS"
   },
   // Screenshoty z nahlášených chyb (brouk), servíruje je worker na /hlaseni/*
-  "kv_namespaces": [{ "binding": "HLASENI", "id": "b7339ed11a64454ca13bc202d571ee8a" }],
+  // Namespace zakládá Task 5; do té doby je id záměrně neplatné, takže
+  // nechtěný `wrangler deploy` selže a na nic nesáhne.
+  "kv_namespaces": [{ "binding": "HLASENI", "id": "CREATE-IN-TASK-5" }],
   // Návštěvnost: anonymní počty (worker.js track()); dataset se založí sám
   // při prvním zápisu, čte se přes SQL API (Account Analytics Read)
   "analytics_engine_datasets": [{ "binding": "STATS", "dataset": "pirati_vysledky_2026" }],
@@ -23,5 +25,27 @@
   // Vlastní doména (zatím běží jen na workers.dev)
   // "routes": [{ "pattern": "volby.example.cz", "custom_domain": true }],
   "workers_dev": true,
-  "observability": { "enabled": true }
+  "observability": { "enabled": true },
+
+  // Staging: samostatný skript (vlastní Durable Object storage a KV), jen
+  // workers.dev, bez routes a cronů. Každé nasazení jde nejdřív sem
+  // (`wrangler deploy --env staging`), produkce až po kontrolách na stagingu.
+  // Wrangler nededí assets, KV, DO, migrace ani analytics — proto jsou níže.
+  "env": {
+    "staging": {
+      "name": "pirati-volby-zaloha-staging",
+      "workers_dev": true,
+      "assets": {
+        "directory": "../dist",
+        "binding": "ASSETS"
+      },
+      // Vlastní namespace zakládá Task 5; do té doby neplatné id (viz výše).
+      "kv_namespaces": [{ "binding": "HLASENI", "id": "CREATE-IN-TASK-5" }],
+      "analytics_engine_datasets": [{ "binding": "STATS", "dataset": "pirati_vysledky_2026" }],
+      "durable_objects": {
+        "bindings": [{ "name": "FEED", "class_name": "Feed" }]
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Feed"] }]
+    }
+  }
 }

@@ -1,0 +1,38 @@
+# Kontrola každé změny: lint, testy, build. Nic nenasazuje (viz deploy.yml).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Prohlížeč nesmí volat volby.gov.cz přímo (jen náš Worker)
+      - name: No direct ČSÚ URL in the bundle
+        run: "! grep -rl 'appdata/kv2026' dist/assets"
