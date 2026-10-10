@@ -31,8 +31,8 @@ function mergedList(list, override) {
 /**
  * Všechna publikovaná města (i skrytá) jako objekty ve tvaru Prahy.
  * `pirates` se vždy odvozuje z `arrangement.list.id`; skryté město má
- * `pirates: null` a `pirateCandidates: []` (arrangement zůstává jen pro
- * banner „ověřujeme“).
+ * `pirates: null` a `pirateCandidates: []`; jeho arrangement má jen typ a
+ * příznaky (list null, members/others prázdné) pro banner „ověřujeme“.
  */
 export function buildCouncils(towns, specifics, overrides) {
     const byZastup = new Map(specifics.map((s) => [s.zastup, s]));
@@ -49,14 +49,25 @@ export function buildCouncils(towns, specifics, overrides) {
             throw new Error(`buildCouncils: shard ${t.shard} does not belong to kraj ${t.kraj} (${t.slug})`);
         }
 
-        const arrangement = {
-            type: o.type ?? spec.type,
-            list: mergedList(spec.list, o.list),
-            members: spec.members,
-            others: spec.others,
-            flags: spec.flags,
-        };
+        if (o.name !== undefined && o.name !== t.name) {
+            throw new Error(`buildCouncils: override name "${o.name}" != "${t.name}" for ${t.zastup}`);
+        }
+
+        const type = o.type ?? spec.type;
+        // Typ c/d = Piráti nemají vlastní kandidátku: seznam se maže, aby `pirates`
+        // (a tím banner i Hemicycle) nemohl být nastaven.
+        const list = type === 'c' || type === 'd' ? null : mergedList(spec.list, o.list);
+        if ((type === 'a' || type === 'b') && !list) {
+            throw new Error(`buildCouncils: type ${type} without a Pirate list (${t.slug})`);
+        }
+        if (type === 'd' && o.pirateCandidates !== undefined) {
+            throw new Error(`buildCouncils: pirateCandidates on a type d town (${t.slug})`);
+        }
         const shown = isShown(spec, o, overrides?.reviewedAt);
+        // Skryté město: z arrangementu zůstává jen typ a příznaky (banner „ověřujeme“).
+        const arrangement = shown
+            ? { type, list, members: spec.members, others: spec.others, flags: spec.flags, note: o.note }
+            : { type, list: null, members: [], others: [], flags: spec.flags, note: undefined };
 
         return {
             slug: t.slug,
@@ -71,10 +82,11 @@ export function buildCouncils(towns, specifics, overrides) {
             population: t.population,
             seats: t.seats,
             precincts: t.precincts,
-            pirates: shown ? (arrangement.list?.id ?? null) : null,
-            pirateCandidates: shown
-                ? (o.pirateCandidates ?? arrangement.others.map(({ list, n, name }) => ({ list, n, name })))
-                : [],
+            pirates: shown ? (list?.id ?? null) : null,
+            pirateCandidates:
+                shown && type !== 'd'
+                    ? (o.pirateCandidates ?? spec.others.map(({ list, n, name }) => ({ list, n, name })))
+                    : [],
             arrangement,
             confidence: o.confidence === 'low' ? 'low' : spec.confidence,
             shown,

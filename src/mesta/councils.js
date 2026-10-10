@@ -6,6 +6,10 @@
 // COUNCILS = jen zobrazená města (trasy, menu, index, hledání); skrytá
 // (nízká důvěra, dokud je nikdo neověří) jsou jen v ALL_COUNCILS, SHARDS
 // a allCouncilByZastup (Worker, shardy, datový build) a mají pirates: null.
+//
+// Pozor (T6): SHARDS[…].zastups obsahují i skrytá města (shardy se nikdy
+// nepřeskládávají). Řádky „Největší města“ proto brát z
+// COUNCILS.filter((c) => c.featured), ne ze SHARDS['top-*'].zastups.
 
 import towns from './towns.generated.json';
 import specifics from './specifics.generated.json';

@@ -169,9 +169,80 @@ describe('buildCouncils', () => {
       const c = bySlug(build({ reviewedAt: null, towns: { 563510: { name: 'Jablonec nad Nisou', type: 'a', reason: 'x' } } }), 'jablonec-nad-nisou')
       expect(c.arrangement.type).toBe('a')
     })
+
+    const withOv = (zastup, name, o) => build({ reviewedAt: null, towns: { [zastup]: { name, ...o } } })
+
+    it('type d override forces list null and pirates null (Plzeň)', () => {
+      const c = bySlug(withOv(554791, 'Plzeň', { type: 'd', note: 'x' }), 'plzen')
+      expect(c).toMatchObject({ shown: true, pirates: null, pirateCandidates: [] })
+      expect(c.arrangement).toMatchObject({ type: 'd', list: null })
+    })
+
+    it('type c override forces list null and pirates null (Hradec Králové)', () => {
+      const c = bySlug(withOv(569810, 'Hradec Králové', { type: 'c', note: 'x' }), 'hradec-kralove')
+      expect(c).toMatchObject({ shown: true, pirates: null, pirateCandidates: [] })
+      expect(c.arrangement).toMatchObject({ type: 'c', list: null })
+    })
+
+    it('type c override keeps candidates derived from others', () => {
+      const s = clone(specifics)
+      s.find((x) => x.zastup === 569810).others = [{ list: 2, listName: 'X', n: 4, name: 'Jan Cizí', nominatedBy: 'STAN' }]
+      const ovr = { reviewedAt: null, towns: { 569810: { name: 'Hradec Králové', type: 'c', note: 'x' } } }
+      const c = bySlug(buildCouncils(clone(towns), s, ovr), 'hradec-kralove')
+      expect(c.pirateCandidates).toEqual([{ list: 2, n: 4, name: 'Jan Cizí' }])
+    })
+
+    it('type d forces derived pirateCandidates [] even with non-empty others', () => {
+      const s = clone(specifics)
+      s.find((x) => x.zastup === 560286).type = 'd'
+      const c = bySlug(buildCouncils(clone(towns), s, NO_OVERRIDES), 'sokolov')
+      expect(c.arrangement.others).toHaveLength(1)
+      expect(c).toMatchObject({ pirates: null, pirateCandidates: [] })
+      const c2 = bySlug(withOv(560286, 'Sokolov', { type: 'd', note: 'x' }), 'sokolov')
+      expect(c2).toMatchObject({ pirates: null, pirateCandidates: [] })
+    })
+
+    it('throws when an override sets pirateCandidates on a type d town', () => {
+      expect(() => withOv(560286, 'Sokolov', { type: 'd', pirateCandidates: [{ list: 7, n: 5, name: 'X' }], note: 'x' })).toThrow(/pirateCandidates/)
+      expect(() => withOv(554791, 'Plzeň', { type: 'd', pirateCandidates: [{ list: 1, n: 1, name: 'X' }], note: 'x' })).toThrow(/pirateCandidates/)
+    })
+
+    it('throws when the effective type is a/b and there is no list', () => {
+      expect(() => withOv(554791, 'Plzeň', { list: null, note: 'x' })).toThrow(/list/)
+      expect(() => withOv(560286, 'Sokolov', { type: 'b', reason: 'x' })).toThrow(/list/)
+      const s = clone(specifics)
+      s.find((x) => x.zastup === 554791).list = null
+      expect(() => buildCouncils(clone(towns), s, NO_OVERRIDES)).toThrow(/list/)
+    })
+
+    it('throws when an override name differs from the town name (typo guard)', () => {
+      expect(() => withOv(554791, 'Skrytov', { note: 'x' })).toThrow(/name/)
+      expect(() => withOv(999001, 'Plzeň', { note: 'x' })).toThrow(/name/)
+    })
+
+    it('allows overrides keyed by a zastup that matches no town (excluded towns)', () => {
+      expect(() => withOv(555088, 'Havířov', { include: false, reason: 'x' })).not.toThrow()
+    })
+
+    it('arrangement.note carries the override note for shown towns', () => {
+      expect(bySlug(withOv(554791, 'Plzeň', { note: 'Ověřeno ručně' }), 'plzen').arrangement.note).toBe('Ověřeno ručně')
+      expect(bySlug(build(), 'plzen').arrangement.note).toBeUndefined()
+    })
   })
 
   describe('H1: hidden towns', () => {
+    it('strips the arrangement of a hidden town but keeps its shape', () => {
+      const a = bySlug(build(), 'skrytov').arrangement
+      expect(a).toEqual({ type: 'b', list: null, members: [], others: [], flags: ['borderline-auto'] })
+      expect(a.note).toBeUndefined()
+    })
+
+    it('strips an override-low town and does not leak the override note', () => {
+      const c = bySlug(build({ reviewedAt: null, towns: { 554791: { name: 'Plzeň', confidence: 'low', note: 'interní' } } }), 'plzen')
+      expect(c.arrangement).toMatchObject({ type: 'a', list: null, members: [], others: [] })
+      expect(c.arrangement.note).toBeUndefined()
+    })
+
     it('generator-low town without review: not shown, pirates null, candidates []', () => {
       const c = bySlug(build(), 'skrytov')
       expect(c).toMatchObject({ shown: false, pirates: null, pirateCandidates: [], confidence: 'low' })
@@ -411,5 +482,21 @@ describe('real generated data', () => {
       expect(m.SHARDS.some((s) => s.kind === 'region' && s.zastups.includes(c.zastup))).toBe(true)
     }
     expect(m.COUNCILS).toEqual(m.ALL_COUNCILS.filter((c) => c.shown))
+  })
+
+  it.skipIf(!HAS_REAL_DATA)('keeps hidden towns out of REGIONS and shard ids consistent', async () => {
+    vi.resetModules()
+    vi.doUnmock('./towns.generated.json')
+    vi.doUnmock('./specifics.generated.json')
+    vi.doUnmock('./overrides.js')
+    const m = await import('./councils.js')
+    const inRegions = new Set(m.REGIONS.flatMap((r) => r.zastups))
+    for (const c of m.ALL_COUNCILS) {
+      if (!c.shown) expect(inRegions.has(c.zastup)).toBe(false)
+      expect(c.shard).toMatch(/^\d{2}-\d+$/)
+      expect(Number(c.shard.split('-')[0])).toBe(c.kraj / 100)
+      if (c.shown && ['c', 'd'].includes(c.arrangement.type)) expect(c.pirates).toBeNull()
+    }
+    for (const s of m.SHARDS.filter((x) => x.kind === 'region')) expect(s.id).toMatch(/^\d{2}-\d+$/)
   })
 })
