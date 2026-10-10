@@ -117,7 +117,7 @@ export function normalize(parsed, { manifest, now, pollsCloseR1, pollsCloseR2 })
   if (suppressedR1) warnings.push('pre-close-data-suppressed')
   if (suppressedR2) warnings.push('r2-data-suppressed')
 
-  return {
+  const snapshot = {
     v: 1,
     kind: 'senat',
     generated: parsed.generated,
@@ -127,4 +127,11 @@ export function normalize(parsed, { manifest, now, pollsCloseR1, pollsCloseR2 })
     obvody,
     warnings,
   }
+  // A gate fired only because `now` is behind the close while ČSÚ's `generated` is already
+  // after it (our clock is slow): the zeros are our doing, so the feed must not keep the
+  // validators of this file. Non-enumerable: not part of the snapshot shape or its JSON.
+  Object.defineProperty(snapshot, 'suppressedByClock', {
+    value: (suppressedR1 && generatedMs >= pollsCloseR1) || (suppressedR2 && generatedMs >= pollsCloseR2),
+  })
+  return snapshot
 }

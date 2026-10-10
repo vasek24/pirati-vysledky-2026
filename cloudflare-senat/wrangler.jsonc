@@ -20,14 +20,23 @@
   "migrations": [{ "tag": "v1", "new_sqlite_classes": ["SenatFeed"] }],
   // Vlastní doména (jen produkce; staging má routes explicitně prázdné)
   "routes": [{ "pattern": "senat.dg12.cz", "custom_domain": true }],
-  "workers_dev": true,
+  // Cache API (x-cache HIT / LASTRESORT) na *.workers.dev nefunguje, takže tam by každý požadavek šel
+  // do Durable Objectu; produkce proto běží jen na senat.dg12.cz (staging workers.dev nechává).
+  "workers_dev": false,
+  // Přepisy konfigurace patří SEM, nikdy do dashboardu (příští `wrangler deploy` dashboardové
+  // proměnné smaže). `vars` se nededí, staging má vlastní. Bez přepisu platí výchozí hodnoty z kódu
+  // (POLLS_CLOSE_R2 = 2026-10-17T14:00:00+02:00). Příklad, kdyby se 2. kolo posunulo o týden:
+  //   "vars": { "POLLS_CLOSE_R2": "2026-10-24T14:00:00+02:00" }
+  // Povoleno jen YYYY-MM-DDTHH:mm[:ss]+HH:mm, po 1. kole a nejdéle o 30 dní; jinak DO při startu vyhodí chybu.
+  "vars": {},
   "observability": { "enabled": true },
   // Warm-up feedu (volá DO jako divák) — jen produkce, ne staging
   "triggers": { "crons": ["* * * * *"] },
 
   // Staging: samostatný skript (vlastní Durable Object storage), jen workers.dev,
   // bez routes a cronů. Každé nasazení jde nejdřív sem (`wrangler deploy --env staging`).
-  // Wrangler nededí assets, DO ani migrace — proto jsou níže znovu.
+  // assets, DO bindingy i migrace by se z produkce zdědily (wrangler 4.x); staging je záměrně uvádí
+  // znovu, aby šlo na první pohled vidět, co přesně se nasazuje, a změna produkce ho tiše neposunula.
   "env": {
     "staging": {
       "name": "pirati-senat-zaloha-staging",
@@ -35,6 +44,7 @@
       "triggers": { "crons": [] },
       "routes": [],
       "workers_dev": true,
+      "vars": {},
       "assets": {
         "directory": "../senat/dist",
         "binding": "ASSETS"

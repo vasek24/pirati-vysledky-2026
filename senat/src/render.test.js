@@ -7,7 +7,8 @@ import Header from './components/Header.jsx'
 import Footer from './components/Footer.jsx'
 import Banner from './components/Banner.jsx'
 import { CHIP, REL, STATE, T } from './text.js'
-import { counting, finalR2, runoff, waiting } from './fixtures/scenarios.js'
+import { counting, finalR2, runoff, runoffEliminatedPirate, waiting } from './fixtures/scenarios.js'
+import { nf, pc } from './format.js'
 
 const html = (s, selected) =>
   renderToStaticMarkup(h(Board, { snapshot: s, selected, onSelect: () => {} })) +
@@ -25,6 +26,7 @@ const patch = (s, n, no, fields) => {
   return x
 }
 
+const sp = (x) => x.replace(/\s/g, ' ') // nbsp -> space (cs-CZ number format)
 const everyObvod = (s) => s.obvody.map((o) => html(s, o.n)).join('\n')
 
 describe('render', () => {
@@ -80,6 +82,62 @@ describe('render', () => {
     expect(out).toContain(T.inRound2.trim())
     expect(out).toContain('1. kolo: ')
     expect(html(s, 57)).toContain(CHIP.runoffTie)
+  })
+
+  test('round 2: a Pirate candidacy that missed the runoff keeps its round-1 numbers (card)', () => {
+    const s = runoffEliminatedPirate()
+    const cards = html(s, 30).split('class="snt-card').slice(1)
+    const card = cards.find((x) => x.includes('Jan Klas')).replace(/\s/g, ' ')
+    expect(card).toContain(`<b class="snt-num">${sp(nf(4221))}</b>`)
+    expect(card).toContain(`<span class="snt-num">${sp(pc(s.obvody.find((o) => o.n === 30).candidates.find((c) => c.no === 1).pct1))}</span>`)
+    expect(card).toContain(`class="snt-rk">${T.rankRound1(3)}<`)
+    expect(card).toContain(`snt-chip snt-notAdvancing">${CHIP.notAdvancing}<`)
+    expect(card).toContain(`${T.roundOnePrefix}${sp(T.progress(nf(150), nf(150), 100))}`)
+    expect(card).not.toContain(T.roundTwoPrefix)
+    expect(card).not.toContain(T.noRank)
+    // the finalist next to it still shows round-2 numbers
+    const fin = cards.find((x) => x.includes('Sucharda')).replace(/\s/g, ' ')
+    expect(fin).toContain(`<b class="snt-num">${sp(nf(2000))}</b>`)
+    expect(fin).toContain(T.roundTwoPrefix)
+    expect(fin).toContain('class="snt-rk">1. místo<')
+  })
+
+  test('round 2: detail row of a non-finalist shows round-1 votes and share, "–" for round 2', () => {
+    const s = runoffEliminatedPirate()
+    const out = html(s, 30).replace(/\s/g, ' ')
+    const row = out.split('class="snt-row').slice(1).find((x) => x.includes('Jan Klas'))
+    expect(row).toContain(`<b>${sp(nf(4221))}</b>`)
+    expect(row).toContain(`${T.inRound1.trim()}`)
+    expect(row).toContain(T.round2None)
+    expect(row).not.toContain('0,00 %')
+    expect(row).toContain(`title="${T.rankRound1(3)}"`)
+    // round-2 finalist rows keep the round-1 line instead
+    const fin = out.split('class="snt-row').slice(1).find((x) => x.includes('Sucharda'))
+    expect(fin).toContain(T.inRound2.trim())
+    expect(fin).not.toContain(T.round2None)
+    // finalists first, then the rest by round-1 votes
+    const order = [...out.matchAll(/class="snt-bn"[^>]*>(\d)</g)].map((m) => Number(m[1]))
+    expect(order).toEqual([2, 6, 1, 5, 4, 3])
+  })
+
+  test('idle round 2 with no counted precinct: header shows the waiting pill', () => {
+    const s = runoff()
+    s.phase = 'idle'
+    for (const o of s.obvody) if (o.rounds[2]) o.rounds[2].okrskyZprac = 0
+    const out = html(s, 30)
+    expect(out).toContain(T.pillWaitingR2)
+    expect(out).toContain(T.agoWaitingR2)
+    expect(out).not.toContain('SČÍTÁNÍ UKONČENO')
+  })
+
+  test('tiles: ties get their own tile only when there are some; behind tile uses the neutral label', () => {
+    const s = runoff()
+    expect(s.summary.ties).toBeGreaterThan(0)
+    const out = html(s, 30)
+    expect(out).toContain(T.tileTies)
+    expect(out).toContain(T.pTileBehind)
+    expect(out).toContain(`<b class="snt-num">${s.summary.runoff}</b><span>${T.tileRunoff}</span>`)
+    expect(html(counting(), 30)).not.toContain(T.tileTies)
   })
 
   test('final 2024 fixture: done pill, no provisional chips, no cards', () => {

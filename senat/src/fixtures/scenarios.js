@@ -74,6 +74,15 @@ export function runoff() {
   return finish(s, 'counting', 2)
 }
 
+// 2. kolo v obvodu 30, kde navíc kandidatura č. 1 (Piráti, 4 221 hlasů v 1. kole) do 2. kola nepostoupila
+export function runoffEliminatedPirate() {
+  const s = runoff()
+  const k = obvod(s, 30)
+  k.candidates.find((c) => c.no === 1).pirate = 'ticket'
+  setRound(k, 1, 150, { 1: 4221, 2: 5200, 3: 500, 4: 1000, 5: 2200, 6: 4800 }, { 2: '2.KOLO', 6: '2.KOLO', 1: 'NEZVOLEN', 3: 'NEZVOLEN', 4: 'NEZVOLEN', 5: 'NEZVOLEN' })
+  return finish(s, 'counting', 2)
+}
+
 // Jen vybrané pole se v testu zbaví registrových textů (jména, strany, povolání, obvody)
 export function scrubRegistry(s) {
   const x = structuredClone(s)

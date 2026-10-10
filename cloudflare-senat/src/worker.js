@@ -34,12 +34,19 @@ function log(event, data = {}) {
   console[method](line)
 }
 
-// Konfigurace jen z env, nikdy z požadavku. Špatné datum = výjimka při startu DO.
-function readConfig(env) {
+// POLLS_CLOSE_R2 (přepis, když se 2. kolo posune): jen datum a čas S OFFSETEM. Datum bez času
+// (`2026-10-24` = půlnoc UTC = 02:00 CEST) nebo čas bez offsetu (čte se jako UTC) by hradlo
+// 2. kola otevřely špatně, proto se odmítnou. 2. kolo musí být po 1. kole, nejdéle o 30 dní.
+const ISO_WITH_OFFSET = /^\d{4}-\d\d-\d\dT\d\d:\d\d(:\d\d)?[+-]\d\d:\d\d$/
+const MAX_R2_AFTER_R1_MS = 30 * 24 * 3600 * 1000
+
+// Konfigurace jen z env, nikdy z požadavku. Špatná hodnota = výjimka při startu DO.
+export function readConfig(env) {
   const pollsCloseR1 = Date.parse(DEFAULT_POLLS_CLOSE_R1)
-  const pollsCloseR2 = Date.parse(env.POLLS_CLOSE_R2 || DEFAULT_POLLS_CLOSE_R2)
-  if (Number.isNaN(pollsCloseR1) || Number.isNaN(pollsCloseR2)) {
-    throw new Error(`invalid POLLS_CLOSE_R2: ${env.POLLS_CLOSE_R2}`)
+  const rawR2 = env.POLLS_CLOSE_R2 || DEFAULT_POLLS_CLOSE_R2
+  const pollsCloseR2 = ISO_WITH_OFFSET.test(rawR2) ? Date.parse(rawR2) : NaN
+  if (!Number.isFinite(pollsCloseR2) || !(pollsCloseR2 > pollsCloseR1) || !(pollsCloseR2 < pollsCloseR1 + MAX_R2_AFTER_R1_MS)) {
+    throw new Error(`invalid POLLS_CLOSE_R2: ${rawR2} (need YYYY-MM-DDTHH:mm[:ss]+HH:mm, after ${DEFAULT_POLLS_CLOSE_R1}, within 30 days)`)
   }
   return { base: (env.CSU_BASE || DEFAULT_CSU_BASE).replace(/\/+$/, ''), pollsCloseR1, pollsCloseR2 }
 }
@@ -61,6 +68,7 @@ export class SenatFeed extends DurableObject {
       log,
       pollsCloseR1,
       pollsCloseR2,
+      requireManifestSet: true, // ostrý feed: cold start s chybějícím obvodem se nepublikuje
       waitUntil: (p) => this.ctx.waitUntil(p),
     })
   }

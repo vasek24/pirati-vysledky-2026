@@ -41,10 +41,12 @@ export const T = {
 
   // hlavička
   pillWaiting: 'ČEKÁ SE NA VÝSLEDKY',
+  pillWaitingR2: 'ČEKÁ SE NA VÝSLEDKY 2. KOLA', // doplněno: 2. kolo ještě nemá sečtený okrsek
   pillLive: (round) => `ŽIVĚ · ${round}. KOLO`,
   pillDone: (round) => `SČÍTÁNÍ UKONČENO · ${round}. KOLO`, // doplněno (fáze idle/final nejsou v náhledu)
   csuFrom: (when) => `ČSÚ data z ${when}`,
   agoWaiting: 'předvolební stav, sčítání ještě nezačalo',
+  agoWaitingR2: 'sčítání 2. kola ještě nezačalo', // doplněno
   ago: (age) => `před ${age}`,
   nextCheck: (mmss) => `další kontrola za ${mmss}`,
 
@@ -61,6 +63,7 @@ export const T = {
   tileAwaiting: 'sečteno, čeká na potvrzení ČSÚ',
   tileCounting: 'se právě sčítá',
   tileWaiting: 'čeká na první okrsky',
+  tileTies: 'obvodů se shodou hlasů ve 2. kole (opakované volby)', // doplněno: shoda hlasů má vlastní dlaždici
   ofTotal: (n) => ` z ${n}`,
 
   // pás obvodů
@@ -78,7 +81,7 @@ export const T = {
   pTileElected: 'kandidatur má mandát (oficiálně)',
   pTileAdvancing: 'postupuje do 2. kola (oficiálně)',
   pTileTop: 'předběžně vede nebo je na 2. místě', // náhled: „…vede nebo je druhý“ (rodový tvar) — doplněno
-  pTileBehind: 'předběžně mimo postupové pozice',
+  pTileBehind: 'předběžně bez postupu nebo bez náskoku', // náhled: „mimo postupové pozice“ (platí jen pro 1. kolo) — doplněno
   pTileOut: 'bez postupu nebo bez mandátu',
   pTileWaiting: 'čeká na sčítání',
   legendSolid: 'Plná barva',
@@ -122,6 +125,8 @@ export const T = {
   ballot: (label) => `Na lístku: ${label}`,
   rank: (r) => `${r}. místo`,
   roundTwoPrefix: '2. kolo: ',
+  roundOnePrefix: '1. kolo: ', // doplněno: kandidatura, která do 2. kola nepostoupila
+  rankRound1: (r) => `1. kolo: ${r}. místo`,
   progress: (z, c, pct) => `sečteno ${z} z ${c} okrsků (${pct} %)`,
 
   // detail
@@ -136,6 +141,8 @@ export const T = {
   noJob: 'povolání neuvedeno',
   majority: 'nad 50 % sečtených hlasů, čeká na potvrzení ČSÚ',
   inRound2: ' ve 2. kole',
+  inRound1: ' v 1. kole', // doplněno
+  round2None: '2. kolo: –', // doplněno: kandidatura mimo 2. kolo nemá hlasy 2. kola
   round1Votes: (v, pct) => `1. kolo: ${v} · ${pct}`,
   note1: 'Pořadí a podíly se počítají ze sečtených okrsků. ČSÚ publikuje oficiální stav (mandát získán, postup do 2. kola) až po uzavření obvodu.',
   note2: 'Číslo v kroužku je pořadí na hlasovacím lístku. Tituly, věk, povolání a bydliště pocházejí z registru kandidatur ČSÚ.',

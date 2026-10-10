@@ -29,6 +29,8 @@ const OK = { outcome: 'ok', quarantinable: false };
  * ctx.now (nepovinný, epoch ms, čas tohoto stažení): je-li zadán, kandidát s
  *   generatedMs > now + 5 min je hard reject `generated-in-future` (jinak by jeden
  *   soubor s budoucím časem zablokoval všechny další jako `older`). Platí i bez good.
+ * ctx.requireManifestSet (nepovinný, `=== true`): bez good je varování normalize
+ *   `obvody-set-differs-from-manifest` hard reject (ostrý feed; testy s jinými fixtures ne).
  */
 function assertCtx(ctx) {
     if (!ctx || typeof ctx !== 'object'
@@ -117,7 +119,7 @@ function regressionReason(s, good) {
 /**
  * @param {object} candidate  normalizovaný + odvozený snapshot
  * @param {object|null} good  poslední publikovaný snapshot
- * @param {{ goodRefreshedAt: number, pollsCloseR1: number, base: string, goodBase: string, now?: number }} ctx
+ * @param {{ goodRefreshedAt: number, pollsCloseR1: number, base: string, goodBase: string, now?: number, requireManifestSet?: boolean }} ctx
  * @returns {{ outcome: 'ok'|'older'|'rejected', reason?: string, quarantinable: boolean }}
  *   `quarantinable` je true jen u rejected, který smí po ≥ 3 odlišných stažených
  *   200 přes ≥ 2 min přijmout quarantine (skutečné stažení kandidatury, změna
@@ -127,7 +129,15 @@ export function validateCandidate(candidate, good, ctx) {
     const hard = hardReason(candidate);
     if (hard) return rejected(hard, false);
     if (ctx && num(ctx.now) && candidate.generatedMs > ctx.now + FUTURE_SKEW_MS) return rejected('generated-in-future', false);
-    if (!good) return OK; // studený start: ctx se nevyžaduje
+    if (!good) {
+        // studený start (i po nasazení s jiným CODE_REV): chybějící / cizí obvod nemá s čím
+        // srovnat strukturální kontrola, proto tvrdé zamítnutí; jen pro ostrý feed
+        // (ctx.requireManifestSet) a jen s neprázdným manifestem (varování z normalize)
+        if (ctx?.requireManifestSet === true && candidate.warnings?.includes('obvody-set-differs-from-manifest')) {
+            return rejected('obvody-set-differs-from-manifest', false);
+        }
+        return OK; // ctx se jinak nevyžaduje
+    }
     if (!baselineApplies(good, ctx)) return OK; // ověří i ctx (TypeError)
 
     if (candidate.generatedMs < good.generatedMs) return { outcome: 'older', quarantinable: false };

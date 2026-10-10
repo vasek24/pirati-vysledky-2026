@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
 import * as manifest from './manifest.js'
-import { USER_AGENT, createSenatFeed } from './feed.js'
+import { MAX_BODY_BYTES, USER_AGENT, createSenatFeed } from './feed.js'
 
 const read = (n) => readFileSync(new URL(`../fixtures/${n}`, import.meta.url), 'utf8')
 const FROZEN = read('se2026-frozen.xml')
@@ -184,6 +184,93 @@ describe('fetchId', () => {
     await expect(feed.build({})).rejects.toThrow()
     body = FROZEN
     expect((await feed.build({})).fetchId).toBe(2)
+  })
+})
+
+describe('L4: body size cap and body cancel', () => {
+  // a body of `chunks` x `size` bytes that reports whether it was cancelled
+  function stream(chunks, size, init = {}) {
+    const state = { cancelled: false, pulled: 0 }
+    const body = new ReadableStream({
+      pull(controller) {
+        if (state.pulled >= chunks) return controller.close()
+        state.pulled += 1
+        controller.enqueue(new Uint8Array(size).fill(32))
+      },
+      cancel() {
+        state.cancelled = true
+      },
+    })
+    return { state, res: () => Promise.resolve(new Response(body, { status: 200, ...init })) }
+  }
+
+  it('a declared content-length above 5 MB is rejected without reading the body', async () => {
+    const { state, res } = stream(1, 10, { headers: { 'content-length': String(MAX_BODY_BYTES + 1) } })
+    await expect(mkFeed(res).build({})).rejects.toThrow(/response larger than 5000000 bytes/)
+    await vi.advanceTimersByTimeAsync(0)
+    expect(state.pulled).toBeLessThanOrEqual(1) // the stream's own start-up prefetch, never a read
+    expect(state.cancelled).toBe(true)
+  })
+
+  it('a streamed body above 5 MB (no or false content-length) is rejected and cancelled', async () => {
+    const { state, res } = stream(12, 1_000_000)
+    await expect(mkFeed(res).build({})).rejects.toThrow(/upstream request failed: response larger than 5000000 bytes/)
+    expect(state.cancelled).toBe(true)
+    expect(state.pulled).toBeLessThan(9) // stopped soon after the cap, not read to the end
+    const lying = stream(12, 1_000_000, { headers: { 'content-length': '100' } })
+    await expect(mkFeed(lying.res).build({})).rejects.toThrow(/larger than/)
+    expect(lying.state.cancelled).toBe(true)
+  })
+
+  it('a rejected oversize body is not counted as a 200 fetch', async () => {
+    let big = true
+    const feed = mkFeed(() => (big ? stream(12, 1_000_000).res() : Promise.resolve(new Response(FROZEN, { status: 200 }))))
+    await expect(feed.build({})).rejects.toThrow()
+    big = false
+    expect((await feed.build({})).fetchId).toBe(1)
+  })
+
+  it('a body just under the cap is read in full (multi-chunk UTF-8 is decoded correctly)', async () => {
+    const out = await mkFeed(xml(FROZEN.replace('Cheb', 'Chěb'))).build({})
+    expect(out.snapshot.obvody.find((o) => o.n === 3).name).toBe('Chěb')
+    const chunked = new ReadableStream({
+      start(controller) {
+        const bytes = new TextEncoder().encode(FROZEN.replace('Cheb', 'Chěb'))
+        const cut = bytes.indexOf(0xc4) + 1 // splits the two-byte "ě" between chunks
+        controller.enqueue(bytes.slice(0, cut))
+        controller.enqueue(bytes.slice(cut))
+        controller.close()
+      },
+    })
+    const split = await mkFeed(() => Promise.resolve(new Response(chunked, { status: 200 }))).build({})
+    expect(split.snapshot.obvody.find((o) => o.n === 3).name).toBe('Chěb')
+  })
+
+  it.each([500, 404, 304])('a %i response body is cancelled, never read', async (code) => {
+    const state = { cancelled: false, pulled: 0 }
+    const body = new ReadableStream({ pull() { state.pulled += 1 }, cancel() { state.cancelled = true } })
+    const feed = mkFeed(() => Promise.resolve(new Response(code === 304 ? null : body, { status: code })))
+    const p = feed.build({ validators: { etag: '"x"' } })
+    if (code === 304) expect(await p).toEqual({ notModified: true })
+    else await expect(p).rejects.toThrow(`HTTP ${code}`)
+    await vi.advanceTimersByTimeAsync(0)
+    if (code !== 304) expect(state.cancelled).toBe(true)
+    expect(state.pulled).toBeLessThanOrEqual(1) // the stream's own start-up pull at most, never a read
+  })
+})
+
+describe('L6: suppressedByClock', () => {
+  it('a file generated after R2 and fetched by a clock before R2 is flagged; the snapshot stays unflagged JSON', async () => {
+    const out = await mkFeed(xml(FINAL_2024), { now: () => R1 + 3_600_000 }).build({})
+    expect(out.suppressedByClock).toBe(true)
+    expect(JSON.stringify(out.snapshot)).not.toContain('suppressedByClock')
+  })
+
+  it('a correct clock, or a really pre-close file, is not flagged', async () => {
+    expect((await mkFeed(xml(FINAL_2024)).build({})).suppressedByClock).toBe(false)
+    expect((await mkFeed(xml(FROZEN)).build({})).suppressedByClock).toBe(false)
+    const preClose = read('se2024-final.xml') // stamped 2026-09-14
+    expect((await mkFeed(xml(preClose)).build({})).suppressedByClock).toBe(false)
   })
 })
 

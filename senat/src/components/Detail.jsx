@@ -1,10 +1,12 @@
 import { T, STATE } from '../text.js'
 import { fullName, nf, pc } from '../format.js'
-import { currentRound, pctOf, progressOf, sortRows, votesOf } from '../view.js'
+import { isOutOfRunoff, pctOf, progressOf, rankOf, roundOf, sortRows, votesOf } from '../view.js'
 import { Chip, Relation, Why } from './Chip.jsx'
 
 function Row({ o, c }) {
-  const round = currentRound(o)
+  const round = roundOf(o, c)
+  const out = isOutOfRunoff(o, c)
+  const rank = rankOf(o, c)
   const r = o.rounds[round]
   const v = votesOf(o, c)
   const has = v != null
@@ -13,7 +15,7 @@ function Row({ o, c }) {
   const bio = [c.age != null && `${c.age} let`, c.job || (c.age != null ? T.noJob : null), c.residence].filter(Boolean)
   return (
     <div className={`snt-row${c.pirate ? ' snt-pir' : ''}`}>
-      <div className="snt-rk2">{has && counted && c.rank ? `${c.rank}.` : '–'}</div>
+      <div className="snt-rk2" title={out && rank ? T.rankRound1(rank) : undefined}>{has && counted && rank ? `${rank}.` : '–'}</div>
       <div>
         <div className="snt-nm">
           <span className="snt-bn" title={T.ballotNoTitle}>{c.no}</span>
@@ -36,8 +38,9 @@ function Row({ o, c }) {
       </div>
       <div className="snt-v snt-num">
         <b>{has ? nf(v) : '0'}</b>
-        <span>{has && counted ? pc(pct, 2) : '0,00 %'}{round === 2 ? T.inRound2 : ''}</span>
+        <span>{has && counted ? pc(pct, 2) : '0,00 %'}{round === 2 ? T.inRound2 : out ? T.inRound1 : ''}</span>
         {round === 2 && c.votes1 != null && <span className="snt-r2">{T.round1Votes(nf(c.votes1), pc(c.pct1, 2))}</span>}
+        {out && <span className="snt-r2">{T.round2None}</span>}
       </div>
       <div className="snt-bar snt-rbar" aria-hidden="true">
         <i style={{ width: `${Math.min(100, pct)}%`, ...(c.pirate ? { background: 'var(--ink)' } : {}) }} />

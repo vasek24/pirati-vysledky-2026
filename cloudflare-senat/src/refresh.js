@@ -93,13 +93,17 @@ function withDeadline(fn, ms) {
   return Promise.race([Promise.resolve().then(() => fn(ac.signal)), timeout]).finally(() => clearTimeout(timer))
 }
 
-export function createRefresher({ now, random, storage, feed, base, log, pollsCloseR1, pollsCloseR2, waitUntil }) {
+export function createRefresher({ now, random, storage, feed, base, log, pollsCloseR1, pollsCloseR2, waitUntil, requireManifestSet = false }) {
   // good = { snapshot (object), str (JSON string), meta, tooBig } | null
   let good = null
   let nextRefreshAt = 0 // in memory; differs from meta.nextRefreshAt after older/failures
   let stale = false
   let failures = 0
-  let unconditional = false // set by every non-ok outcome: the next fetch sends no validators
+  let unconditional = false // set by every non-ok outcome and by a failed put: the next fetch sends no validators
+  // true from the moment a full {snapshot, meta} put is issued until it succeeds (and after any
+  // failed put until the next full put succeeds): meta alone must never reach the storage then,
+  // or a newer ETag would pair with an older stored snapshot
+  let storageDirty = false
   let quarantine = null
   let olderSince = null
   let olderLoggedAt = null
@@ -158,15 +162,19 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
   }
 
   // ---- persistence -----------------------------------------------------------
-  function onPutError(error) {
-    emit('error', 'storage-put-failed', { error: String(error?.message || error) })
-  }
-
   // The put is not awaited: a stuck write must not block the refresher or the
   // responses (the in-memory publish stands even if the write fails).
-  function persist(obj) {
+  function persist(obj, full) {
+    const onPutError = (error) => {
+      storageDirty = true
+      unconditional = true // the stored validators may not belong to the stored snapshot: refetch in full
+      emit('error', 'storage-put-failed', { error: String(error?.message || error) })
+    }
+    if (full) storageDirty = true
     try {
-      Promise.resolve(storage.put(obj)).catch(onPutError)
+      Promise.resolve(storage.put(obj)).then(() => {
+        if (full) storageDirty = false
+      }, onPutError)
     } catch (error) {
       onPutError(error)
     }
@@ -204,11 +212,12 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
       }
       return
     }
-    persist({ snapshot: str, meta }) // snapshot and meta in ONE put
+    persist({ snapshot: str, meta }, true) // snapshot and meta in ONE put
   }
 
   // 304: the good snapshot is still current. Only the timestamps move (validators
-  // and snapshot are unchanged), so only meta is persisted.
+  // and snapshot are unchanged), so only meta is persisted, and only while the stored
+  // snapshot is known to be the one these validators belong to (not storageDirty).
   function touch(t) {
     const phase = phaseOfSnapshot(good.snapshot)
     const next = computeNextRefreshAt({
@@ -219,7 +228,7 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
     stale = false
     failures = 0
     emit('info', 'not-modified', { generated: good.snapshot.generated })
-    if (!good.tooBig) persist({ meta: good.meta })
+    if (!good.tooBig && !storageDirty) persist({ meta: good.meta }, false)
   }
 
   function fail(t, event, data) {
@@ -230,6 +239,11 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
     feed.invalidate()
     emit('warn', event, { failures, ...data })
   }
+
+  // A snapshot zeroed by OUR clock being behind a close (file generated after the close,
+  // fetched "before" it) must not keep its validators: a 304 would preserve the zeros
+  // until the file changes. No validators = the next fetch is unconditional.
+  const validatorsOf = (candidate) => (candidate.suppressedByClock ? null : candidate.validators)
 
   // ---- one refresh ---------------------------------------------------------------
   async function refreshOnce() {
@@ -260,16 +274,18 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
 
     // goodRefreshedAt = when the good CONTENT was fetched, not the last 304: an unchanged
     // pre-close (frozen/test) file touched after 14:00 must not become the baseline
-    const ctx = { now: t, ...(prev ? { goodRefreshedAt: prev.meta.installedAt, pollsCloseR1, base, goodBase: prev.meta.base } : {}) }
+    const ctx = { now: t, requireManifestSet, ...(prev ? { goodRefreshedAt: prev.meta.installedAt, pollsCloseR1, base, goodBase: prev.meta.base } : {}) }
     const verdict = validateCandidate(candidate.snapshot, prev?.snapshot ?? null, ctx)
 
     if (verdict.outcome === 'older') {
-      // lagging ČSÚ replica: good stays, not stale, no backoff; the quarantine is untouched
-      stale = false
+      // lagging ČSÚ replica: good stays, no backoff; the quarantine is untouched. Not stale
+      // at first, but a replica stuck behind for OLDER_ERROR_MS turns the stale banner on
+      // (cleared by the next ok install)
       failures = 0
       unconditional = true
       feed.invalidate()
       olderSince ??= t
+      stale = t - olderSince >= REFRESH.OLDER_ERROR_MS
       nextRefreshAt = t + REFRESH.FLOOR_MS
       emit('info', 'older', { generated: candidate.snapshot.generated, good: prev.snapshot.generated })
       if (t - olderSince >= REFRESH.OLDER_ERROR_MS && (olderLoggedAt === null || t - olderLoggedAt >= REFRESH.OLDER_ERROR_MS)) {
@@ -294,14 +310,14 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
       if (verdict.quarantinable && prev
         && quarantine.count >= REFRESH.QUARANTINE_COUNT && t - quarantine.firstAt >= REFRESH.QUARANTINE_SPAN_MS) {
         emit('warn', 'quarantine-accepted', { reason, count: quarantine.count, spanMs: t - quarantine.firstAt })
-        install(candidate.snapshot, candidate.validators, t)
+        install(candidate.snapshot, validatorsOf(candidate), t)
         return
       }
       fail(t, 'rejected', { reason, quarantineCount: quarantine.count })
       return
     }
 
-    install(candidate.snapshot, candidate.validators, t)
+    install(candidate.snapshot, validatorsOf(candidate), t)
   }
 
   function startRefresh() {

@@ -17,7 +17,8 @@ export function OverviewTiles({ summary }) {
   return (
     <div className="snt-tiles">
       <Tile main value={summary.decided} of={summary.obvody} label={T.tileDecided} />
-      <Tile value={summary.runoff + summary.ties} label={T.tileRunoff} />
+      <Tile value={summary.runoff} label={T.tileRunoff} />
+      {summary.ties > 0 && <Tile value={summary.ties} label={T.tileTies} />}
       <Tile value={summary.awaitingOfficial} label={T.tileAwaiting} />
       <Tile value={summary.counting} label={T.tileCounting} />
       <Tile value={summary.waiting} label={T.tileWaiting} />

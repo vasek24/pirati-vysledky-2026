@@ -206,3 +206,19 @@ test('M1/L6: a Pirate-backed entry absent from the XML warns pirate-backed-missi
   const gone = frozenText.replace(/<KANDIDAT PORADOVE_CISLO="1" [^>]*Plevn[^>]*\/>/, '')
   expect(run(gone, R2 + DAY).warnings).toContain('pirate-backed-missing:3:1')
 })
+
+test('L6: suppressedByClock is true only when `now` alone zeroed counted data (file generated after the close), and is not part of the snapshot', () => {
+  const clockR2 = run(finalText, R1 + 3600000) // generated after R2, our clock before it
+  expect(clockR2.warnings).toContain('r2-data-suppressed')
+  expect(clockR2.suppressedByClock).toBe(true)
+  expect(Object.keys(clockR2)).not.toContain('suppressedByClock')
+  expect(JSON.stringify(clockR2)).not.toContain('suppressedByClock')
+  // the file itself is pre-close (generated before R1), whatever our clock says: not our clock's doing
+  expect(run(rawFinal, R2 + DAY).suppressedByClock).toBe(false)
+  expect(run(rawFinal, R1 - 3600000).suppressedByClock).toBe(false)
+  // nothing suppressed, or nothing counted to suppress
+  expect(run(finalText, R2 + DAY).suppressedByClock).toBe(false)
+  expect(run(frozenText, R1 - 3600000).suppressedByClock).toBe(false)
+  // generated between the closes, clock before R1 -> R1 gate by clock (the file carries round-1 data)
+  expect(run(finalBetween, R1 - 3600000).suppressedByClock).toBe(true)
+})

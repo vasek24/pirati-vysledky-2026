@@ -82,7 +82,7 @@ function memStorage(initial = {}) {
 }
 
 // `build` runs on every feed.build({ signal, validators }); `feed` replaces the fake feed
-function setup({ build, feed: realFeed, random = () => 0.5, base = BASE, storage, time = T0 } = {}) {
+function setup({ build, feed: realFeed, random = () => 0.5, base = BASE, storage, time = T0, requireManifestSet } = {}) {
   vi.setSystemTime(time)
   const st = storage ?? memStorage()
   const feed = realFeed ?? { build: vi.fn(build ?? (async () => ok(snap(), 1))), invalidate: vi.fn() }
@@ -99,6 +99,7 @@ function setup({ build, feed: realFeed, random = () => 0.5, base = BASE, storage
     pollsCloseR1: R1,
     pollsCloseR2: R2,
     waitUntil,
+    ...(requireManifestSet === undefined ? {} : { requireManifestSet }),
   })
   return { r, st, feed, log, waitUntil }
 }
@@ -1202,4 +1203,220 @@ it('idle polls every 60 s from 5 min before the round-2 polls close (first round
   expect(computeNextRefreshAt({ ...base, refreshedAt: close - 3_600_000, now: close - 3_600_000 })).toBe(close - 3_600_000 + REFRESH.IDLE_MS)
   expect(computeNextRefreshAt({ ...base, refreshedAt: close - 60_000, now: close - 60_000 })).toBe(close - 60_000 + REFRESH.WAITING_MS)
   expect(computeNextRefreshAt({ ...base, refreshedAt: close + 3_600_000, now: close + 3_600_000 })).toBe(close + 3_600_000 + REFRESH.WAITING_MS)
+})
+
+// ---- review fixes (M1, L5, L6, L7) -----------------------------------------------------------
+
+describe('M1: snapshot and meta never diverge in storage', () => {
+  // upstream file that answers 304 only to its current ETag (a real server)
+  function server(initial) {
+    const state = { snap: initial.snap, etag: initial.etag }
+    let n = 0
+    const build = vi.fn(async ({ validators }) => (validators?.etag === state.etag
+      ? { notModified: true }
+      : ok(structuredClone(state.snap), ++n, state.etag)))
+    return { state, build }
+  }
+  const file = (generatedMs, votes1) => snap({ generated: csu(generatedMs), obvody: [{ n: 3, z: 10, c: 10, votes: [votes1, 50] }] })
+  const votes1Of = (res) => parse(res).obvody[0].candidates[0].votes1
+  const storedVotes1 = (st) => JSON.parse(st.data.get('snapshot')).obvody[0].candidates[0].votes1
+  const metaOnlyPuts = (st) => st.put.mock.calls.filter(([o]) => !('snapshot' in o))
+
+  it('probe1: failed put of B, then a refresh, then an eviction must not serve A as fresh', async () => {
+    const up = server({ snap: file(T0 - 60 * S, 100), etag: '"A"' })
+    const a = setup({ build: up.build })
+    await a.r.get()
+    expect(a.st.data.get('meta').validators.etag).toBe('"A"')
+
+    up.state.snap = file(T0 + 10 * MIN, 120)
+    up.state.etag = '"B"'
+    a.st.put.mockRejectedValueOnce(new Error('put failed'))
+    await advance(10 * MIN)
+    await poll(a.r) // B installed in memory, its put fails
+    expect(events(a.log, 'storage-put-failed')).toHaveLength(1)
+    expect(votes1Of(await a.r.get())).toBe(120)
+    expect(storedVotes1(a.st)).toBe(100) // storage still holds A (and A's meta)
+
+    // the next fetch after a failed put is unconditional (a 304 for "B" would only re-confirm memory)
+    await advance(10 * MIN)
+    await poll(a.r)
+    expect(sentValidators(a.feed, 2)).toBeUndefined()
+    expect(storedVotes1(a.st)).toBe(120) // a full put succeeded
+    expect(a.st.data.get('meta').validators.etag).toBe('"B"')
+
+    // eviction: a new refresher rehydrates from storage and serves the right numbers
+    await advance(11 * MIN)
+    const b = setup({ storage: a.st, time: Date.now(), build: up.build })
+    await b.r.get()
+    await settle()
+    const res = await b.r.get()
+    expect(parse(res)).toMatchObject({ stale: false })
+    expect(votes1Of(res)).toBe(120)
+  })
+
+  it('a put that fails after a 304 was answered: no meta-only put in between, eviction refetches in full', async () => {
+    const up = server({ snap: file(T0 - 60 * S, 100), etag: '"A"' })
+    const a = setup({ build: up.build })
+    await a.r.get()
+
+    up.state.snap = file(T0 + 10 * MIN, 120)
+    up.state.etag = '"B"'
+    let rejectPut
+    a.st.put.mockImplementationOnce(() => new Promise((_, reject) => { rejectPut = reject })) // B's put is in flight
+    await advance(10 * MIN)
+    await poll(a.r) // B in memory, full put pending
+    await advance(10 * MIN)
+    await poll(a.r) // conditional with "B" -> 304 while the put is still pending
+    expect(sentValidators(a.feed, 2)).toEqual({ etag: '"B"', lastModified: null })
+    expect(metaOnlyPuts(a.st)).toHaveLength(0) // the 304 did not write meta next to the old snapshot
+    rejectPut(new Error('put failed'))
+    await settle()
+    expect(events(a.log, 'storage-put-failed')).toHaveLength(1)
+    expect(storedVotes1(a.st)).toBe(100)
+    expect(a.st.data.get('meta').validators.etag).toBe('"A"') // storage is still the consistent A pair
+
+    await advance(11 * MIN)
+    const b = setup({ storage: a.st, time: Date.now(), build: up.build })
+    await b.r.get()
+    await settle()
+    expect(sentValidators(b.feed, 0)).toEqual({ etag: '"A"', lastModified: null }) // A's validators, A's snapshot
+    expect(votes1Of(await b.r.get())).toBe(120) // upstream has B: a 200, not a 304 on a wrong pair
+    expect(parse(await b.r.get()).stale).toBe(false)
+  })
+
+  it('after a failed put, meta-only puts stay off until a full put succeeds, then resume', async () => {
+    const up = server({ snap: file(T0 - 60 * S, 100), etag: '"A"' })
+    const a = setup({ build: up.build })
+    await a.r.get()
+    up.state.snap = file(T0 + 10 * MIN, 120)
+    up.state.etag = '"B"'
+    a.st.put.mockRejectedValueOnce(new Error('put failed'))
+    await advance(10 * MIN)
+    await poll(a.r)
+    // the unconditional refetch installs B again: full put (succeeds) -> clean
+    await advance(10 * MIN)
+    await poll(a.r)
+    expect(metaOnlyPuts(a.st)).toHaveLength(0)
+    await advance(10 * MIN)
+    await poll(a.r) // conditional "B" -> 304 -> meta-only put is allowed again
+    expect(metaOnlyPuts(a.st)).toHaveLength(1)
+    expect(a.st.data.get('meta').validators.etag).toBe('"B"')
+    expect(storedVotes1(a.st)).toBe(120)
+  })
+
+  it('a synchronously throwing put is handled the same way', async () => {
+    const up = server({ snap: file(T0 - 60 * S, 100), etag: '"A"' })
+    const a = setup({ build: up.build })
+    await a.r.get()
+    up.state.snap = file(T0 + 10 * MIN, 120)
+    up.state.etag = '"B"'
+    a.st.put.mockImplementationOnce(() => { throw new Error('sync boom') })
+    await advance(10 * MIN)
+    await poll(a.r)
+    expect(events(a.log, 'storage-put-failed')).toHaveLength(1)
+    await advance(10 * MIN)
+    await poll(a.r)
+    expect(sentValidators(a.feed, 2)).toBeUndefined()
+  })
+})
+
+describe('L5: a permanent older response turns stale on', () => {
+  const olderBuild = () => {
+    let n = 0
+    return async () => (n++ === 0 ? ok(snap({ generated: csu(T0 + 10 * S) }), 1) : ok(snap({ generated: csu(T0 + 5 * S) }), n))
+  }
+
+  it('stale:false until OLDER_ERROR_MS, stale:true from then on, cleared by the next ok install', async () => {
+    let newer = false
+    const base = olderBuild()
+    const { r } = setup({ build: async (a) => (newer ? ok(snap({ generated: csu(Date.now()), z: 6 }), 99) : base(a)) })
+    await r.get()
+    await advance(71 * S)
+    const first = Date.now()
+    for (let i = 0; Date.now() - first < REFRESH.OLDER_ERROR_MS - 30 * S; i++) {
+      await poll(r)
+      await advance(20 * S)
+    }
+    expect(parse(await r.get()).stale).toBe(false)
+    for (let i = 0; i < 6; i++) {
+      await poll(r)
+      await advance(20 * S)
+    }
+    expect(parse(await r.get())).toMatchObject({ stale: true })
+    newer = true
+    await advance(21 * S)
+    await poll(r)
+    expect(parse(await r.get())).toMatchObject({ stale: false })
+  })
+})
+
+describe('L6: a snapshot zeroed by our own clock is installed without validators', () => {
+  it('suppressedByClock → null validators in memory and meta; the next fetch is unconditional; the next ok restores them', async () => {
+    const { r, st, feed } = setup({
+      build: script(
+        { ...ok(snap(), 1, '"zeroed"'), suppressedByClock: true },
+        ok(snap({ generated: csu(T0 + 2 * MIN), z: 6 }), 2, '"fixed"'),
+        { notModified: true },
+      ),
+    })
+    await r.get()
+    expect(st.data.get('meta').validators).toEqual({ etag: null, lastModified: null })
+    await advance(61 * S)
+    await poll(r)
+    expect(sentValidators(feed, 1)).toBeUndefined()
+    expect(st.data.get('meta').validators).toEqual({ etag: '"fixed"', lastModified: null })
+    await advance(61 * S)
+    await poll(r)
+    expect(sentValidators(feed, 2)).toEqual({ etag: '"fixed"', lastModified: null })
+  })
+
+  it('a normal install keeps its validators', async () => {
+    const { r, st } = setup({ build: async () => ({ ...ok(snap(), 1, '"keep"'), suppressedByClock: false }) })
+    await r.get()
+    expect(st.data.get('meta').validators).toEqual({ etag: '"keep"', lastModified: null })
+  })
+
+  it('the same holds for a quarantine-accepted install', async () => {
+    let n = 0
+    const { r, st, log } = setup({
+      random: () => 0,
+      build: async () => {
+        n += 1
+        if (n === 1) return ok(snap(), 1, '"g"')
+        return { ...ok(snap({ generated: csu(T0 + 30 * S), votes: [40, 50] }), n, '"c"'), suppressedByClock: true }
+      },
+    })
+    await r.get()
+    await advance(61 * S)
+    for (let i = 0; i < 12 && !events(log, 'quarantine-accepted').length; i++) {
+      await poll(r)
+      await advance(20 * S)
+    }
+    expect(events(log, 'quarantine-accepted')).toHaveLength(1)
+    expect(st.data.get('meta').validators).toEqual({ etag: null, lastModified: null })
+  })
+})
+
+describe('L7: the obvod set against the manifest, with no good snapshot', () => {
+  const differing = () => ({ ...snap(), warnings: ['obvody-set-differs-from-manifest'] })
+
+  it('requireManifestSet: a cold start with a differing set is a hard reject (503), nothing installed or stored', async () => {
+    const { r, st, log } = setup({ requireManifestSet: true, build: async () => ok(differing(), 1) })
+    const res = await r.get()
+    expect(res.status).toBe(503)
+    expect(st.put).not.toHaveBeenCalled()
+    expect(events(log, 'rejected')[0][1]).toMatchObject({ reason: 'obvody-set-differs-from-manifest' })
+  })
+
+  it('not required (default): the warning stays soft and the snapshot is published', async () => {
+    const { r } = setup({ build: async () => ok(differing(), 1) })
+    const res = await r.get()
+    expect(res.status).toBe(200)
+    expect(parse(res).warnings).toContain('obvody-set-differs-from-manifest')
+  })
+
+  it('required, a matching set: published as usual', async () => {
+    const { r } = setup({ requireManifestSet: true, build: async () => ok(snap(), 1) })
+    expect((await r.get()).status).toBe(200)
+  })
 })

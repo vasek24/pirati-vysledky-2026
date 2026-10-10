@@ -7,6 +7,34 @@ import { derive } from './derive.js'
 
 export const USER_AGENT = 'pirati-senat-zaloha/0.1 (backup mirror; maintainer Vaclav Vislous +420777954389; manages this fork)'
 export const REQUEST_TIMEOUT_MS = 8000
+export const MAX_BODY_BYTES = 5_000_000 // vysledky.xml is ~30–45 KB; anything near this is not the feed
+
+// Body as text, never more than MAX_BODY_BYTES (declared or streamed): a huge or looping
+// error page must not end up in Durable Object memory.
+async function readCapped(res) {
+  const tooLarge = () => new Error(`response larger than ${MAX_BODY_BYTES} bytes`)
+  const declared = Number(res.headers.get('content-length'))
+  if (Number.isFinite(declared) && declared > MAX_BODY_BYTES) {
+    res.body?.cancel().catch(() => {})
+    throw tooLarge()
+  }
+  if (!res.body) return res.text()
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let text = ''
+  let total = 0
+  for (;;) {
+    const { done, value } = await reader.read()
+    if (done) break
+    total += value.byteLength
+    if (total > MAX_BODY_BYTES) {
+      await reader.cancel().catch(() => {})
+      throw tooLarge()
+    }
+    text += decoder.decode(value, { stream: true })
+  }
+  return text + decoder.decode()
+}
 
 export function createSenatFeed({
   baseUrl, fetchImpl = fetch, userAgent = USER_AGENT, manifest, now, pollsCloseR1, pollsCloseR2,
@@ -25,7 +53,9 @@ export function createSenatFeed({
     }
     try {
       const res = await fetchImpl(url, { headers, signal: ac.signal })
-      const text = res.status === 200 ? await res.text() : null
+      let text = null
+      if (res.status === 200) text = await readCapped(res)
+      else res.body?.cancel().catch(() => {}) // never read: free the connection
       return { res, text }
     } catch (error) {
       throw new Error(`upstream request failed: ${error?.message || error}`)
@@ -47,8 +77,11 @@ export function createSenatFeed({
       const id = ++fetchId
 
       let snapshot
+      let suppressedByClock
       try {
-        snapshot = derive(normalize(parseResultsXml(text), { manifest, now: now(), pollsCloseR1, pollsCloseR2 }))
+        const normalized = normalize(parseResultsXml(text), { manifest, now: now(), pollsCloseR1, pollsCloseR2 })
+        suppressedByClock = normalized.suppressedByClock === true
+        snapshot = derive(normalized)
       } catch (error) {
         throw new Error(`upstream XML unusable: ${error?.message || error}`)
       }
@@ -56,6 +89,8 @@ export function createSenatFeed({
         snapshot,
         validators: { etag: res.headers.get('etag'), lastModified: res.headers.get('last-modified') },
         fetchId: id,
+        // zeros caused by our clock being behind a close: the refresher drops the validators
+        suppressedByClock,
       }
     },
 

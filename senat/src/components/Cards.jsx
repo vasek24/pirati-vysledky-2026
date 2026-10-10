@@ -1,16 +1,19 @@
 import { T } from '../text.js'
 import { fullName, nf, pc } from '../format.js'
-import { currentRound, pctOf, pirateCards, progressOf, votesOf } from '../view.js'
+import { isOutOfRunoff, pctOf, pirateCards, progressOf, rankOf, roundOf, votesOf } from '../view.js'
 import { Chip, Relation, Why } from './Chip.jsx'
 
 function Card({ o, c, selected, onSelect }) {
-  const round = currentRound(o)
+  const round = roundOf(o, c)
   const r = o.rounds[round]
   const v = votesOf(o, c)
   const show = v != null
   const counted = r.okrskyZprac > 0
   const pct = show ? pctOf(o, c) : 0
   const prog = Math.round(progressOf(r))
+  const rank = rankOf(o, c)
+  const rankText = !(show && counted && rank) ? T.noRank : isOutOfRunoff(o, c) ? T.rankRound1(rank) : T.rank(rank)
+  const roundPrefix = round === 2 ? T.roundTwoPrefix : isOutOfRunoff(o, c) ? T.roundOnePrefix : ''
   return (
     <button
       type="button"
@@ -30,13 +33,13 @@ function Card({ o, c, selected, onSelect }) {
       <div className="snt-big">
         <b className="snt-num">{show ? nf(v) : '0'}</b>
         <span className="snt-num">{show && counted ? pc(pct) : '0,0 %'}</span>
-        <span className="snt-rk">{show && counted && c.rank ? T.rank(c.rank) : T.noRank}</span>
+        <span className="snt-rk">{rankText}</span>
       </div>
       <div className="snt-bar" aria-hidden="true"><i style={{ width: `${Math.min(100, pct)}%` }} /></div>
       <div><Chip o={o} c={c} /></div>
       <Why o={o} c={c} />
       <div className="snt-prog snt-num">
-        <span>{round === 2 ? T.roundTwoPrefix : ''}{T.progress(nf(r.okrskyZprac), nf(r.okrskyCelkem), prog)}</span>
+        <span>{roundPrefix}{T.progress(nf(r.okrskyZprac), nf(r.okrskyCelkem), prog)}</span>
         <div className="snt-bar" aria-hidden="true"><i style={{ width: `${prog}%`, background: 'var(--adv)' }} /></div>
       </div>
     </button>

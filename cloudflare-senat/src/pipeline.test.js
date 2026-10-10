@@ -82,3 +82,13 @@ test('H1 end to end: a pre-close test file fetched long after both closes publis
   expect(s.warnings).toEqual(['pre-close-data-suppressed', 'r2-data-suppressed'])
   expect(s.summary).toMatchObject({ obvody: 27, decided: 0, runoff: 0, waiting: 27 })
 })
+
+test('L7: a cold start with an obvod missing from the XML is a hard reject only when the set is required; an empty manifest never rejects', () => {
+  const renamed = FROZEN.replace('<OBVOD CISLO="3" NAZEV="Cheb">', '<OBVOD CISLO="4" NAZEV="Cheb">')
+  const s = build(renamed, manifest, AFTER)
+  expect(s.warnings).toContain('obvody-set-differs-from-manifest')
+  expect(validateCandidate(s, null, { now: AFTER })).toEqual({ outcome: 'ok', quarantinable: false })
+  expect(validateCandidate(s, null, { now: AFTER, requireManifestSet: true })).toMatchObject({ outcome: 'rejected', reason: 'obvody-set-differs-from-manifest', quarantinable: false })
+  const none27 = build(renamed, none, AFTER)
+  expect(validateCandidate(none27, null, { now: AFTER, requireManifestSet: true }).outcome).toBe('ok')
+})

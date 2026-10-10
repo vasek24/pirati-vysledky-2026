@@ -341,3 +341,30 @@ describe('snapshotHash', () => {
         expect(snapshotHash(edit(a, (s) => { s.warnings.push('x'); }))).not.toBe(snapshotHash(a));
     });
 });
+
+describe('validateCandidate: L7 manifest obvod set on a cold start (ctx.requireManifestSet)', () => {
+    const W = 'obvody-set-differs-from-manifest';
+    const differs = mk({ warnings: [W] });
+    const strict = { now: T1, requireManifestSet: true };
+
+    it('no good + requireManifestSet === true + the normalize warning = hard reject, never quarantinable', () => {
+        expect(validateCandidate(differs, null, strict)).toEqual(rej(W, false));
+    });
+
+    it('without the flag (or with a truthy non-true value) the warning stays soft', () => {
+        expect(validateCandidate(differs, null, { now: T1 })).toEqual({ outcome: 'ok', quarantinable: false });
+        expect(validateCandidate(differs, null, { now: T1, requireManifestSet: false })).toEqual({ outcome: 'ok', quarantinable: false });
+        expect(validateCandidate(differs, null, { now: T1, requireManifestSet: 1 })).toEqual({ outcome: 'ok', quarantinable: false });
+        expect(validateCandidate(differs, null)).toEqual({ outcome: 'ok', quarantinable: false });
+    });
+
+    it('no warning (same set, or an empty manifest, for which normalize emits none) passes even with the flag', () => {
+        expect(validateCandidate(mk(), null, strict)).toEqual({ outcome: 'ok', quarantinable: false });
+        expect(validateCandidate(mk({ warnings: ['sum-mismatch:3:1'] }), null, strict)).toEqual({ outcome: 'ok', quarantinable: false });
+    });
+
+    it('with a good snapshot the structural checks decide, not this one', () => {
+        const good = mk();
+        expect(validateCandidate(differs, good, { ...ctx(), ...strict })).toEqual({ outcome: 'ok', quarantinable: false });
+    });
+});
