@@ -234,6 +234,10 @@ function CouncilMenu({ demo }) {
                                         {demo ? 'zpět na skutečná data z volby.gov.cz' : 'simulace večera z dat 2022 — na vyzkoušení'}
                                     </div>
                                 </a>
+                                <a href="https://volby.dg12.cz" className="block rounded-xl px-3 py-2.5 hover:bg-[#FFF6D1] text-neutral-800">
+                                    <div className="text-sm font-semibold">← Všechny volby 2026</div>
+                                    <div className="text-xs text-neutral-500">Praha, města a Senát — volby.dg12.cz</div>
+                                </a>
                             </div>
                         </nav>
                         <div className="px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom))] border-t border-neutral-100 text-[11px] text-neutral-500 leading-relaxed">
