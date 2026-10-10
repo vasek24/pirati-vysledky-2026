@@ -77,6 +77,13 @@ describe('wholeCouncils', () => {
         expect(councils.get(581330).druh).toBe(1);
         expect(councils.size).toBe(6);
     });
+
+    it('includePrague keeps the DRUHZASTUP 4 council (extract councils.csv) but still drops TYPZASTUP 2', () => {
+        const withPrague = wholeCouncils(RZC, { includePrague: true });
+        expect(withPrague.get(554782)).toMatchObject({ druh: 4, name: 'Praha hl.m.' });
+        expect(withPrague.has(500054)).toBe(false);
+        expect(withPrague.size).toBe(councils.size + 1);
+    });
 });
 
 describe('matchOwnerTowns', () => {

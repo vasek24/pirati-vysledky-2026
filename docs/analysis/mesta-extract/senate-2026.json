@@ -1,0 +1,112 @@
+{
+  "obvody": [
+    {
+      "obvod": 3,
+      "nazevObvodu": "Cheb"
+    },
+    {
+      "obvod": 6,
+      "nazevObvodu": "Louny"
+    },
+    {
+      "obvod": 9,
+      "nazevObvodu": "Plzeň-město"
+    },
+    {
+      "obvod": 12,
+      "nazevObvodu": "Strakonice"
+    },
+    {
+      "obvod": 15,
+      "nazevObvodu": "Pelhřimov"
+    },
+    {
+      "obvod": 18,
+      "nazevObvodu": "Příbram"
+    },
+    {
+      "obvod": 21,
+      "nazevObvodu": "Praha 5"
+    },
+    {
+      "obvod": 24,
+      "nazevObvodu": "Praha 9"
+    },
+    {
+      "obvod": 27,
+      "nazevObvodu": "Praha 1"
+    },
+    {
+      "obvod": 30,
+      "nazevObvodu": "Kladno"
+    },
+    {
+      "obvod": 33,
+      "nazevObvodu": "Děčín"
+    },
+    {
+      "obvod": 36,
+      "nazevObvodu": "Česká Lípa"
+    },
+    {
+      "obvod": 39,
+      "nazevObvodu": "Trutnov"
+    },
+    {
+      "obvod": 42,
+      "nazevObvodu": "Kolín"
+    },
+    {
+      "obvod": 45,
+      "nazevObvodu": "Hradec Králové"
+    },
+    {
+      "obvod": 48,
+      "nazevObvodu": "Rychnov nad Kněžnou"
+    },
+    {
+      "obvod": 51,
+      "nazevObvodu": "Žďár nad Sázavou"
+    },
+    {
+      "obvod": 54,
+      "nazevObvodu": "Znojmo"
+    },
+    {
+      "obvod": 57,
+      "nazevObvodu": "Vyškov"
+    },
+    {
+      "obvod": 60,
+      "nazevObvodu": "Brno-město"
+    },
+    {
+      "obvod": 63,
+      "nazevObvodu": "Přerov"
+    },
+    {
+      "obvod": 66,
+      "nazevObvodu": "Litovel"
+    },
+    {
+      "obvod": 69,
+      "nazevObvodu": "Frýdek-Místek"
+    },
+    {
+      "obvod": 72,
+      "nazevObvodu": "Ostrava-město"
+    },
+    {
+      "obvod": 75,
+      "nazevObvodu": "Karviná"
+    },
+    {
+      "obvod": 78,
+      "nazevObvodu": "Zlín"
+    },
+    {
+      "obvod": 81,
+      "nazevObvodu": "Uherské Hradiště"
+    }
+  ]
+}

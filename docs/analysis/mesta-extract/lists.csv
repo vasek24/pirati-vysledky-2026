@@ -1,0 +1,863 @@
+OKRES,KODZASTUP,NAZEVZAST,COBVODU,POR_STR_HL,OSTRANA,VSTRANA,NAZEVCELK,ZKRATKAO30,ZKRATKAO8,POCSTR_SLO,SLOZENI
+7102,500496,Olomouc,1,1,1245,1245,PŘÍSAHA občanské hnutí,PŘÍSAHA občanské hnutí,PŘÍSAHA,1,1245
+7102,500496,Olomouc,1,2,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+7102,500496,Olomouc,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+7102,500496,Olomouc,1,4,385,385,LEVICOVÉ OLOMOUCKO (LOL),LEVICOVÉ OLOMOUCKO (LOL),KSČM+SDS+NK,3,"047,074,080"
+7102,500496,Olomouc,1,5,1192,1192,spOLečně,spOLečně,spOL,1,1192
+7102,500496,Olomouc,1,6,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+7102,500496,Olomouc,1,7,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+7102,500496,Olomouc,1,8,1486,1486,"SPD, Svobodní a Trikolora","SPD, Svobodní a Trikolora",Svob+SPD+Trikol,3,"714,1114,1227"
+7102,500496,Olomouc,1,9,1369,1369,"MILUJEME OLOMOUC - Piráti, TOP 09, Zelení","MILUJEME OLOMOUC - Piráti, TOP 09, Zelení",Zelen+Pirát+TOP,3,"005,720,721"
+7102,500496,Olomouc,1,10,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","DSZ - ZA PRÁVA ZVÍŘAT, sdružení DSZ + NK",DSZ+NK,2,"080,715"
+7102,500496,Olomouc,1,11,1039,1039,ProOlomouc,ProOlomouc,ProOl,1,1039
+7102,500496,Olomouc,1,12,55,55,"Koruna Česká (monarchistická strana Čech, Moravy a Slezska)","Koruna Česká (monarch.str.Čech, Moravy a Slezska)",Koruna Česká,1,055
+7102,503444,Litovel,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+7102,503444,Litovel,1,2,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+7102,503444,Litovel,1,3,901,90,Sdružení nezávislých kandidátů Litovel,Sdružení nezávislých kandidátů Litovel,SNK,1,080
+7102,503444,Litovel,1,4,902,90,NAŠE LITOVELSKO,NAŠE LITOVELSKO,SNK,1,080
+7102,503444,Litovel,1,5,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+7102,503444,Litovel,1,6,1695,1695,Občané pro Litovel s podporou Naše Česko,Občané pro Litovel s podporou Naše Česko,NČ+NK,2,"080,1722"
+7102,505587,Uničov,1,1,1227,1227,TRIKOLORA – UNIČOV PATŘÍ VÁM,TRIKOLORA – UNIČOV PATŘÍ VÁM,Trikolora,1,1227
+7102,505587,Uničov,1,2,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+7102,505587,Uničov,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+7102,505587,Uničov,1,4,340,340,Spojené generace pro Uničov,Spojené generace pro Uničov,KDU-ČSL+STAN,2,"001,166"
+7102,505587,Uničov,1,5,387,387,"Uničov náš domov, s podporou KSČM","Uničov náš domov, s podporou KSČM",KSČM+NK,2,"047,080"
+7102,505587,Uničov,1,6,541,541,Česká pirátská strana,Česká pirátská strana,Piráti+NK,2,"080,720"
+7102,505587,Uničov,1,7,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+8105,505927,Opava,1,1,364,364,Zelená pro Opavu,Zelená pro Opavu,Zelení+NK,2,"005,080"
+8105,505927,Opava,1,2,1807,1807,OK Změna pro Opavu,OK Změna pro Opavu,OK+NK,2,"080,1287"
+8105,505927,Opava,1,3,389,389,ODS + nezávislé osobnosti,ODS + nezávislé osobnosti,ODS+NK,2,"053,080"
+8105,505927,Opava,1,4,231,231,ŽIJEME OPAVOU!,ŽIJEME OPAVOU!,SOCDEM+KSČM,2,"007,047"
+8105,505927,Opava,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+8105,505927,Opava,1,6,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+8105,505927,Opava,1,7,1331,1331,VIZE PRO OPAVU,VIZE PRO OPAVU,Piráti+TOP09+NK,3,"080,720,721"
+8105,505927,Opava,1,8,1305,1305,Svoboda a přímá demokracie (SPD) a nezávislí kandidáti,SPD a nezávislí kandidáti,SPD+NK,2,"080,1114"
+8105,505927,Opava,1,9,1188,1188,Občané městských částí Opavy,Občané městských částí Opavy,OMČO,1,1188
+8105,507016,Hlučín,1,1,470,470,OBČANÉ PRO HLUČÍN,OBČANÉ PRO HLUČÍN,STAN+NK,2,"080,166"
+8105,507016,Hlučín,1,2,355,355,Lidovci a nezávislí Hlučín,Lidovci a nezávislí Hlučín,KDU-ČSL+NK,2,"001,080"
+8105,507016,Hlučín,1,3,387,387,Hlučínská levice - sdružení KSČM a nezávislých kandidátů,Hlučínská levice - sdr. KSČM a NK,KSČM+NK,2,"047,080"
+8105,507016,Hlučín,1,4,477,477,Živý Hlučín,Živý Hlučín,Svobodní+NK,2,"080,714"
+8105,507016,Hlučín,1,5,129,129,SNK Evropští demokraté,SNK Evropští demokraté,SNK ED,1,129
+8105,507016,Hlučín,1,6,523,523,My jsme ODS Hlučín,My jsme ODS Hlučín,ODS+TOP 09+NK,3,"053,080,721"
+8105,507016,Hlučín,1,7,541,541,Hlučíňáci,Hlučíňáci,Piráti+NK,2,"080,720"
+8105,507016,Hlučín,1,8,768,768,ANO 2011,ANO 2011,ANO,1,768
+8105,507016,Hlučín,1,9,1537,1537,Změna pro Hlučín,Změna pro Hlučín,PŘÍSAHA+NK,2,"080,1245"
+7104,511382,Přerov,1,1,461,461,"Společně pro Přerov, sdružení nezávislých kandidátů a NEZÁVISLÉ VOLBY","Společně pro Přerov, sdružení NK a NV",NV+NK,2,"080,163"
+7104,511382,Přerov,1,2,1483,1483,Změna pro Přerov,Změna pro Přerov,STAN+Piráti+NK,3,"080,166,720"
+7104,511382,Přerov,1,3,355,355,PŘEROVÁCI S PODPOROU NOVÝCH LIDOVCŮ,PŘEROVÁCI S PODPOROU NOVÝCH LIDOVCŮ,KDU-ČSL+NK,2,"001,080"
+7104,511382,Přerov,1,4,480,480,Za PROSPERITU města PŘEROVA a jeho místních částí,Za PROSPERITU města PŘEROVA a jeho místních částí,TOP 09+NK,2,"080,721"
+7104,511382,Přerov,1,5,1697,1697,Motoristé sobě + Svobodní,Motoristé sobě + Svobodní,Svobodní+AUTO,2,"714,1178"
+7104,511382,Přerov,1,6,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+7104,511382,Přerov,1,7,387,387,Levice a nestraníci pro Přerov,Levice a nestraníci pro Přerov,KSČM+NK,2,"047,080"
+7104,511382,Přerov,1,8,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+7104,511382,Přerov,1,9,768,768,ANO 2011,ANO 2011,ANO,1,768
+2101,529303,Benešov,1,1,532,532,Společně pro Benešov ANO 2011 a nezávislí kandidáti,Společně pro Benešov ANO 2011 a nez.kand.,ANO+NK,2,"080,768"
+2101,529303,Benešov,1,2,401,401,Volba pro Benešov,Volba pro Benešov,NEZ+NK,2,"080,088"
+2101,529303,Benešov,1,3,571,571,Piráti s podporou lidovců pro Benešov,Piráti s podporou lidovců pro Benešov,KDU+Piráti+NK,3,"001,080,720"
+2101,529303,Benešov,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+2101,529303,Benešov,1,5,495,495,SRDCEM PRO BENEŠOV,SRDCEM PRO BENEŠOV,TOP 09+STAN+NK,3,"080,166,721"
+2101,529303,Benešov,1,6,901,90,Benešov pro život,Benešov pro život,SNK,1,080
+2101,529303,Benešov,1,7,1840,1840,"SPD, Trikolora a PRO","SPD, Trikolora a PRO",SPD+Trik+PRO+NK,4,"080,1114,1227,1265"
+2101,529303,Benešov,1,8,387,387,Benešovská levice - KSČM a nezávislí kandidáti,Benešovská levice - KSČM a nezávislí kandidáti,KSČM+NK,2,"047,080"
+2101,530883,Vlašim,1,1,470,470,VOLBA PRO MĚSTO VLAŠIM,VOLBA PRO MĚSTO VLAŠIM,STAN+NK,2,"080,166"
+2101,530883,Vlašim,1,2,88,88,NEZÁVISLÍ,NEZÁVISLÍ,NEZ,1,088
+2101,530883,Vlašim,1,3,532,532,ANO 2011 a nezávislí kandidáti Vlašim,ANO 2011 a nezávislí kandidáti Vlašim,ANO+NK,2,"080,768"
+2101,530883,Vlašim,1,4,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+2101,530883,Vlašim,1,5,355,355,Vlašim je náš domov,Vlašim je náš domov,KDU-ČSL+NK,2,"001,080"
+2101,530883,Vlašim,1,6,541,541,Piráti pro Vlašim,Piráti pro Vlašim,Piráti+NK,2,"080,720"
+2101,530883,Vlašim,1,7,389,389,Naše Vlašim - ODS & nezávislé osobnosti,Naše Vlašim - ODS & nezávislé osobnosti,ODS+NK,2,"053,080"
+2102,531189,Hořovice,1,1,389,389,ODS Hořovice,ODS Hořovice,ODS+NK,2,"053,080"
+2102,531189,Hořovice,1,2,470,470,NAŠE HOŘOVICE,NAŠE HOŘOVICE,STAN+NK,2,"080,166"
+2102,531189,Hořovice,1,3,532,532,ANO 2011 s podporou nezávislých kandidátů,ANO 2011 s podporou nezávislých kandidátů,ANO+NK,2,"080,768"
+2102,531189,Hořovice,1,4,181,181,Nestraníci,Nestraníci,Nestran.,1,181
+2102,531189,Hořovice,1,5,552,552,Hořovičtí s podporou Pirátů,Hořovičtí s podporou Pirátů,Piráti+LES+NK,3,"080,720,795"
+2102,531189,Hořovice,1,6,901,90,Sdružení nezávislých kandidátů HOROVIZE,Sdružení nezávislých kandidátů HOROVIZE,SNK,1,080
+2102,531189,Hořovice,1,7,112,112,MÍSTNÍ HNUTÍ NEZÁVISLÝCH ZA HARMONICKÝ ROZVOJ OBCÍ A MĚST,MÍSTNÍ HNUTÍ NEZ. ZA HARMONICKÝ ROZVOJ OBCÍ A MĚST,MÍSTNÍ HNHRM,1,112
+2103,532053,Kladno,1,1,727,727,VOLBA PRO KLADNO,VOLBA PRO KLADNO,VPK,1,727
+2103,532053,Kladno,1,2,474,474,"Za Kladno, které si můžeme dovolit! (sdružení KSČM, SOCDEM a nezávislých kandidátů )","Za Kladno, které si můžeme dovolit",SOCDEM+KSČM+NK,3,"007,047,080"
+2103,532053,Kladno,1,3,119,119,Unie pro sport a zdraví,Unie pro sport a zdraví,USZ,1,119
+2103,532053,Kladno,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+2103,532053,Kladno,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+2103,532053,Kladno,1,6,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+2103,532053,Kladno,1,7,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+2103,532053,Kladno,1,8,1696,1696,KLADEŇÁCI,KLADEŇÁCI,KDUZelSTANPirNK,5,"001,005,080,166,720"
+2103,532053,Kladno,1,9,1693,1693,Svobodní,Svobodní,Svobo+Triko+PRO,3,"714,1227,1265"
+2103,532819,Slaný,1,1,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+2103,532819,Slaný,1,2,1332,1332,Sportovci - Unie pro sport a zdraví,Sportovci - Unie pro sport a zdraví,USZ+NK,2,"080,119"
+2103,532819,Slaný,1,3,340,340,LEPŠÍ SLANÝ (STAN A KDU-ČSL),LEPŠÍ SLANÝ (STAN A KDU-ČSL),KDU-ČSL+STAN,2,"001,166"
+2103,532819,Slaný,1,4,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK",Sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK,DSZ+NK,2,"080,715"
+2103,532819,Slaný,1,5,1722,1722,NAŠE ČESKO,NAŠE ČESKO,NČ,1,1722
+2103,532819,Slaný,1,6,480,480,Volba pro Slaný,Volba pro Slaný,TOP 09+NK,2,"080,721"
+2103,532819,Slaný,1,7,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+2103,532819,Slaný,1,8,768,768,ANO 2011,ANO 2011,ANO,1,768
+2103,532819,Slaný,1,9,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+2103,532819,Slaný,1,10,1500,1500,Občané města Slaného s podporou SEN21,Občané města Slaného s podporou SEN21,SEN 21+NK,2,"080,1187"
+2104,533165,Kolín,1,1,1748,1748,Budoucnost pro Kolín,Budoucnost pro Kolín,BPK,1,1748
+2104,533165,Kolín,1,2,470,470,ZMĚNA PRO KOLÍN,ZMĚNA PRO KOLÍN,STAN+NK,2,"080,166"
+2104,533165,Kolín,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+2104,533165,Kolín,1,4,687,687,"ODS, TOP 09 a Nestraníci","ODS, TOP 09 a Nestraníci",ODS+TOP 09,2,"053,721"
+2104,533165,Kolín,1,5,1971,1971,"Koalice - Svoboda a přímá demokracie (SPD), Komunistická strana Čech a Moravy, Sociální demokracie","Koalice SPD, KSČM, Sociální demokracie",SOCDEM+KSČM+SPD,3,"007,047,1114"
+2104,533165,Kolín,1,6,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+2104,533165,Kolín,1,7,1500,1500,Kolíňáci - SEN pro Kolín,Kolíňáci - SEN pro Kolín,SEN 21+NK,2,"080,1187"
+2104,533165,Kolín,1,8,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","Sdružení DSZ - ZA PRÁVA ZVÍŘAT, NK",DSZ+NK,2,"080,715"
+2104,533165,Kolín,1,9,355,355,VOLBA PRO KOLÍN,VOLBA PRO KOLÍN,KDU-ČSL+NK,2,"001,080"
+2105,533955,Kutná Hora,1,1,371,371,Město pro lidi a osobnosti Kutné Hory,Město pro lidi a osobnosti Kutné Hory,SOCDEM+NK,2,"007,080"
+2105,533955,Kutná Hora,1,2,1833,1833,"LIPISTAN - LIDOVCI, PIRÁTI, STAROSTOVÉ, NEZÁVISLÍ","LIPISTAN - LIDOVCI, PIRÁTI, STAROSTOVÉ, NEZÁVISLÍ",KDU+STAN+Pir+NK,4,"001,080,166,720"
+2105,533955,Kutná Hora,1,3,1211,1211,Alternativa pro Vás,Alternativa pro Vás,ApV,1,1211
+2105,533955,Kutná Hora,1,4,768,768,ANO 2011,ANO 2011,ANO,1,768
+2105,533955,Kutná Hora,1,5,1491,1491,Lidé z praxe: SPD s podporou Trikolory a nezávislých,Lidé z praxe: SPD s podporou Trikolory a nezávisl.,SPD+Trikol+NK,3,"080,1114,1227"
+2105,533955,Kutná Hora,1,6,523,523,Naše Kutná Hora (ODS s podporou nezávislých kandidátů a TOP 09),Naše Kutná Hora (ODS s podporou NK a TOP 09),ODS+TOP 09+NK,3,"053,080,721"
+2106,534676,Mělník,1,1,1925,1925,ANO 2011 a Svobodní,ANO 2011 a Svobodní,Svobodní+ANO,2,"714,768"
+2106,534676,Mělník,1,2,497,497,Mělník 2022 s podporou Strany soukromníků České republiky,Mělník 2022 s podporou Strany soukromníků ČR,Soukromníci+NK,2,"080,716"
+2106,534676,Mělník,1,3,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","DSZ - ZA PRÁVA ZVÍŘAT, sdružení DSZ a NK",DSZ+NK,2,"080,715"
+2106,534676,Mělník,1,4,1305,1305,Mělnický soutok s podporou SPD a nezávislých,Mělnický soutok s podporou SPD a nezávislých,SPD+NK,2,"080,1114"
+2106,534676,Mělník,1,5,1389,1389,MĚLNIČANÉ - MÁME RÁDI MĚLNÍK,MĚLNIČANÉ - MÁME RÁDI MĚLNÍK,SNK ED+STAN+NK,3,"080,129,166"
+2106,534676,Mělník,1,6,902,90,MLK - Moderní Lokální Kreativní,MLK - Moderní Lokální Kreativní,SNK,1,080
+2106,534676,Mělník,1,7,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+2106,534676,Mělník,1,8,1695,1695,Naše město s podporou hnutí Naše Česko a nezávislých kandidátů,Naše město s podporou hnutí NČ a nezávislých kand.,NČ+NK,2,"080,1722"
+2106,534676,Mělník,1,9,371,371,Mělník - City s podporou Karla Lojky,Mělník - City s podporou Karla Lojky,SOCDEM+NK,2,"007,080"
+2106,534676,Mělník,1,10,901,90,PRO MĚSTO,PRO MĚSTO,SNK,1,080
+2106,534951,Kralupy nad Vltavou,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+2106,534951,Kralupy nad Vltavou,1,2,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+2106,534951,Kralupy nad Vltavou,1,3,387,387,KRALUPSKÉ MOSTY,KRALUPSKÉ MOSTY,KSČM+NK,2,"047,080"
+2106,534951,Kralupy nad Vltavou,1,4,470,470,PELOTON KRALUPY,PELOTON KRALUPY,STAN+NK,2,"080,166"
+2106,534951,Kralupy nad Vltavou,1,5,1560,1560,Kralupy Nová VLna,Kralupy Nová VLna,Idealisté+NK,2,"080,1233"
+2106,534951,Kralupy nad Vltavou,1,6,1934,1934,Změna pro Kralupy,Změna pro Kralupy,LCH+NK,2,"080,1750"
+2106,535087,Neratovice,1,1,1688,1688,Volt Česko a nezávislí kandidáti MISE,Volt Česko a nezávislí kandidáti MISE,Volt+NK,2,"080,1272"
+2106,535087,Neratovice,1,2,470,470,NERATOVICE V POHYBU,NERATOVICE V POHYBU,STAN+NK,2,"080,166"
+2106,535087,Neratovice,1,3,480,480,Společně pro Neratovice,Společně pro Neratovice,TOP 09+NK,2,"080,721"
+2106,535087,Neratovice,1,4,1521,1521,BUDOUCNOST PRO NERATOVICE,BUDOUCNOST PRO NERATOVICE,Budoucnost+NK,2,"080,1232"
+2106,535087,Neratovice,1,5,901,90,Speciál Neratovice,Speciál Neratovice,SNK,1,080
+2106,535087,Neratovice,1,6,768,768,ANO 2011,ANO 2011,ANO,1,768
+2106,535087,Neratovice,1,7,389,389,NERATOVIČÁCI,NERATOVIČÁCI,ODS+NK,2,"053,080"
+2106,535087,Neratovice,1,8,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+2107,535419,Mladá Boleslav,1,1,411,411,Hlas pro Boleslav,Hlas pro Boleslav,VPM+NK,2,"080,113"
+2107,535419,Mladá Boleslav,1,2,523,523,ODS s podporou TOP 09 a nezávislých,ODS s podporou TOP 09 a nezávislých,ODS+TOP 09+NK,3,"053,080,721"
+2107,535419,Mladá Boleslav,1,3,1838,1838,"KSČM, STAČILO, NEZÁVISLÍ","KSČM, STAČILO, NEZÁVISLÍ",KSČM+Stačilo+NK,3,"047,080,1298"
+2107,535419,Mladá Boleslav,1,4,1370,1370,Šance pro Mladou Boleslav,Šance pro Mladou Boleslav,KDU+Zel+Pir+NK,4,"001,005,080,720"
+2107,535419,Mladá Boleslav,1,5,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+2107,535419,Mladá Boleslav,1,6,1071,1071,ANO 2011 + Volba pro Mladou Boleslav,ANO 2011 + Volba pro Mladou Boleslav,VpMB+ANO,2,"193,768"
+2107,535419,Mladá Boleslav,1,7,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+2107,535419,Mladá Boleslav,1,8,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,1,901,90,Naše dvojměstí,Naše dvojměstí,SNK,1,080
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,3,389,389,ODS a nezávislí pro Brandýs i Boleslav,ODS a nezávislí pro Brandýs i Boleslav,ODS+NK,2,"053,080"
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,4,785,785,ZDRAVÍ SPORT VZDĚLÁNÍ,ZDRAVÍ SPORT VZDĚLÁNÍ,PRO Zdraví,1,785
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,5,541,541,Piráti a Nezávislí,Piráti a Nezávislí,Piráti+NK,2,"080,720"
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,6,1030,1030,Podpora občanů,Podpora občanů,Podpora,1,1030
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,7,1315,1315,VY JSTE MĚSTO,VY JSTE MĚSTO,KDU+STAN+TOP09,3,"001,166,721"
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,8,1695,1695,Patrioti pro Brandýs a Boleslav s podporou Naše Česko,Patrioti pro Brandýs a Boleslav s podp. Naše Česko,NČ+NK,2,"080,1722"
+2109,538132,Čelákovice,1,1,470,470,"PROČ – PRO ČELÁKOVICE, STAROSTOVÉ A NEZÁVISLÍ","PROČ – PRO ČELÁKOVICE, STAROSTOVÉ A NEZÁVISLÍ",STAN+NK,2,"080,166"
+2109,538132,Čelákovice,1,2,1593,1593,Koalice ANO 2011 a hnutí Zdraví Sport Vzdělání,Koalice ANO 2011 a hnutí Zdraví Sport Vzdělání,ANO+PRO Zdraví,2,"768,785"
+2109,538132,Čelákovice,1,3,1577,1577,SPOLEČNĚ pro Čelákovice,SPOLEČNĚ pro Čelákovice,KDU+Piráti+TOP,3,"001,720,721"
+2109,538132,Čelákovice,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+2109,538728,Říčany,1,1,389,389,ZDRAVÉ ŘÍČANY,ZDRAVÉ ŘÍČANY,ODS+NK,2,"053,080"
+2109,538728,Říčany,1,2,1198,1198,Klidné město,Klidné město,KM,1,1198
+2109,538728,Říčany,1,3,540,540,Říčany srdcem,Říčany srdcem,KDUČSL+TOP09+NK,3,"001,080,721"
+2109,538728,Říčany,1,4,529,529,Piráti se Zelení a nestranní,Piráti se Zelení a nestranní,Zel.+Piráti+NK,3,"005,080,720"
+2109,538728,Říčany,1,5,119,119,Unie pro sport a zdraví Říčany,Unie pro sport a zdraví Říčany,USZ,1,119
+2110,539139,Černošice,1,1,449,449,Trojlístek,Trojlístek,SNK ED+NK,2,"080,129"
+2110,539139,Černošice,1,2,541,541,Futurista s podporou Pirátů,Futurista s podporou Pirátů,Piráti+NK,2,"080,720"
+2110,539139,Černošice,1,3,480,480,TOP 09 a nezávislí kandidáti,TOP 09 a nezávislí kandidáti,TOP 09+NK,2,"080,721"
+2110,539139,Černošice,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+2110,539139,Černošice,1,5,901,90,Věci černošické,Věci černošické,SNK,1,080
+2110,539627,Roztoky,1,1,470,470,SAKURA POD STANEM S PODPOROU SNK-ED,SAKURA POD STANEM S PODPOROU SNK-ED,STAN+NK,2,"080,166"
+2110,539627,Roztoky,1,2,1316,1316,SPOLEČNĚ pro Roztoky a Žalov,SPOLEČNĚ pro Roztoky a Žalov,SMS+NK,2,"080,1202"
+2110,539627,Roztoky,1,3,353,353,ZMĚNA pro Roztoky,ZMĚNA pro Roztoky,KDU-ČSL+ODS+NK,3,"001,053,080"
+2110,539627,Roztoky,1,4,480,480,TOP 09 a nezávislí pro Roztoky a Žalov s podporou Pirátů,TOP 09 a NK pro Roztoky a Žalov s podporou Pirátů,TOP 09+NK,2,"080,721"
+2110,539627,Roztoky,1,5,901,90,Roztoky sobě,Roztoky sobě,SNK,1,080
+2111,539911,Příbram,1,1,529,529,"Příbram zdola - sdružení Pirátů, Zelených a nezávislých kandidátů","Příbram zdola-sdr. Pirátů,Zelených a nez.kandidátů",Zel.+Piráti+NK,3,"005,080,720"
+2111,539911,Příbram,1,2,1535,1535,Svoboda a přímá demokracie (SPD) s podporou PRO Právo Respekt Odbornost,SPD a PRO Právo Respekt Odbornost,SPD+PRO,2,"1114,1265"
+2111,539911,Příbram,1,3,389,389,Příbramští patrioté ODS,Příbramští patrioté ODS,ODS+NK,2,"053,080"
+2111,539911,Příbram,1,4,495,495,SPOJENCI,SPOJENCI,TOP 09+STAN+NK,3,"080,166,721"
+2111,539911,Příbram,1,5,449,449,Příbramáci pro Příbram,Příbramáci pro Příbram,SNK ED+NK,2,"080,129"
+2111,539911,Příbram,1,6,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+2111,539911,Příbram,1,7,355,355,"Přátelé Příbrami a Březových Hor, KDU-ČSL","Přátelé Příbrami a Březových Hor, KDU-ČSL",KDU-ČSL+NK,2,"001,080"
+2111,539911,Příbram,1,8,1695,1695,Šance pro Příbram - Naše Česko,Šance pro Příbram - Naše Česko,NČ+NK,2,"080,1722"
+2111,539911,Příbram,1,9,768,768,ANO 2011,ANO 2011,ANO,1,768
+3101,544256,České Budějovice,1,1,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","DSZ - ZA PRÁVA ZVÍŘAT, sdružení DSZ a NK",DSZ+NK,2,"080,715"
+3101,544256,České Budějovice,1,2,1881,1881,Motoristé a Svobodní,Motoristé a Svobodní,SvobAUTOTrikoNK,4,"080,714,1178,1227"
+3101,544256,České Budějovice,1,3,540,540,Společně pro Budějovice (Lidovci a TOP 09),Společně pro Budějovice (Lidovci a TOP 09),KDUČSL+TOP09+NK,3,"001,080,721"
+3101,544256,České Budějovice,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3101,544256,České Budějovice,1,5,1916,1916,"PRO BUDĚJCE (koalice: KSČM, PRO, SOCDEM, ČSSD, ČSNS, Stačilo!)",PRO BUDĚJCE (koalice),NSSOKSČMČSSDPSt,6,"002,007,047,759,1265,1298"
+3101,544256,České Budějovice,1,6,1066,1066,Piráti a Budějčáci s podporou Zelených,Piráti a Budějčáci s podporou Zelených,Zelení+Piráti,2,"005,720"
+3101,544256,České Budějovice,1,7,596,596,OBČANÉ PRO BUDĚJOVICE A STAROSTOVÉ,OBČANÉ PRO BUDĚJOVICE A STAROSTOVÉ,STAN+HOPB,2,"166,753"
+3101,544256,České Budějovice,1,8,1722,1722,Naše Česko,Naše Česko,NČ,1,1722
+3101,544256,České Budějovice,1,9,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+3101,544256,České Budějovice,1,10,768,768,ANO 2011,ANO 2011,ANO,1,768
+7203,544841,Rožnov pod Radhoštěm,1,1,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+7203,544841,Rožnov pod Radhoštěm,1,2,389,389,Občanská demokratická strana a nezávislí kandidáti,Občanská demokratická strana a nezávislí kandidáti,ODS+NK,2,"053,080"
+7203,544841,Rožnov pod Radhoštěm,1,3,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+7203,544841,Rožnov pod Radhoštěm,1,4,541,541,Zdravý Rožnov s podporou Pirátů,Zdravý Rožnov s podporou Pirátů,Piráti+NK,2,"080,720"
+7203,544841,Rožnov pod Radhoštěm,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+7203,544841,Rožnov pod Radhoštěm,1,6,470,470,NEZÁVISLÍ ROŽNOVÁCI A STAN,NEZÁVISLÍ ROŽNOVÁCI A STAN,STAN+NK,2,"080,166"
+3103,545881,Jindřichův Hradec,1,1,541,541,Společně s Piráty,Společně s Piráty,Piráti+NK,2,"080,720"
+3103,545881,Jindřichův Hradec,1,2,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3103,545881,Jindřichův Hradec,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+3103,545881,Jindřichův Hradec,1,4,401,401,Nezávislí PRO HRADEC,Nezávislí PRO HRADEC,NEZ+NK,2,"080,088"
+3103,545881,Jindřichův Hradec,1,5,1838,1838,"Náš Hradec (koalice KSČM, Stačilo! a nezávislých kandidátů)","Náš Hradec (koalice KSČM, Stačilo! a nez. kand.)",KSČM+Stačilo+NK,3,"047,080,1298"
+3103,545881,Jindřichův Hradec,1,6,1722,1722,Naše Česko,Naše Česko,NČ,1,1722
+3103,545881,Jindřichův Hradec,1,7,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+3103,545881,Jindřichův Hradec,1,8,1687,1687,SPD + Motoristé + Svobodní + Trikolora + PRO = VELKÝ KŘÍŽEK PRO HRADEC,SPD+AUTO+Svob.+Trikol.+PRO=VELKÝ KŘÍŽEK PRO HRADEC,SvSPDAUTriPRONK,6,"080,714,1114,1178,1227,1265"
+3103,545881,Jindřichův Hradec,1,9,7,7,Sociální demokracie,Sociální demokracie,SOCDEM,1,007
+3103,545881,Jindřichův Hradec,1,10,1830,1830,VÝZVA PRO JINDŘICHŮV HRADEC a místní části,VÝZVA PRO JINDŘICHŮV HRADEC a místní části,VÝZVA+NK,2,"080,1704"
+6103,547492,Pelhřimov,1,1,532,532,ANO 2011 a nezávislí,ANO 2011 a nezávislí,ANO+NK,2,"080,768"
+6103,547492,Pelhřimov,1,2,1647,1647,"SPD, Svobodní, PRO a Trikolora v koalici","SPD, Svobodní, PRO a Trikolora v koalici",Svo+SPD+Tri+PRO,4,"714,1114,1227,1265"
+6103,547492,Pelhřimov,1,3,387,387,PELHŘIMÁCI S PODPOROU KSČM,PELHŘIMÁCI S PODPOROU KSČM,KSČM+NK,2,"047,080"
+6103,547492,Pelhřimov,1,4,480,480,Společně pro Pelhřimov,Společně pro Pelhřimov,TOP 09+NK,2,"080,721"
+6103,547492,Pelhřimov,1,5,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+6103,547492,Pelhřimov,1,6,371,371,Za zdravý Pelhřimov,Za zdravý Pelhřimov,SOCDEM+NK,2,"007,080"
+6103,547492,Pelhřimov,1,7,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+6103,547492,Pelhřimov,1,8,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+6103,547492,Pelhřimov,1,9,1479,1479,My Pelhřimáci,My Pelhřimáci,MY+NK,2,"080,1228"
+6103,547999,Humpolec,1,1,901,90,HUMPOLECGO!,HUMPOLECGO!,SNK,1,080
+6103,547999,Humpolec,1,2,470,470,STAROSTOVÉ A NEZÁVISLÍ HUMPOLEC,STAROSTOVÉ A NEZÁVISLÍ HUMPOLEC,STAN+NK,2,"080,166"
+6103,547999,Humpolec,1,3,779,779,Starostové pro občany,Starostové pro občany,STO,1,779
+6103,547999,Humpolec,1,4,768,768,ANO 2011,ANO 2011,ANO,1,768
+6103,547999,Humpolec,1,5,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+6103,547999,Humpolec,1,6,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+6103,547999,Humpolec,1,7,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3104,549240,Písek,1,1,480,480,ONA PÍSEK,ONA PÍSEK,TOP 09+NK,2,"080,721"
+3104,549240,Písek,1,2,364,364,Zelená pro Písek,Zelená pro Písek,Zelení+NK,2,"005,080"
+3104,549240,Písek,1,3,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3104,549240,Písek,1,4,477,477,"Písek srdcem a rozumem - Děkujeme za Váš hlas. Zaškrtnutí celé naší kandidátky nám dá velmi silný mandát, který zajistí naplnění našeho závazku vůči Vám. Navýšení parkovacích míst, levnější odpady, snížení daně z nemovitosti na původní hodnotu, nastartování družstevní bytové výstavby, založení nových zahrádkářských kolonií a místních výborů = občané tak získají přímé spojení na vedení města.",Písek srdcem a rozumem - Děkujeme za Váš hlas.,Svobodní+NK,2,"080,714"
+3104,549240,Písek,1,5,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+3104,549240,Písek,1,6,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3104,549240,Písek,1,7,1521,1521,Hlas Písku,Hlas Písku,Budoucnost+NK,2,"080,1232"
+3104,549240,Písek,1,8,113,113,Volba pro město,Volba pro město,VPM,1,113
+3104,549240,Písek,1,9,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+3104,549240,Písek,1,10,1722,1722,Naše Česko,Naše Česko,NČ,1,1722
+3104,549240,Písek,1,11,768,768,ANO 2011,ANO 2011,ANO,1,768
+3105,550094,Prachatice,1,1,88,88,NEZÁVISLÍ,NEZÁVISLÍ,NEZ,1,088
+3105,550094,Prachatice,1,2,457,457,PRO Prachatice,PRO Prachatice,Nestraníci+NK,2,"080,181"
+3105,550094,Prachatice,1,3,355,355,KDU-ČSL Libín-Prachatice,KDU-ČSL Libín-Prachatice,KDU-ČSL+NK,2,"001,080"
+3105,550094,Prachatice,1,4,1713,1713,Česká strana asociálů,Česká strana asociálů,ČSA,1,1713
+3105,550094,Prachatice,1,5,1964,1964,Prachatice společně,Prachatice společně,SV+NK,2,"080,742"
+3105,550094,Prachatice,1,6,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3105,550094,Prachatice,1,7,562,562,Živé Prachatice,Živé Prachatice,Zel+STAN+Pir+NK,4,"005,080,166,720"
+3105,550094,Prachatice,1,8,768,768,ANO 2011,ANO 2011,ANO,1,768
+3105,550094,Prachatice,1,9,1695,1695,SRDCEM PRO PRACHATICE S PODPOROU NAŠE ČESKO,SRDCEM PRO PRACHATICE S PODPOROU NAŠE ČESKO,NČ+NK,2,"080,1722"
+3107,552046,Tábor,1,1,470,470,TÁBOR na MAX s podporou STAROSTŮ,TÁBOR na MAX s podporou STAROSTŮ,STAN+NK,2,"080,166"
+3107,552046,Tábor,1,2,1810,1810,"ŠANCE pro TÁBOR (SOCDEM, SPD, PRO, KSČM, nezávislí)","ŠANCE pro TÁBOR (SOCDEM, SPD, PRO, KSČM, nez.)",SOCDKSČMSPDPRON,5,"007,047,080,1114,1265"
+3107,552046,Tábor,1,3,1722,1722,Naše Česko,Naše Česko,NČ,1,1722
+3107,552046,Tábor,1,4,1327,1327,SPOLEČNĚ PRO TÁBOR,SPOLEČNĚ PRO TÁBOR,KDU+ODS+TOP 09,3,"001,053,721"
+3107,552046,Tábor,1,5,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK",DSZ - ZA PRÁVA ZVÍŘAT a NK,DSZ+NK,2,"080,715"
+3107,552046,Tábor,1,6,136,136,Tábor 2020,Tábor 2020,T2020,1,136
+3107,552046,Tábor,1,7,529,529,Živý Tábor,Živý Tábor,Zel.+Piráti+NK,3,"005,080,720"
+3107,552046,Tábor,1,8,768,768,ANO 2011,ANO 2011,ANO,1,768
+3201,553425,Domažlice,1,1,482,482,VAŠE DOMAŽLICE,VAŠE DOMAŽLICE,DSZ+NK,2,"080,715"
+3201,553425,Domažlice,1,2,1838,1838,Stačilo! (KSČM a nezávislí),Stačilo! (KSČM a nezávislí),KSČM+Stačilo+NK,3,"047,080,1298"
+3201,553425,Domažlice,1,3,532,532,ANO 2011 a nezávislí,ANO 2011 a nezávislí,ANO+NK,2,"080,768"
+3201,553425,Domažlice,1,4,355,355,"Pro Domažlice, KDU-ČSL a nezávislí","Pro Domažlice, KDU-ČSL a nezávislí",KDU-ČSL+NK,2,"001,080"
+3201,553425,Domažlice,1,5,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3201,553425,Domažlice,1,6,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3201,553425,Domažlice,1,7,470,470,SDRUŽENÍ PRO MĚSTO DOMAŽLICE,SDRUŽENÍ PRO MĚSTO DOMAŽLICE,STAN+NK,2,"080,166"
+3201,553425,Domažlice,1,8,1830,1830,ŽIJEME DOMAŽLICE - VÝZVA PRO NOVÝ SMĚR MĚSTA,ŽIJEME DOMAŽLICE - VÝZVA PRO NOVÝ SMĚR MĚSTA,VÝZVA+NK,2,"080,1704"
+3201,553425,Domažlice,1,9,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+4101,554481,Cheb,1,1,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+4101,554481,Cheb,1,2,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+4101,554481,Cheb,1,3,389,389,ODS Cheb ve spolupráci s nezávislými,ODS Cheb ve spolupráci s nezávislými,ODS+NK,2,"053,080"
+4101,554481,Cheb,1,4,1837,1837,FAJN Cheb s podporou Motoristé sobě,FAJN Cheb s podporou Motoristé sobě,AUTO+NK,2,"080,1178"
+4101,554481,Cheb,1,5,393,393,Lidé Proti Zóně - NEPOSTAVÍME průmyslovou zónu Cheb II - www.protizone.cz,Lidé Proti Zóně-NEPOSTAVÍME prům. zónu Cheb II,Levice+NK,2,"074,080"
+4101,554481,Cheb,1,6,1523,1523,Koalice pro Cheb,Koalice pro Cheb,KDUZelPirTOPNK,5,"001,005,080,720,721"
+4101,554481,Cheb,1,7,1118,1118,VOK – Volba pro kraj,VOK – Volba pro kraj,VOK,1,1118
+4101,554481,Cheb,1,8,1722,1722,Naše Česko,Naše Česko,NČ,1,1722
+4101,554481,Cheb,1,9,470,470,VOLBA PRO MĚSTO CHEB S PODPOROU STAROSTŮ,VOLBA PRO MĚSTO CHEB S PODPOROU STAROSTŮ,STAN+NK,2,"080,166"
+4101,554481,Cheb,1,10,768,768,ANO 2011,ANO 2011,ANO,1,768
+4101,554642,Mariánské Lázně,1,1,1118,1118,Změna pro Mariánské Lázně s podporou VOK - Volba pro kraj,Změna pro M. L. s podporou VOK-Volba pro kraj,VOK,1,1118
+4101,554642,Mariánské Lázně,1,2,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+4101,554642,Mariánské Lázně,1,3,1722,1722,Naše Česko,Naše Česko,NČ,1,1722
+4101,554642,Mariánské Lázně,1,4,532,532,ANO 2011 a Nezávislí,ANO 2011 a Nezávislí,ANO+NK,2,"080,768"
+4101,554642,Mariánské Lázně,1,5,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+4101,554642,Mariánské Lázně,1,6,1415,1415,Město sobě,Město sobě,BPS+NK,2,"080,140"
+4101,554642,Mariánské Lázně,1,7,210,210,ODS + KDU-ČSL,ODS + KDU-ČSL,KDU-ČSL+ODS,2,"001,053"
+4101,554642,Mariánské Lázně,1,8,1847,1847,Sdružení politických stran KSČM a SPD za lepší Mariánské Lázně,Sdružení pol. stran KSČM a SPD za lepší Mar. Lázně,KSČM+SPD,2,"047,1114"
+4101,554642,Mariánské Lázně,1,9,541,541,Za lepší Mariánské Lázně,Za lepší Mariánské Lázně,Piráti+NK,2,"080,720"
+4101,554642,Mariánské Lázně,1,10,714,714,Svobodní,Svobodní,Svobodní,1,714
+3203,554791,Plzeň,1,1,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","DSZ - ZA PRÁVA ZVÍŘAT, sdružení DSZ a NK",DSZ+NK,2,"080,715"
+3203,554791,Plzeň,1,2,1639,1639,SPD + TRIKOLORA + PRO s podporou PŘÍSAHY,SPD + TRIKOLORA + PRO s podporou PŘÍSAHY,SPD+Trikol+PRO,3,"1114,1227,1265"
+3203,554791,Plzeň,1,3,55,55,"Koruna Česká (monarchistická strana Čech, Moravy a Slezska)","Koruna Česká (monarch.str.Čech, Moravy a Slezska)",Koruna Česká,1,055
+3203,554791,Plzeň,1,4,532,532,ANO 2011 a nezávislí,ANO 2011 a nezávislí,ANO+NK,2,"080,768"
+3203,554791,Plzeň,1,5,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+3203,554791,Plzeň,1,6,1661,1661,PRO PLZEŇ s podporou lidovců,PRO PLZEŇ s podporou lidovců,KDUČSL+PROPLZEŇ,2,"001,1014"
+3203,554791,Plzeň,1,7,371,371,Sociální demokracie s Plzeňáky,Sociální demokracie s Plzeňáky,SOCDEM+NK,2,"007,080"
+3203,554791,Plzeň,1,8,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3203,554791,Plzeň,1,9,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+3203,554791,Plzeň,1,10,1298,1298,Stačilo!,Stačilo!,Stačilo!,1,1298
+3203,554791,Plzeň,1,11,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3203,554791,Plzeň,1,12,501,501,"Chceme Plzeň - koalice nezávislých, TOP 09 a Zelených","Chceme Plzeň-koalice nezávislých,TOP 09 a Zelených",Zelení+TOP09+NK,3,"005,080,721"
+3203,554791,Plzeň,1,13,1697,1697,Motoristé sobě + Svobodní,Motoristé sobě + Svobodní,Svobodní+AUTO,2,"714,1178"
+4207,554804,Ústí nad Labem,1,1,1699,1699,ÚSTEČÁCI,ÚSTEČÁCI,HR+NK,2,"080,1715"
+4207,554804,Ústí nad Labem,1,2,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK",DSZ - ZA PRÁVA ZVÍŘAT a NK,DSZ+NK,2,"080,715"
+4207,554804,Ústí nad Labem,1,3,785,785,Zdraví Sport Vzdělání,Zdraví Sport Vzdělání,PRO Zdraví,1,785
+4207,554804,Ústí nad Labem,1,4,1951,1951,PRO Právo Respekt Odbornost a Stačilo!,PRO Právo Respekt Odbornost a Stačilo!,PRO+Stačilo!,2,"1265,1298"
+4207,554804,Ústí nad Labem,1,5,1933,1933,JEDNO ÚSTÍ,JEDNO ÚSTÍ,ZSTAPTOPUFONČNK,7,"005,080,166,720,721,1012,1722"
+4207,554804,Ústí nad Labem,1,6,1686,1686,Vaše Ústí s podporou Za lepší Střekov,Vaše Ústí s podporou Za lepší Střekov,VÚ+ZLS,2,"1128,1195"
+4207,554804,Ústí nad Labem,1,7,1813,1813,SPD a Motoristé sobě s podporou Přísahy a Trikolory,SPD a AUTO s podporou Přísahy a Trikolory,SPD+AUTO,2,"1114,1178"
+4207,554804,Ústí nad Labem,1,8,210,210,SPOLU PRO ÚSTÍ,SPOLU PRO ÚSTÍ,KDU-ČSL+ODS,2,"001,053"
+4207,554804,Ústí nad Labem,1,9,768,768,ANO 2011,ANO 2011,ANO,1,768
+8106,554821,Ostrava,1,1,1818,1818,Hnutí Stačilo! a nezávislí Ostraváci,Hnutí Stačilo! a nezávislí Ostraváci,Stačilo!+NK,2,"080,1298"
+8106,554821,Ostrava,1,2,1327,1327,"srdcOVA - ODS, Lidovci, TOP 09 a nestraníci","srdcOVA - ODS, Lidovci, TOP 09 a nestraníci",KDU+ODS+TOP 09,3,"001,053,721"
+8106,554821,Ostrava,1,3,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+8106,554821,Ostrava,1,4,371,371,Pro naši Ostravu,Pro naši Ostravu,SOCDEM+NK,2,"007,080"
+8106,554821,Ostrava,1,5,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+8106,554821,Ostrava,1,6,1973,1973,STAROSTOVÉ pro OSTRAVU,STAROSTOVÉ pro OSTRAVU,NEZ+STAN,2,"088,166"
+8106,554821,Ostrava,1,7,1842,1842,"ŠVÝCARSKÁ DEMOKRACIE, PRO, SVOBODNÍ A TRIKOLORA","ŠVÝCARSKÁ DEMOKRACIE, PRO, SVOBODNÍ A TRIKOLORA",SvoŠvýdemTriPRO,4,"714,752,1227,1265"
+8106,554821,Ostrava,1,8,1722,1722,Naše Česko,Naše Česko,NČ,1,1722
+8106,554821,Ostrava,1,9,1807,1807,OK pro Ostravu,OK pro Ostravu,OK+NK,2,"080,1287"
+8106,554821,Ostrava,1,10,755,755,Ostravak,Ostravak,Ostravak,1,755
+8106,554821,Ostrava,1,11,768,768,ANO 2011,ANO 2011,ANO,1,768
+8106,554821,Ostrava,1,12,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+8106,554821,Ostrava,1,13,387,387,Ostravská levice – sdružení Komunistické strany Čech a Moravy a nezávislých kandidátů,Ostravská levice – sdružení KSČM a NK,KSČM+NK,2,"047,080"
+4102,554961,Karlovy Vary,1,1,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+4102,554961,Karlovy Vary,1,2,1028,1028,Karlovaráci,Karlovaráci,KVC,1,1028
+4102,554961,Karlovy Vary,1,3,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+4102,554961,Karlovy Vary,1,4,1961,1961,VARY+,VARY+,KDU+KOA+Pir+TOP,4,"001,182,720,721"
+4102,554961,Karlovy Vary,1,5,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4102,554961,Karlovy Vary,1,6,1118,1118,VOK – Volba pro kraj,VOK – Volba pro kraj,VOK,1,1118
+4102,554961,Karlovy Vary,1,7,768,768,ANO 2011,ANO 2011,ANO,1,768
+4102,554961,Karlovy Vary,1,8,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+4102,554961,Karlovy Vary,1,9,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+8103,555088,Havířov,1,1,114,114,Hnutí pro Havířov,Hnutí pro Havířov,HPH,1,114
+8103,555088,Havířov,1,2,1531,1531,"SPOLEČNĚ PRO HAVÍŘOV (koalice ODS, KDU-ČSL, STAN, TOP 09)","SPOLEČNĚ PRO HAVÍŘOV (ODS, KDU-ČSL, STAN, TOP 09)",KDU+ODS+STA+TOP,4,"001,053,166,721"
+8103,555088,Havířov,1,3,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+8103,555088,Havířov,1,4,1962,1962,Společně změňme Havířov,Společně změňme Havířov,KSČMČSSDTriStNK,5,"047,080,759,1227,1298"
+8103,555088,Havířov,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+8103,555088,Havířov,1,6,1627,1627,PRO HAVÍŘOV,PRO HAVÍŘOV,PRO+NK,2,"080,1265"
+8103,555088,Havířov,1,7,371,371,SOCDEM+Nezávislí kandidáti,SOCDEM+Nezávislí kandidáti,SOCDEM+NK,2,"007,080"
+8103,555088,Havířov,1,8,401,401,"HAVÍŘOV SOBĚ – sdružení politického hnutí NEZÁVISLÍ, spolku Životice Sobě a nezávislých kandidátů","HAVÍŘOV SOBĚ – NEZÁVISLÍ, Životice Sobě a NK",NEZ+NK,2,"080,088"
+5302,555134,Pardubice,1,1,1305,1305,"SPD s podporou Trikolory, Svobodných a nezávislých","SPD s podporou Trikolory, Svobodných a nezávislých",SPD+NK,2,"080,1114"
+5302,555134,Pardubice,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+5302,555134,Pardubice,1,3,1897,1897,Progresivní Pardubice (Piráti a TOP 09 s podporou Zelených a nezávislých osobností),"Prog. Pard. (Piráti, TOP, podpora Zel, nez.osob.)",Piráti+TOP 09,2,"720,721"
+5302,555134,Pardubice,1,4,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+5302,555134,Pardubice,1,5,389,389,ODS PARDUBICE,ODS PARDUBICE,ODS+NK,2,"053,080"
+5302,555134,Pardubice,1,6,339,339,Noví lidovci a Nestraníci,Noví lidovci a Nestraníci,KDU-ČSL+Nestran,2,"001,181"
+5302,555134,Pardubice,1,7,1950,1950,Žijeme Pardubice,Žijeme Pardubice,SNKEDPaspVČMYPP,5,"129,756,770,1228,1266"
+5302,555134,Pardubice,1,8,1301,1301,"NAŠE PARDUBICE - ""Nechme město rozkvést""","NAŠE PARDUBICE - ""Nechme město rozkvést""",SOPU+NK,2,"080,1041"
+5302,555134,Pardubice,1,9,1741,1741,Srdcem pro Pardubice,Srdcem pro Pardubice,SPP,1,1741
+4102,555428,Ostrov,1,1,1315,1315,Ostrováci.cz,Ostrováci.cz,KDU+STAN+TOP09,3,"001,166,721"
+4102,555428,Ostrov,1,2,364,364,"OSTROV, MŮJ DOMOV","OSTROV, MŮJ DOMOV",Zelení+NK,2,"005,080"
+4102,555428,Ostrov,1,3,1679,1679,VIZE,VIZE,Vize KVK+NK,2,"080,1285"
+4102,555428,Ostrov,1,4,456,456,Slušný Ostrov – místní iniciativa,Slušný Ostrov – místní iniciativa,MHNHRM+NK,2,"080,112"
+4102,555428,Ostrov,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+4102,555428,Ostrov,1,6,119,119,Unie pro sport a zdraví,Unie pro sport a zdraví,USZ,1,119
+4102,555428,Ostrov,1,7,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+4102,555428,Ostrov,1,8,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+4102,555428,Ostrov,1,9,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4102,555428,Ostrov,1,10,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+4102,555428,Ostrov,1,11,1481,1481,Místní pro Ostrov - VOK,Místní pro Ostrov - VOK,VOK+NK,2,"080,1118"
+3202,555771,Klatovy,1,1,1305,1305,"Svoboda a přímá demokracie (SPD) s podporou nezávislých kandidátů, sportovců, zdravotníků a osobností města Klatov","SPD s podporou NK, sport.,zdrav. a osob. m. Klatov",SPD+NK,2,"080,1114"
+3202,555771,Klatovy,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+3202,555771,Klatovy,1,3,470,470,NESTRANÍCI PRO KLATOVY,NESTRANÍCI PRO KLATOVY,STAN+NK,2,"080,166"
+3202,555771,Klatovy,1,4,571,571,KLATOVY21,KLATOVY21,KDU+Piráti+NK,3,"001,080,720"
+3202,555771,Klatovy,1,5,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3202,555771,Klatovy,1,6,1838,1838,"STAČILO! Koalice hnutí Stačilo!, Komunistická strana Čech a Moravy a nezávislých kandidátů","STAČILO! Koalice hnutí Stačilo!, KSČM a NK",KSČM+Stačilo+NK,3,"047,080,1298"
+3202,557153,Sušice,1,1,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+3202,557153,Sušice,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+3202,557153,Sušice,1,3,1,1,Křesťanská a demokratická unie – Československá strana lidová (KDU-ČSL),KDU-ČSL,KDU-ČSL,1,001
+3202,557153,Sušice,1,4,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3202,557153,Sušice,1,5,901,90,Sdružení nezávislých kandidátů SUŠICKÁ VEŘEJNOST,Sdružení nezávislých kandidátů SUŠICKÁ VEŘEJNOST,SNK,1,080
+3202,557153,Sušice,1,6,1291,1291,Hnutí Generace,Hnutí Generace,Generace,1,1291
+3202,557153,Sušice,1,7,371,371,"ZMĚNA pro Sušici (SPD, SOCDEM, nezávislí)","ZMĚNA pro Sušici (SPD, SOCDEM, nezávislí)",SOCDEM+NK,2,"007,080"
+3206,559717,Rokycany,1,1,541,541,Naše Rokycany,Naše Rokycany,Piráti+NK,2,"080,720"
+3206,559717,Rokycany,1,2,523,523,"Společně změníme Rokycany (ODS, TOP 09 a nezávislí kandidáti)","Společně změníme Rokycany (ODS, TOP 09, NK)",ODS+TOP 09+NK,3,"053,080,721"
+3206,559717,Rokycany,1,3,532,532,ANO a nezávislí,ANO a nezávislí,ANO+NK,2,"080,768"
+3206,559717,Rokycany,1,4,1847,1847,Komunistická strana Čech a Moravy a osobnosti s podporou SPD,KSČM a osobnosti s podporou SPD,KSČM+SPD,2,"047,1114"
+3206,559717,Rokycany,1,5,470,470,NEZÁVISLÍ,NEZÁVISLÍ,STAN+NK,2,"080,166"
+3206,559717,Rokycany,1,6,457,457,ROKYCANŠTÍ PATRIOTI,ROKYCANŠTÍ PATRIOTI,Nestraníci+NK,2,"080,181"
+3206,559717,Rokycany,1,7,395,395,PROBUDÍME ROKYCANY,PROBUDÍME ROKYCANY,ND+NK,2,"079,080"
+3206,559717,Rokycany,1,8,1597,1597,PRO ROKYCANY - zdraví a sport,PRO ROKYCANY - zdraví a sport,PRO PLZEŇ+NK,2,"080,1014"
+4103,560286,Sokolov,1,1,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+4103,560286,Sokolov,1,2,480,480,TOP Sokolov,TOP Sokolov,TOP 09+NK,2,"080,721"
+4103,560286,Sokolov,1,3,389,389,Hnutí pro město Sokolov,Hnutí pro město Sokolov,ODS+NK,2,"053,080"
+4103,560286,Sokolov,1,4,1481,1481,SPOLEČNĚ pro Sokolov a politické hnutí VOK - Volba pro kraj,SPOLEČNĚ pro Sokolov a VOK - Volba pro kraj,VOK+NK,2,"080,1118"
+4103,560286,Sokolov,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+4103,560286,Sokolov,1,6,1682,1682,Svoboda a přímá demokracie (SPD) a Svobodní,Svoboda a přímá demokracie (SPD) a Svobodní,Svobodní+SPD,2,"714,1114"
+4103,560286,Sokolov,1,7,470,470,SOKOLOV NA PLNÝ ÚVAZEK - STAROSTOVÉ S PODPOROU MÍSTNÍCH OSOBNOSTÍ,SOKOLOV NA PLNÝ ÚVAZEK,STAN+NK,2,"080,166"
+5101,561380,Česká Lípa,1,1,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+5101,561380,Česká Lípa,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+5101,561380,Česká Lípa,1,3,1509,1509,PŘÍSAHA s podporou SOCDEM,PŘÍSAHA s podporou SOCDEM,SOCD+PŘÍSAHA+NK,3,"007,080,1245"
+5101,561380,Česká Lípa,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+5101,561380,Česká Lípa,1,5,475,475,ŽIVÁ LÍPA,ŽIVÁ LÍPA,SLK+NK,2,"080,703"
+5101,561380,Česká Lípa,1,6,1928,1928,VAŠE LÍPA,VAŠE LÍPA,ČSNS+KSČM+NK,3,"002,047,080"
+5101,561380,Česká Lípa,1,7,1854,1854,SPOLEČNĚ,SPOLEČNĚ,KDUTOPSPOLEHNNK,4,"001,080,721,1047"
+5101,561380,Česká Lípa,1,8,1066,1066,Piráti a Zelení,Piráti a Zelení,Zelení+Piráti,2,"005,720"
+4201,562335,Děčín,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+4201,562335,Děčín,1,2,1930,1930,HLAS DĚČÍNA (Piráti Děčín + Hlas regionů),HLAS DĚČÍNA (Piráti Děčín + Hlas regionů),Piráti+HR,2,"720,1715"
+4201,562335,Děčín,1,3,1600,1600,Severočeši Děčín,Severočeši Děčín,BEZ-UL+ČiKR,2,"761,1021"
+4201,562335,Děčín,1,4,456,456,Volba pro Děčín,Volba pro Děčín,MHNHRM+NK,2,"080,112"
+4201,562335,Děčín,1,5,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+4201,562335,Děčín,1,6,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+4201,562335,Děčín,1,7,1697,1697,Motoristé sobě a Svobodní,Motoristé sobě a Svobodní,Svobodní+AUTO,2,"714,1178"
+4201,562335,Děčín,1,8,1851,1851,Náš Děčín,Náš Děčín,PRO Zdraví+APB,2,"785,1173"
+4201,562335,Děčín,1,9,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4201,562882,Varnsdorf,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+4201,562882,Varnsdorf,1,2,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","Sdružení DSZ - ZA PRÁVA ZVÍŘAT, NK",DSZ+NK,2,"080,715"
+4201,562882,Varnsdorf,1,3,355,355,Volba pro město Varnsdorf,Volba pro město Varnsdorf,KDU-ČSL+NK,2,"001,080"
+4201,562882,Varnsdorf,1,4,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+4201,562882,Varnsdorf,1,5,389,389,Sousedé 2026 - sdružení ODS a nezávislých kandidátů,Sousedé 2026 - sdružení ODS a NK,ODS+NK,2,"053,080"
+4201,562882,Varnsdorf,1,6,1483,1483,NÁŠ VARNSDORF,NÁŠ VARNSDORF,STAN+Piráti+NK,3,"080,166,720"
+4201,562882,Varnsdorf,1,7,1514,1514,OBNOVA VARNSDORFU - NÁŠ DOMOV,OBNOVA VARNSDORFU - NÁŠ DOMOV,DOMOV+NK,2,"080,1221"
+4201,562882,Varnsdorf,1,8,1265,1265,PRO Právo Respekt Odbornost,PRO Právo Respekt Odbornost,PRO,1,1265
+4202,562971,Chomutov,1,1,1721,1721,MÁME RÁDI CHOMUTOV,MÁME RÁDI CHOMUTOV,MRCHA,1,1721
+4202,562971,Chomutov,1,2,1861,1861,CHOMUTOVSKÁ KOALICE-NAŠE ČESKO-SPRÁVNÁ VOLBA PRO ZDRAVÍ A SPORT,CHOM. KOALICE-NAŠE ČESKO-SpV PRO ZDRAVÍ A SPORT,SpV+Koala+NČ+NK,4,"080,1269,1299,1722"
+4202,562971,Chomutov,1,3,1323,1323,STAROSTOVÉ A NEZÁVISLÍ S PODPOROU ODS,STAROSTOVÉ A NEZÁVISLÍ S PODPOROU ODS,ODS+STAN,2,"053,166"
+4202,562971,Chomutov,1,4,1935,1935,Vize 2042 Chomutov,Vize 2042 Chomutov,MODES+NK,2,"080,1063"
+4202,562971,Chomutov,1,5,1825,1825,JsmePRO! Chomutov,JsmePRO! Chomutov,KDUZPiTOPJPRONK,6,"001,005,080,720,721,1126"
+4202,562971,Chomutov,1,6,1497,1497,Lepší Chomutov,Lepší Chomutov,LS+NK,2,"080,1259"
+4202,562971,Chomutov,1,7,1960,1960,PRO CHOMUTOV,PRO CHOMUTOV,PRO Chomutov+NK,2,"080,1746"
+4202,562971,Chomutov,1,8,1687,1687,SPD + MOTORISTÉ + PRO = CHOMUTOV SOBĚ,SPD + MOTORISTÉ + PRO = CHOMUTOV SOBĚ,SvSPDAUTriPRONK,6,"080,714,1114,1178,1227,1265"
+4202,562971,Chomutov,1,9,768,768,ANO 2011,ANO 2011,ANO,1,768
+4202,562971,Chomutov,1,10,1298,1298,Stačilo!,Stačilo!,Stačilo!,1,1298
+4202,562971,Chomutov,1,11,1017,1017,NOVÝ SEVER,NOVÝ SEVER,NS,1,1017
+4202,563099,Jirkov,1,1,1298,1298,Stačilo!,Stačilo!,Stačilo!,1,1298
+4202,563099,Jirkov,1,2,1497,1497,LEPŠÍ JIRKOV - LEPŠÍ SEVER,LEPŠÍ JIRKOV - LEPŠÍ SEVER,LS+NK,2,"080,1259"
+4202,563099,Jirkov,1,3,1639,1639,SPD + PRO + TRIKOLORA = JIRKOV SOBĚ,SPD + PRO + TRIKOLORA = JIRKOV SOBĚ,SPD+Trikol+PRO,3,"1114,1227,1265"
+4202,563099,Jirkov,1,4,5,5,Strana zelených,Strana zelených,Zelení,1,005
+4202,563099,Jirkov,1,5,785,785,Zdraví Sport Vzdělání,Zdraví Sport Vzdělání,PRO Zdraví,1,785
+4202,563099,Jirkov,1,6,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4202,563099,Jirkov,1,7,714,714,Svobodní,Svobodní,Svobodní,1,714
+4202,563099,Jirkov,1,8,470,470,NÁŠ JIRKOV,NÁŠ JIRKOV,STAN+NK,2,"080,166"
+4202,563099,Jirkov,1,9,768,768,ANO 2011,ANO 2011,ANO,1,768
+4202,563102,Kadaň,1,1,1497,1497,LEPŠÍ SEVER - LEPŠÍ KADAŇ,LEPŠÍ SEVER - LEPŠÍ KADAŇ,LS+NK,2,"080,1259"
+4202,563102,Kadaň,1,2,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4202,563102,Kadaň,1,3,541,541,Spojení pro změnu,Spojení pro změnu,Piráti+NK,2,"080,720"
+4202,563102,Kadaň,1,4,1695,1695,Pro Kadaň a okolí s podporou Naše Česko,Pro Kadaň a okolí s podporou Naše Česko,NČ+NK,2,"080,1722"
+4202,563102,Kadaň,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+4202,563102,Kadaň,1,6,355,355,Dáme Kadani novou šanci,Dáme Kadani novou šanci,KDU-ČSL+NK,2,"001,080"
+5102,563510,Jablonec nad Nisou,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+5102,563510,Jablonec nad Nisou,1,2,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+5102,563510,Jablonec nad Nisou,1,3,1537,1537,SPRÁVNÁ CESTA pro JABLONEC,SPRÁVNÁ CESTA pro JABLONEC,PŘÍSAHA+NK,2,"080,1245"
+5102,563510,Jablonec nad Nisou,1,4,541,541,Piráti a nezávislí,Piráti a nezávislí,Piráti+NK,2,"080,720"
+5102,563510,Jablonec nad Nisou,1,5,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+5102,563510,Jablonec nad Nisou,1,6,479,479,SPOLEČNĚ PRO JABLONEC,SPOLEČNĚ PRO JABLONEC,KDUČSL+Zel.+NK,3,"001,005,080"
+5102,563510,Jablonec nad Nisou,1,7,1892,1892,SPOLU se Sportovci – pro ŽIVÝ JABLONEC,SPOLU se Sportovci – pro ŽIVÝ JABLONEC,USZ+TOP 09+NK,3,"080,119,721"
+5102,563510,Jablonec nad Nisou,1,8,703,703,Starostové pro Liberecký kraj,Starostové pro Liberecký kraj,SLK,1,703
+5103,563889,Liberec,1,1,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+5103,563889,Liberec,1,2,540,540,LIBERECKÁ 9,LIBERECKÁ 9,KDUČSL+TOP09+NK,3,"001,080,721"
+5103,563889,Liberec,1,3,1265,1265,PRO Právo Respekt Odbornost,PRO Právo Respekt Odbornost,PRO,1,1265
+5103,563889,Liberec,1,4,768,768,ANO 2011,ANO 2011,ANO,1,768
+5103,563889,Liberec,1,5,1806,1806,LIBE!,LIBE!,GEN+NK,2,"080,1297"
+5103,563889,Liberec,1,6,1066,1066,Liberec otevřený lidem a Piráti,Liberec otevřený lidem a Piráti,Zelení+Piráti,2,"005,720"
+5103,563889,Liberec,1,7,1713,1713,Česká strana asociálů,Česká strana asociálů,ČSA,1,1713
+5103,563889,Liberec,1,8,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","DSZ - ZA PRÁVA ZVÍŘAT, sdružení DSZ a NK",DSZ+NK,2,"080,715"
+5103,563889,Liberec,1,9,1872,1872,Lepší Liberec,Lepší Liberec,Lepší město+NK,2,"080,1719"
+5103,563889,Liberec,1,10,1839,1839,ODS společně se sportovci,ODS společně se sportovci,ODS+USZ,2,"053,119"
+5103,563889,Liberec,1,11,703,703,Starostové pro Liberecký kraj,Starostové pro Liberecký kraj,SLK,1,703
+4203,564567,Litoměřice,1,1,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4203,564567,Litoměřice,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+4203,564567,Litoměřice,1,3,355,355,Boží Litoměřice – KDU-ČSL,Boží Litoměřice – KDU-ČSL,KDU-ČSL+NK,2,"001,080"
+4203,564567,Litoměřice,1,4,492,492,TEAM,TEAM,S.cz+NK,2,"080,704"
+4203,564567,Litoměřice,1,5,1800,1800,SPD s podporou Stačilo! a PRO,SPD s podporou Stačilo! a PRO,SPD+PRO+Stačilo,3,"1114,1265,1298"
+4203,564567,Litoměřice,1,6,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","DSZ - ZA PRÁVA ZVÍŘ., sdr. DSZ - ZA PR. ZVÍŘ. a NK",DSZ+NK,2,"080,715"
+4203,564567,Litoměřice,1,7,470,470,STAROSTOVÉ A NEZÁVISLÍ A SPORT A ZDRAVÍ LITOMĚŘICE,STAROSTOVÉ A NEZÁVISLÍ A SPORT A ZDRAVÍ LITOMĚŘICE,STAN+NK,2,"080,166"
+4203,564567,Litoměřice,1,8,449,449,Naše Litoměřice 2026,Naše Litoměřice 2026,SNK ED+NK,2,"080,129"
+4203,564567,Litoměřice,1,9,1500,1500,SEN pro Litoměřice,SEN pro Litoměřice,SEN 21+NK,2,"080,1187"
+4203,565555,Roudnice nad Labem,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+4203,565555,Roudnice nad Labem,1,2,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+4203,565555,Roudnice nad Labem,1,3,210,210,ODS a KDU-ČSL,ODS a KDU-ČSL,KDU-ČSL+ODS,2,"001,053"
+4203,565555,Roudnice nad Labem,1,4,1524,1524,"ROUDNIČTÍ PATRIOTI (DOMOV, KSČM)","ROUDNIČTÍ PATRIOTI (DOMOV, KSČM)",KSČM+DOMOV,2,"047,1221"
+4203,565555,Roudnice nad Labem,1,5,902,90,Akce R,Akce R,SNK,1,080
+4203,565555,Roudnice nad Labem,1,6,541,541,Tým Roudnice,Tým Roudnice,Piráti+NK,2,"080,720"
+4203,565555,Roudnice nad Labem,1,7,901,90,SPOLEČNĚ PRO ROUDNICI N. L.,SPOLEČNĚ PRO ROUDNICI N. L.,SNK,1,080
+4204,565971,Louny,1,1,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+4204,565971,Louny,1,2,119,119,Unie pro sport a zdraví,Unie pro sport a zdraví,USZ,1,119
+4204,565971,Louny,1,3,210,210,VIZE PRO LOUNY,VIZE PRO LOUNY,KDU-ČSL+ODS,2,"001,053"
+4204,565971,Louny,1,4,371,371,Sociální demokracie a nezávislí kandidáti,Sociální demokracie a nezávislí kandidáti,SOCDEM+NK,2,"007,080"
+4204,565971,Louny,1,5,529,529,"LOUNY SPOLEČNĚ: Piráti, Zelení, nezávislí","LOUNY SPOLEČNĚ: Piráti, Zelení, nezávislí",Zel.+Piráti+NK,3,"005,080,720"
+4204,565971,Louny,1,6,768,768,ANO 2011,ANO 2011,ANO,1,768
+4204,565971,Louny,1,7,1305,1305,"SPD, nezávislí kandidáti","SPD, nezávislí kandidáti",SPD+NK,2,"080,1114"
+4204,565971,Louny,1,8,524,524,LOUNŠTÍ PATRIOTI,LOUNŠTÍ PATRIOTI,Patrioti ČR+NK,2,"080,1004"
+4204,565971,Louny,1,9,495,495,PRO LEPŠÍ LOUNY - nezávislí s podporou TOP 09 a STAN,PRO LEPŠÍ LOUNY-nezávislí s podporou TOP 09 a STAN,TOP 09+STAN+NK,3,"080,166,721"
+4204,566985,Žatec,1,1,470,470,STAROSTOVÉ PRO ŽATEC,STAROSTOVÉ PRO ŽATEC,STAN+NK,2,"080,166"
+4204,566985,Žatec,1,2,540,540,ŽATEC SRDCE REGIONU,ŽATEC SRDCE REGIONU,KDUČSL+TOP09+NK,3,"001,080,721"
+4204,566985,Žatec,1,3,401,401,NEZÁVISLÍ PRO ŽATEC,NEZÁVISLÍ PRO ŽATEC,NEZ+NK,2,"080,088"
+4204,566985,Žatec,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4204,566985,Žatec,1,5,541,541,Piráti a nezávislí pro Žatec,Piráti a nezávislí pro Žatec,Piráti+NK,2,"080,720"
+4204,566985,Žatec,1,6,113,113,Volba pro město,Volba pro město,VPM,1,113
+4204,566985,Žatec,1,7,768,768,ANO 2011,ANO 2011,ANO,1,768
+4204,566985,Žatec,1,8,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+4204,566985,Žatec,1,9,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+4204,566985,Žatec,1,10,1699,1699,Hlas ŽATECKA,Hlas ŽATECKA,HR+NK,2,"080,1715"
+4205,567027,Most,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+4205,567027,Most,1,2,1175,1175,ProMOST,ProMOST,ProMOST,1,1175
+4205,567027,Most,1,3,1743,1743,VIZE pro Most,VIZE pro Most,VIZE,1,1743
+4205,567027,Most,1,4,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK",Sdružení DSZ - ZA PRÁVA ZVÍŘATa NK,DSZ+NK,2,"080,715"
+4205,567027,Most,1,5,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4205,567027,Most,1,6,1894,1894,"Piráti, Zelení a Starostové","Piráti, Zelení a Starostové",Zele+STAN+Pirát,3,"005,166,720"
+4205,567027,Most,1,7,1813,1813,SPD a Motoristé sobě,SPD a Motoristé sobě,SPD+AUTO,2,"1114,1178"
+4205,567027,Most,1,8,1298,1298,Stačilo!,Stačilo!,Stačilo!,1,1298
+4205,567256,Litvínov,1,1,1298,1298,Stačilo!,Stačilo!,Stačilo!,1,1298
+4205,567256,Litvínov,1,2,529,529,Litvínov DO TOHO!,Litvínov DO TOHO!,Zel.+Piráti+NK,3,"005,080,720"
+4205,567256,Litvínov,1,3,1305,1305,SPD + MOTORISTÉ + PRO = LITVÍNOV SOBĚ,SPD + MOTORISTÉ + PRO = LITVÍNOV SOBĚ,SPD+NK,2,"080,1114"
+4205,567256,Litvínov,1,4,1811,1811,Společně za Lepší Litvínov,Společně za Lepší Litvínov,SvDOTriPŘÍSLSNK,6,"080,714,1221,1227,1245,1259"
+4205,567256,Litvínov,1,5,389,389,Sdružení ODS a nezávislých kandidátů,Sdružení ODS a nezávislých kandidátů,ODS+NK,2,"053,080"
+4205,567256,Litvínov,1,6,768,768,ANO 2011,ANO 2011,ANO,1,768
+4205,567256,Litvínov,1,7,1695,1695,To dáme - za podpory Naše Česko,To dáme - za podpory Naše Česko,NČ+NK,2,"080,1722"
+4205,567256,Litvínov,1,8,470,470,LITVÍNOV PATŘÍ OBČANŮM - STAROSTOVÉ A NEZÁVISLÍ,LITVÍNOV PATŘÍ OBČANŮM - STAROSTOVÉ A NEZÁVISLÍ,STAN+NK,2,"080,166"
+4206,567442,Teplice,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+4206,567442,Teplice,1,2,1491,1491,"SPD, Trikolora, nezávislí","SPD, Trikolora, nezávislí",SPD+Trikol+NK,3,"080,1114,1227"
+4206,567442,Teplice,1,3,1500,1500,SEN PRO TEPLICE,SEN PRO TEPLICE,SEN 21+NK,2,"080,1187"
+4206,567442,Teplice,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4206,567442,Teplice,1,5,1895,1895,STAČILO! A PRO JINDŘICHA RAJCHLA,STAČILO! A PRO JINDŘICHA RAJCHLA,PRO+Stačilo!+NK,3,"080,1265,1298"
+4206,567442,Teplice,1,6,1837,1837,Motoristé sobě a nezávislí kandidáti,Motoristé sobě a nezávislí kandidáti,AUTO+NK,2,"080,1178"
+4206,567442,Teplice,1,7,1931,1931,Spokojené Teplice,Spokojené Teplice,ČSSD+PRO Zdraví,2,"759,785"
+4206,567442,Teplice,1,8,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","DSZ - ZA PRÁVA ZVÍŘAT,sd. DSZ ZPZ a NK",DSZ+NK,2,"080,715"
+4206,567442,Teplice,1,9,1370,1370,Volba pro Teplice,Volba pro Teplice,KDU+Zel+Pir+NK,4,"001,005,080,720"
+4206,567451,Bílina,1,1,768,768,ANO 2011,ANO 2011,ANO,1,768
+4206,567451,Bílina,1,2,524,524,Patrioti Bílina,Patrioti Bílina,Patrioti ČR+NK,2,"080,1004"
+4206,567451,Bílina,1,3,745,745,Nezávislí pro Bílinu,Nezávislí pro Bílinu,NEZ Bílina,1,745
+4206,567451,Bílina,1,4,1600,1600,ČISTÁ A BEZPEČNÁ BÍLINA,ČISTÁ A BEZPEČNÁ BÍLINA,BEZ-UL+ČiKR,2,"761,1021"
+4206,567451,Bílina,1,5,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+4206,567451,Bílina,1,6,1639,1639,"SPD, Trikolora, PRO","SPD, Trikolora, PRO",SPD+Trikol+PRO,3,"1114,1227,1265"
+4206,567451,Bílina,1,7,5,5,Strana zelených,Strana zelených,Zelení,1,005
+4206,567451,Bílina,1,8,389,389,Společně pro město – ODS Bílina a nezávislí kandidáti,Společně pro město - ODS Bílina a NK,ODS+NK,2,"053,080"
+4206,567451,Bílina,1,9,714,714,Naše Bílina - Svobodní,Naše Bílina - Svobodní,Svobodní,1,714
+4206,567451,Bílina,1,10,1331,1331,MOJE BÍLINA s podporou Pirátů,MOJE BÍLINA s podporou Pirátů,Piráti+TOP09+NK,3,"080,720,721"
+4206,567639,Krupka,1,1,1553,1553,Z D R A V Á   K R U P K A,Z D R A V Á   K R U P K A,Zel+JsmePRO!+NK,3,"005,080,1126"
+4206,567639,Krupka,1,2,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+4206,567639,Krupka,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+4206,567639,Krupka,1,4,1497,1497,Lepší sever lepší Krupka,Lepší sever lepší Krupka,LS+NK,2,"080,1259"
+4206,567639,Krupka,1,5,371,371,PRO KRUPKU,PRO KRUPKU,SOCDEM+NK,2,"007,080"
+4206,567639,Krupka,1,6,355,355,KRUPKA NÁŠ DOMOV,KRUPKA NÁŠ DOMOV,KDU-ČSL+NK,2,"001,080"
+4206,567639,Krupka,1,7,470,470,STAN KRUPKA,STAN KRUPKA,STAN+NK,2,"080,166"
+4206,567639,Krupka,1,8,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+6101,568414,Havlíčkův Brod,1,1,480,480,Město moderně,Město moderně,TOP 09+NK,2,"080,721"
+6101,568414,Havlíčkův Brod,1,2,1487,1487,SPD a Trikolora v koalici,SPD a Trikolora v koalici,SPD+Trikolora,2,"1114,1227"
+6101,568414,Havlíčkův Brod,1,3,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+6101,568414,Havlíčkův Brod,1,4,387,387,Komunistická strana Čech a Moravy a Nezávislí kandidáti,KSČM a Nezávislí kandidáti,KSČM+NK,2,"047,080"
+6101,568414,Havlíčkův Brod,1,5,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+6101,568414,Havlíčkův Brod,1,6,470,470,BROĎÁCI,BROĎÁCI,STAN+NK,2,"080,166"
+6101,568414,Havlíčkův Brod,1,7,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+6101,568414,Havlíčkův Brod,1,8,1412,1412,ANO 2011 a Ženy za Brod,ANO 2011 a Ženy za Brod,ŽB+ANO,2,"731,768"
+6101,568414,Havlíčkův Brod,1,9,1722,1722,Naše Česko,Naše Česko,NČ,1,1722
+6101,568414,Havlíčkův Brod,1,10,1537,1537,Brodská Občanská Liga,Brodská Občanská Liga,PŘÍSAHA+NK,2,"080,1245"
+6101,568414,Havlíčkův Brod,1,11,364,364,Společně pro Brod,Společně pro Brod,Zelení+NK,2,"005,080"
+6101,568414,Havlíčkův Brod,1,12,371,371,PRO BROD,PRO BROD,SOCDEM+NK,2,"007,080"
+5201,569810,Hradec Králové,1,1,231,231,Hradecká levice,Hradecká levice,SOCDEM+KSČM,2,"007,047"
+5201,569810,Hradec Králové,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+5201,569810,Hradec Králové,1,3,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+5201,569810,Hradec Králové,1,4,1350,1350,PIRÁTI a STAROSTOVÉ,PIRÁTI a STAROSTOVÉ,STAN+Piráti,2,"166,720"
+5201,569810,Hradec Králové,1,5,1812,1812,"SPD, Motoristé sobě, Trikolora a nezávislí","SPD, Motoristé sobě, Trikolora a nezávislí",SPDAUTOTrikolNK,4,"080,1114,1178,1227"
+5201,569810,Hradec Králové,1,6,479,479,"Změna pro Hradec, Zelení a KDU-ČSL","Změna pro Hradec, Zelení a KDU-ČSL",KDUČSL+Zel.+NK,3,"001,005,080"
+5201,569810,Hradec Králové,1,7,1899,1899,"NÁŠ HRADEC: koalice Naše Česko, MY, ROZVÍJÍME HRADEC, HRADEČTÍ PATRIOTI, Volba pro město","NÁŠ HRADEC: Koalice NČ, MY, RH, HP a VPM",VPM+HP+MY+RH+NČ,5,"113,1016,1228,1267,1722"
+5201,569810,Hradec Králové,1,8,1858,1858,"PRO Právo Respekt Odbornost, Svobodní, PŘÍSAHA občanské hnutí","PRO Právo Respekt Odbornost, Svobodní, PŘÍSAHA",Svob+PŘÍSAH+PRO,3,"714,1245,1265"
+5201,569810,Hradec Králové,1,9,1859,1859,Hradecký demokratický klub a TOP 09 s podporou Hradeckých kantorů a nestraníků,HDK a TOP 09 s podporou Hrad. kantorů a nestraníků,TOP 09+HDK,2,"721,1049"
+5201,569810,Hradec Králové,1,10,1738,1738,SALON REPUBLIKY 21,SALON REPUBLIKY 21,SR21,1,1738
+5301,571164,Chrudim,1,1,1627,1627,NEZÁVISLÍ PRO Chrudim,NEZÁVISLÍ PRO Chrudim,PRO+NK,2,"080,1265"
+5301,571164,Chrudim,1,2,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+5301,571164,Chrudim,1,3,477,477,CHRUDIMÁCI (Svobodní a nezávislí),CHRUDIMÁCI (Svobodní a nezávislí),Svobodní+NK,2,"080,714"
+5301,571164,Chrudim,1,4,768,768,ANO 2011,ANO 2011,ANO,1,768
+5301,571164,Chrudim,1,5,1911,1911,DIALOG PRO CHRUDIM,DIALOG PRO CHRUDIM,SOCDEKSČMČSSDNK,4,"007,047,080,759"
+5301,571164,Chrudim,1,6,1315,1315,CHRUDIM SPOLEČNĚ,CHRUDIM SPOLEČNĚ,KDU+STAN+TOP09,3,"001,166,721"
+5301,571164,Chrudim,1,7,541,541,Lidi z Chrudimi - Piráti a nezávislí,Lidi z Chrudimi - Piráti a nezávislí,Piráti+NK,2,"080,720"
+5301,571164,Chrudim,1,8,1305,1305,SPD s podporou nezávislých,SPD s podporou nezávislých,SPD+NK,2,"080,1114"
+5301,571164,Chrudim,1,9,129,129,SNK Evropští demokraté,SNK Evropští demokraté,SNK ED,1,129
+5301,571164,Chrudim,1,10,1932,1932,Nová Koalice pro Chrudim,Nová Koalice pro Chrudim,LES+NČ,2,"795,1722"
+5202,572659,Jičín,1,1,482,482,"Za práva zvířat v Jičíně, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","Za práva zvířat v Jičíně, sdr. DSZ-ZA PRÁ.ZV. a NK",DSZ+NK,2,"080,715"
+5202,572659,Jičín,1,2,544,544,Patrioti a JDK,Patrioti a JDK,HDK+NK,2,"080,1049"
+5202,572659,Jičín,1,3,113,113,VOLBA PRO MĚSTO,VOLBA PRO MĚSTO,VPM,1,113
+5202,572659,Jičín,1,4,470,470,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN+NK,2,"080,166"
+5202,572659,Jičín,1,5,389,389,ODS s podporou nezávislých kandidátů,ODS s podporou nezávislých kandidátů,ODS+NK,2,"053,080"
+5202,572659,Jičín,1,6,901,90,Sdružení nezávislých kandidátů Aktivní Jičín,Sdružení nezávislých kandidátů Aktivní Jičín,SNK,1,080
+5202,572659,Jičín,1,7,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+5202,572659,Jičín,1,8,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+5202,572659,Jičín,1,9,541,541,JIČÍN SRDCEM s podporou Pirátů,JIČÍN SRDCEM s podporou Pirátů,Piráti+NK,2,"080,720"
+5202,572659,Jičín,1,10,355,355,Sdružení pro Jičín,Sdružení pro Jičín,KDU-ČSL+NK,2,"001,080"
+5202,572659,Jičín,1,11,768,768,ANO 2011,ANO 2011,ANO,1,768
+5203,573868,Náchod,1,1,1454,1454,ODS • STAN • VÝCHODOČEŠI – ŽIJEME NÁCHODEM,ODS • STAN • VÝCHODOČEŠI – ŽIJEME NÁCHODEM,ODS+STAN+VČ,3,"053,166,770"
+5203,573868,Náchod,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+5203,573868,Náchod,1,3,1264,1264,PATRIOTI NÁCHODA,PATRIOTI NÁCHODA,PaN,1,1264
+5203,573868,Náchod,1,4,1804,1804,SPD a nezávislí kandidáti s podporou PRO,SPD a nezávislí kandidáti s podporou PRO,SPD+PRO+NK,3,"080,1114,1265"
+5203,573868,Náchod,1,5,1523,1523,SOUSEDÉ za lepší Náchod,SOUSEDÉ za lepší Náchod,KDUZelPirTOPNK,5,"001,005,080,720,721"
+5203,573868,Náchod,1,6,371,371,JAN BIRKE PRO NÁCHOD,JAN BIRKE PRO NÁCHOD,SOCDEM+NK,2,"007,080"
+5203,574121,Jaroměř,1,1,901,90,PRO JAROMĚŘ,PRO JAROMĚŘ,SNK,1,080
+5203,574121,Jaroměř,1,2,1479,1479,Hnutí dobrých proměn Jaroměř,Hnutí dobrých proměn Jaroměř,MY+NK,2,"080,1228"
+5203,574121,Jaroměř,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+5203,574121,Jaroměř,1,4,470,470,JAROMĚŘÁCI A STAN,JAROMĚŘÁCI A STAN,STAN+NK,2,"080,166"
+5203,574121,Jaroměř,1,5,1327,1327,SPOLU pro Jaroměř,SPOLU pro Jaroměř,KDU+ODS+TOP 09,3,"001,053,721"
+5203,574121,Jaroměř,1,6,529,529,Nová vlna pro Jaroměř,Nová vlna pro Jaroměř,Zel.+Piráti+NK,3,"005,080,720"
+5204,576069,Rychnov nad Kněžnou,1,1,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+5204,576069,Rychnov nad Kněžnou,1,2,1305,1305,Svoboda a přímá demokracie a nezávislí,Svoboda a přímá demokracie a nezávislí,SPD+NK,2,"080,1114"
+5204,576069,Rychnov nad Kněžnou,1,3,1483,1483,PROSTOR 516 01 s podporou Pirátů a Starostů,PROSTOR 516 01 s podporou Pirátů a Starostů,STAN+Piráti+NK,3,"080,166,720"
+5204,576069,Rychnov nad Kněžnou,1,4,113,113,Volba pro město,Volba pro město,VPM,1,113
+5204,576069,Rychnov nad Kněžnou,1,5,901,90,RYCHNOV PLUS,RYCHNOV PLUS,SNK,1,080
+5204,576069,Rychnov nad Kněžnou,1,6,515,515,NENÍ NÁM TO JEDNO s podporou politického hnutí Východočeši,NENÍ NÁM TO JEDNO s podporou hnutí Východočeši,VČ+NK,2,"080,770"
+5204,576069,Rychnov nad Kněžnou,1,7,902,90,Nezávislí za Rychnov,Nezávislí za Rychnov,SNK,1,080
+5204,576069,Rychnov nad Kněžnou,1,8,768,768,ANO 2011,ANO 2011,ANO,1,768
+5204,576069,Rychnov nad Kněžnou,1,9,480,480,21 pro město,21 pro město,TOP 09+NK,2,"080,721"
+5104,577626,Turnov,1,1,210,210,ODS s podporou KDU-ČSL,ODS s podporou KDU-ČSL,KDU-ČSL+ODS,2,"001,053"
+5104,577626,Turnov,1,2,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+5104,577626,Turnov,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+5104,577626,Turnov,1,4,902,90,Nezávislý blok,Nezávislý blok,SNK,1,080
+5104,577626,Turnov,1,5,901,90,PROTO (PRO Turnovské Občany),PROTO (PRO Turnovské Občany),SNK,1,080
+5104,577626,Turnov,1,6,1890,1890,Zdravý Turnov,Zdravý Turnov,Zel+Soukromn+NK,3,"005,080,716"
+5205,579025,Trutnov,1,1,1805,1805,"PATRIOTI TRUTNOV s podporou PRO, SPD, Svobodných a nezávislých kandidátů","PATRIOTI TRUTNOV s podp. PRO, SPD, Svobodných a NK",Svob+SPD+PRO+NK,4,"080,714,1114,1265"
+5205,579025,Trutnov,1,2,113,113,Volba pro město,Volba pro město,VPM,1,113
+5205,579025,Trutnov,1,3,470,470,ADRESA TRUTNOV,ADRESA TRUTNOV,STAN+NK,2,"080,166"
+5205,579025,Trutnov,1,4,768,768,ANO 2011,ANO 2011,ANO,1,768
+5205,579025,Trutnov,1,5,1508,1508,Máme rádi Trutnov - ODS s podporou KDU-ČSL a TOP09,Máme rádi Trutnov - ODS s podporou KDU-ČSL a TOP09,KDU+ODS+TOP+NK,4,"001,053,080,721"
+5205,579203,Dvůr Králové nad Labem,1,1,1370,1370,Klíč ke Dvoru,Klíč ke Dvoru,KDU+Zel+Pir+NK,4,"001,005,080,720"
+5205,579203,Dvůr Králové nad Labem,1,2,389,389,Máme rádi Dvůr - ODS a nezávislí,Máme rádi Dvůr - ODS a nezávislí,ODS+NK,2,"053,080"
+5205,579203,Dvůr Králové nad Labem,1,3,1479,1479,Sportovci pro Dvůr,Sportovci pro Dvůr,MY+NK,2,"080,1228"
+5205,579203,Dvůr Králové nad Labem,1,4,470,470,SÍLA DVORA S PODPOROU STAROSTŮ A NEZÁVISLÝCH,SÍLA DVORA S PODPOROU STAROSTŮ A NEZÁVISLÝCH,STAN+NK,2,"080,166"
+5205,579203,Dvůr Králové nad Labem,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+5304,580031,Česká Třebová,1,1,355,355,Koalice pro Českou Třebovou,Koalice pro Českou Třebovou,KDU-ČSL+NK,2,"001,080"
+5304,580031,Česká Třebová,1,2,1331,1331,Stateční & Piráti,Stateční & Piráti,Piráti+TOP09+NK,3,"080,720,721"
+5304,580031,Česká Třebová,1,3,566,566,„Třebováci” Zdraví Sport Vzdělávání,„Třebováci” Zdraví Sport Vzdělávání,PRO Zdraví+NK,2,"080,785"
+5304,580031,Česká Třebová,1,4,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+5304,580031,Česká Třebová,1,5,1479,1479,3PK – PRO PROSPERUJÍCÍ ČESKOU TŘEBOVOU,3PK – PRO PROSPERUJÍCÍ ČESKOU TŘEBOVOU,MY+NK,2,"080,1228"
+5304,580031,Česká Třebová,1,6,181,181,Nestraníci,Nestraníci,Nestran.,1,181
+5304,580031,Česká Třebová,1,7,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+6201,581283,Blansko,1,1,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+6201,581283,Blansko,1,2,1305,1305,SPD a nezávislí - SRDCEM pro BLANSKO,SPD a nezávislí - SRDCEM pro BLANSKO,SPD+NK,2,"080,1114"
+6201,581283,Blansko,1,3,1642,1642,LEVICE pro Blansko,LEVICE pro Blansko,ČSNS+KSČM,2,"002,047"
+6201,581283,Blansko,1,4,523,523,Tým Crha - ODS a nezávislé osobnosti s podporou TOP09,Tým Crha-ODS a nezávis. osobnosti s podporou TOP09,ODS+TOP 09+NK,3,"053,080,721"
+6201,581283,Blansko,1,5,1692,1692,SPORTOVCI PRO BLANSKO,SPORTOVCI PRO BLANSKO,SOCDEM+Volt+NK,3,"007,080,1272"
+6201,581283,Blansko,1,6,714,714,Svobodní,Svobodní,Svobodní,1,714
+6201,581283,Blansko,1,7,768,768,ANO 2011,ANO 2011,ANO,1,768
+6201,581283,Blansko,1,8,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+6201,581283,Blansko,1,9,1560,1560,FÓRUM Blansko,FÓRUM Blansko,Idealisté+NK,2,"080,1233"
+6201,581283,Blansko,1,10,1871,1871,Volba pro Blansko,Volba pro Blansko,SOL+NK,2,"080,1031"
+6202,582786,Brno,1,1,371,371,Sociální demokracie,Sociální demokracie,SOCDEM+NK,2,"007,080"
+6202,582786,Brno,1,2,340,340,Lidovci a Starostové – Brno blíž lidem,Lidovci a Starostové – Brno blíž lidem,KDU-ČSL+STAN,2,"001,166"
+6202,582786,Brno,1,3,1869,1869,"ZELENÉ BRNO (Zelení, Žít Brno, SEN 21, LES, Volt, Budoucnost, Kruh)","ZELENÉ BRNO (Zel.,ŽTB,SEN 21,LES,Volt,Bud.,Kruh)",ZLESŽBSENBuVoKr,7,"005,795,1026,1187,1232,1272,1707"
+6202,582786,Brno,1,4,768,768,ANO 2011,ANO 2011,ANO,1,768
+6202,582786,Brno,1,5,1710,1710,Za Lužánky,Za Lužánky,Za Lužánky,1,1710
+6202,582786,Brno,1,6,523,523,"ODS, TOP 09 a nezávislí","ODS, TOP 09 a nezávislí",ODS+TOP 09+NK,3,"053,080,721"
+6202,582786,Brno,1,7,1832,1832,Restart pro Brno,Restart pro Brno,KSČMČSSDDOSmSt!,5,"047,759,1221,1248,1298"
+6202,582786,Brno,1,8,1711,1711,Brnoklidem,Brnoklidem,KLID,1,1711
+6202,582786,Brno,1,9,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+6202,582786,Brno,1,10,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","Sdružení DSZ - ZA PRÁVA ZVÍŘAT, NK",DSZ+NK,2,"080,715"
+6202,582786,Brno,1,11,1901,1901,Brno Brňankám a Brňanům! (B3!),Brno Brňankám a Brňanům! (B3!),LANO+VRBa,2,"1286,1744"
+6202,582786,Brno,1,12,1245,1245,PŘÍSAHA občanské hnutí,PŘÍSAHA občanské hnutí,PŘÍSAHA,1,1245
+6202,582786,Brno,1,13,1693,1693,"BRNO NAPLNO - koalice Svobodní, Trikolora, PRO","BRNO NAPLNO - koalice Svobodní, Trikolora, PRO",Svobo+Triko+PRO,3,"714,1227,1265"
+6202,582786,Brno,1,14,1730,1730,Nové Brno,Nové Brno,NB,1,1730
+6202,582786,Brno,1,15,1870,1870,Piráti a Fakt Brno TU!,Piráti a Fakt Brno TU!,PirIdeFaktBrGEN,4,"720,1233,1246,1297"
+6202,582786,Brno,1,16,1305,1305,SPD a nezávislí,SPD a nezávislí,SPD+NK,2,"080,1114"
+6203,583952,Šlapanice,1,1,902,90,Nezávislí92,Nezávislí92,SNK,1,080
+6203,583952,Šlapanice,1,2,389,389,VIZE pro Šlapanice,VIZE pro Šlapanice,ODS+NK,2,"053,080"
+6203,583952,Šlapanice,1,3,1058,1058,Společně za Šlapanice,Společně za Šlapanice,KDU-ČSL+TOP 09,2,"001,721"
+6203,583952,Šlapanice,1,4,901,90,Čisté Šlapanice,Čisté Šlapanice,SNK,1,080
+6203,583952,Šlapanice,1,5,470,470,SNK pro Šlapanice,SNK pro Šlapanice,STAN+NK,2,"080,166"
+6203,583952,Šlapanice,1,6,541,541,Piráti Šlapanice & friends,Piráti Šlapanice & friends,Piráti+NK,2,"080,720"
+6203,584002,Tišnov,1,1,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+6203,584002,Tišnov,1,2,903,90,Tišnov Plus,Tišnov Plus,SNK,1,080
+6203,584002,Tišnov,1,3,901,90,Místní Občanský Spolek Tišnováků (MOST),Místní Občanský Spolek Tišnováků (MOST),SNK,1,080
+6203,584002,Tišnov,1,4,687,687,Tišnováci (s podporou ODS a TOP 09),Tišnováci (s podporou ODS a TOP 09),ODS+TOP 09,2,"053,721"
+6203,584002,Tišnov,1,5,902,90,OTEVŘENÝ TIŠNOV,OTEVŘENÝ TIŠNOV,SNK,1,080
+6203,584002,Tišnov,1,6,768,768,ANO 2011,ANO 2011,ANO,1,768
+6203,584002,Tišnov,1,7,541,541,SPOLKY pro TIŠNOV,SPOLKY pro TIŠNOV,Piráti+NK,2,"080,720"
+6203,584002,Tišnov,1,8,470,470,NÁŠ TIŠNOV,NÁŠ TIŠNOV,STAN+NK,2,"080,166"
+6204,584291,Břeclav,1,1,1483,1483,MLADÍ A NEKLIDNÍ BŘECLAV,MLADÍ A NEKLIDNÍ BŘECLAV,STAN+Piráti+NK,3,"080,166,720"
+6204,584291,Břeclav,1,2,1305,1305,SPD a nezávislí,SPD a nezávislí,SPD+NK,2,"080,1114"
+6204,584291,Břeclav,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+6204,584291,Břeclav,1,4,401,401,Naše Břeclav,Naše Břeclav,NEZ+NK,2,"080,088"
+6204,584291,Břeclav,1,5,1058,1058,Břeclav má na víc,Břeclav má na víc,KDU-ČSL+TOP 09,2,"001,721"
+6204,584291,Břeclav,1,6,1298,1298,Stačilo!,Stačilo!,Stačilo!,1,1298
+6204,584291,Břeclav,1,7,1537,1537,PŘÍSAHA a lidé pro Břeclav,PŘÍSAHA a lidé pro Břeclav,PŘÍSAHA+NK,2,"080,1245"
+6204,584291,Břeclav,1,8,389,389,ODS Břeclav - Pro budoucí generace,ODS Břeclav - Pro budoucí generace,ODS+NK,2,"053,080"
+6204,584291,Břeclav,1,9,1699,1699,Pro Region Břeclav,Pro Region Břeclav,HR+NK,2,"080,1715"
+6204,584649,Mikulov,1,1,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+6204,584649,Mikulov,1,2,541,541,Piráti Mikulov,Piráti Mikulov,Piráti+NK,2,"080,720"
+6204,584649,Mikulov,1,3,901,90,Pro Mikulov,Pro Mikulov,SNK,1,080
+6204,584649,Mikulov,1,4,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+6204,584649,Mikulov,1,5,659,659,STAROSTOVÉ A NEZÁVISLÍ PRO MIKULOV S PODPOROU TOP 09,STAROST. A NEZÁVISLÍ PRO MIKULOV S PODPOR. TOP 09,TOP+STAN,2,"166,721"
+6204,584649,Mikulov,1,6,1500,1500,Nezávislí SEN pro Mikulov,Nezávislí SEN pro Mikulov,SEN 21+NK,2,"080,1187"
+6204,584649,Mikulov,1,7,902,90,SPRÁVNÁ VOLBA Mikulov,SPRÁVNÁ VOLBA Mikulov,SNK,1,080
+6204,584649,Mikulov,1,8,768,768,ANO 2011,ANO 2011,ANO,1,768
+6204,584649,Mikulov,1,9,1830,1830,VÝZVA MIKULOV,VÝZVA MIKULOV,VÝZVA+NK,2,"080,1704"
+6204,584649,Mikulov,1,10,463,463,Náš Mikulov,Náš Mikulov,SOM+NK,2,"080,158"
+6204,584649,Mikulov,1,11,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+7204,585068,Zlín,1,1,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+7204,585068,Zlín,1,2,1697,1697,Společná kandidátka politických stran Motoristé sobě a Svobodní,Spol. kandidátka pol. stran Motoristé a Svobodní,Svobodní+AUTO,2,"714,1178"
+7204,585068,Zlín,1,3,1387,1387,Společně pro Zlín,Společně pro Zlín,KDU+Nestr.+TOP,3,"001,181,721"
+7204,585068,Zlín,1,4,1866,1866,PRO LEPŠÍ ZLÍN,PRO LEPŠÍ ZLÍN,TrikoPROStač!NK,4,"080,1227,1265,1298"
+7204,585068,Zlín,1,5,1949,1949,ZLÍN SRDCEM a Piráti,ZLÍN SRDCEM a Piráti,Piráti+ZS+NK,3,"080,720,1751"
+7204,585068,Zlín,1,6,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+7204,585068,Zlín,1,7,768,768,ANO 2011,ANO 2011,ANO,1,768
+7204,585068,Zlín,1,8,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+7204,585068,Zlín,1,9,797,797,Zlín 21,Zlín 21,Z21,1,797
+7204,585599,Otrokovice,1,1,541,541,Občané OE s podporou Pirátů,Občané OE s podporou Pirátů,Piráti+NK,2,"080,720"
+7204,585599,Otrokovice,1,2,371,371,VIZE 21,VIZE 21,SOCDEM+NK,2,"007,080"
+7204,585599,Otrokovice,1,3,355,355,SPOLEČNĚ PRO OTROKOVICE,SPOLEČNĚ PRO OTROKOVICE,KDU-ČSL+NK,2,"001,080"
+7204,585599,Otrokovice,1,4,88,88,NEZÁVISLÍ,NEZÁVISLÍ,NEZ,1,088
+7204,585599,Otrokovice,1,5,480,480,DOMA s podporou TOP 09,DOMA s podporou TOP 09,TOP 09+NK,2,"080,721"
+7204,585599,Otrokovice,1,6,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+7204,585599,Otrokovice,1,7,1953,1953,OTROKOVICE SRDCEM + ODS + STAN,OTROKOVICE SRDCEM + ODS + STAN,ODS+STAN+NI+NK,4,"053,080,166,726"
+7204,585599,Otrokovice,1,8,768,768,ANO 2011,ANO 2011,ANO,1,768
+6205,586722,Veselí nad Moravou,1,1,389,389,Stopro Veselí - ODS a nezávislé osobnosti,Stopro Veselí - ODS a nezávislé osobnosti,ODS+NK,2,"053,080"
+6205,586722,Veselí nad Moravou,1,2,541,541,ZA NAŠE VESELÍ,ZA NAŠE VESELÍ,Piráti+NK,2,"080,720"
+6205,586722,Veselí nad Moravou,1,3,480,480,SPOLEČNĚ PRO VESELÍ - veselská TOP 09 a nezávislé osobnosti,SPOLEČNĚ PRO VESELÍ - veselská TOP 09 a nez.osob.,TOP 09+NK,2,"080,721"
+6205,586722,Veselí nad Moravou,1,4,768,768,ANO 2011,ANO 2011,ANO,1,768
+6205,586722,Veselí nad Moravou,1,5,464,464,Veselská volba,Veselská volba,Moravané+NK,2,"080,083"
+6205,586722,Veselí nad Moravou,1,6,355,355,Lidovci a nezávislí pro Veselí,Lidovci a nezávislí pro Veselí,KDU-ČSL+NK,2,"001,080"
+6205,586722,Veselí nad Moravou,1,7,1435,1435,JEDENADVACÍTKA NEZÁVISLÝCH,JEDENADVACÍTKA NEZÁVISLÝCH,Koruna Česká+NK,2,"055,080"
+6205,586722,Veselí nad Moravou,1,8,1305,1305,Svoboda a přímá demokracie (SPD) a nezávislí pro Veselí,Svoboda a přímá dem. (SPD) a nezávislí pro Veselí,SPD+NK,2,"080,1114"
+6102,586846,Jihlava,1,1,529,529,Piráti a Fórum Jihlava s podporou Zelených,Piráti a Fórum Jihlava s podporou Zelených,Zel.+Piráti+NK,3,"005,080,720"
+6102,586846,Jihlava,1,2,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+6102,586846,Jihlava,1,3,1327,1327,"Tým Pro Jihlavu - ODS, lidovci, TOP 09","Tým Pro Jihlavu - ODS, lidovci, TOP 09",KDU+ODS+TOP 09,3,"001,053,721"
+6102,586846,Jihlava,1,4,1695,1695,Naše Česko a sdružení nezávislých kandidátů Jihlava srdcem,Naše Česko a sdružení nezáv. kand. Jihlava srdcem,NČ+NK,2,"080,1722"
+6102,586846,Jihlava,1,5,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+6102,586846,Jihlava,1,6,768,768,ANO 2011,ANO 2011,ANO,1,768
+6102,586846,Jihlava,1,7,1647,1647,"SPD, Svobodní, PRO a Trikolora v koalici","SPD, Svobodní, PRO a Trikolora v koalici",Svo+SPD+Tri+PRO,4,"714,1114,1227,1265"
+6102,586846,Jihlava,1,8,233,233,Sociální demokracie a Levice,Sociální demokracie a Levice,SOCDEM+Levice,2,"007,074"
+6102,586846,Jihlava,1,9,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+6102,586846,Jihlava,1,10,1268,1268,SPOLEK ZA ZDRAVOU JIHLAVU,SPOLEK ZA ZDRAVOU JIHLAVU,SZZJ,1,1268
+7201,588296,Kroměříž,1,1,1220,1220,HLAS PRO KROMĚŘÍŽ,HLAS PRO KROMĚŘÍŽ,Hlas,1,1220
+7201,588296,Kroměříž,1,2,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","DSZ - ZA PRÁVA ZVÍŘAT sdružení DSZ - ZA P. ZV., NK",DSZ+NK,2,"080,715"
+7201,588296,Kroměříž,1,3,387,387,KSČM - Alternativa pro občany,KSČM - Alternativa pro občany,KSČM+NK,2,"047,080"
+7201,588296,Kroměříž,1,4,540,540,"KDU-ČSL, TOP 09 a nezávislí","KDU-ČSL, TOP 09 a nezávislí",KDUČSL+TOP09+NK,3,"001,080,721"
+7201,588296,Kroměříž,1,5,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+7201,588296,Kroměříž,1,6,511,511,OK OBČANÉ KROMĚŘÍŽE,OK OBČANÉ KROMĚŘÍŽE,ZVUK 12+NK,2,"080,775"
+7201,588296,Kroměříž,1,7,541,541,První volba pro Kroměříž a místní části,První volba pro Kroměříž a místní části,Piráti+NK,2,"080,720"
+7201,588296,Kroměříž,1,8,714,714,Svobodní,Svobodní,Svobodní,1,714
+7201,588296,Kroměříž,1,9,371,371,KM26,KM26,SOCDEM+NK,2,"007,080"
+7201,588296,Kroměříž,1,10,389,389,Občanští demokraté a kroměřížské osobnosti,Občanští demokraté a kroměřížské osobnosti,ODS+NK,2,"053,080"
+7201,588296,Kroměříž,1,11,364,364,Zdravé Kroměřížsko,Zdravé Kroměřížsko,Zelení+NK,2,"005,080"
+7201,588296,Kroměříž,1,12,88,88,NEZÁVISLÍ,NEZÁVISLÍ,NEZ,1,088
+7201,588296,Kroměříž,1,13,768,768,ANO 2011,ANO 2011,ANO,1,768
+7201,588458,Holešov,1,1,355,355,LIDOVCI Holešov,LIDOVCI Holešov,KDU-ČSL+NK,2,"001,080"
+7201,588458,Holešov,1,2,1331,1331,AKCE Holešovských Občanů,AKCE Holešovských Občanů,Piráti+TOP09+NK,3,"080,720,721"
+7201,588458,Holešov,1,3,1850,1850,Koalice pro Holešov,Koalice pro Holešov,Zelení+ZVUK+NK,3,"005,080,775"
+7201,588458,Holešov,1,4,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+7201,588458,Holešov,1,5,387,387,KSČM – Alternativa pro občany,KSČM – Alternativa pro občany,KSČM+NK,2,"047,080"
+7201,588458,Holešov,1,6,1877,1877,Za Holešov,Za Holešov,ZH+NK,2,"080,1745"
+7201,588458,Holešov,1,7,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+7201,588458,Holešov,1,8,371,371,Holešovští patrioti,Holešovští patrioti,SOCDEM+NK,2,"007,080"
+7201,588458,Holešov,1,9,768,768,ANO 2011,ANO 2011,ANO,1,768
+7201,588458,Holešov,1,10,470,470,STAROSTOVÉ a nezávislí kandidáti,STAROSTOVÉ a nezávislí kandidáti,STAN+NK,2,"080,166"
+7103,589250,Prostějov,1,1,541,541,Prostějov 2:0,Prostějov 2:0,Piráti+NK,2,"080,720"
+7103,589250,Prostějov,1,2,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+7103,589250,Prostějov,1,3,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+7103,589250,Prostějov,1,4,7,7,Sociální demokracie,Sociální demokracie,SOCDEM,1,007
+7103,589250,Prostějov,1,5,768,768,ANO 2011,ANO 2011,ANO,1,768
+7103,589250,Prostějov,1,6,1627,1627,NÁŠ PROSTĚJOV,NÁŠ PROSTĚJOV,PRO+NK,2,"080,1265"
+7103,589250,Prostějov,1,7,1020,1020,Pévéčko,Pévéčko,PV,1,1020
+7103,589250,Prostějov,1,8,389,389,Prostějovští demokraté: Občanská demokratická strana spolu s nezávislými osobnostmi města Prostějova,Prost. dem.: ODS spolu s nezáv. osob. města Prost.,ODS+NK,2,"053,080"
+7103,589250,Prostějov,1,9,1612,1612,Na rovinu!,Na rovinu!,Zelení+STAN+TOP,3,"005,166,721"
+7103,589250,Prostějov,1,10,55,55,"Koruna Česká (monarchistická strana Čech, Moravy a Slezska)","Koruna Česká (monarch.str.Čech, Moravy a Slezska)",Koruna Česká,1,055
+6104,590266,Třebíč,1,1,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+6104,590266,Třebíč,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+6104,590266,Třebíč,1,3,470,470,PRO TŘEBÍČ,PRO TŘEBÍČ,STAN+NK,2,"080,166"
+6104,590266,Třebíč,1,4,1688,1688,MOSTy Třebíč,MOSTy Třebíč,Volt+NK,2,"080,1272"
+6104,590266,Třebíč,1,5,371,371,Budoucnost pro Třebíč,Budoucnost pro Třebíč,SOCDEM+NK,2,"007,080"
+6104,590266,Třebíč,1,6,1874,1874,Živé Město,Živé Město,ODS+SNKED+TOP09,3,"053,129,721"
+6104,590266,Třebíč,1,7,529,529,Piráti - Břehy - Zelení,Piráti - Břehy - Zelení,Zel.+Piráti+NK,3,"005,080,720"
+6104,590266,Třebíč,1,8,1699,1699,Třebíč Občanům!,Třebíč Občanům!,HR+NK,2,"080,1715"
+6104,590266,Třebíč,1,9,355,355,LIDOVCI,LIDOVCI,KDU-ČSL+NK,2,"001,080"
+6104,590266,Třebíč,1,10,1487,1487,SPD a Trikolora,SPD a Trikolora,SPD+Trikolora,2,"1114,1227"
+6104,591181,Moravské Budějovice,1,1,1896,1896,Za lepší Budějovice,Za lepší Budějovice,ODS+Piráti,2,"053,720"
+6104,591181,Moravské Budějovice,1,2,532,532,ANO 2011 a SOMB,ANO 2011 a SOMB,ANO+NK,2,"080,768"
+6104,591181,Moravské Budějovice,1,3,527,527,Slušně a zodpovědně za Moravské Budějovice,Slušně a zodpovědně za Moravské Budějovice,STO+NK,2,"080,779"
+6104,591181,Moravské Budějovice,1,4,355,355,Noví lidovci - KDU-ČSL,Noví lidovci - KDU-ČSL,KDU-ČSL+NK,2,"001,080"
+6104,591181,Moravské Budějovice,1,5,464,464,Živé město,Živé město,Moravané+NK,2,"080,083"
+6104,591181,Moravské Budějovice,1,6,470,470,BUDĚJOVÁCI s podporou Starostů,BUDĚJOVÁCI s podporou Starostů,STAN+NK,2,"080,166"
+7202,592005,Uherské Hradiště,1,1,1430,1430,Hradišťáci,Hradišťáci,Svob+Soukrom+NK,3,"080,714,716"
+7202,592005,Uherské Hradiště,1,2,541,541,TOŽ HRADIŠTĚ s podporou Pirátů,TOŽ HRADIŠTĚ s podporou Pirátů,Piráti+NK,2,"080,720"
+7202,592005,Uherské Hradiště,1,3,355,355,KDU-ČSL a nezávislé osobnosti,KDU-ČSL a nezávislé osobnosti,KDU-ČSL+NK,2,"001,080"
+7202,592005,Uherské Hradiště,1,4,371,371,Město generací - sdružení Sociální demokracie a nezávislých kandidátů,Město generací - sdružení Sociální demokracie a NK,SOCDEM+NK,2,"007,080"
+7202,592005,Uherské Hradiště,1,5,463,463,NESTRANÍCI PRO HRADIŠTĚ,NESTRANÍCI PRO HRADIŠTĚ,SOM+NK,2,"080,158"
+7202,592005,Uherské Hradiště,1,6,495,495,TOP STAN!,TOP STAN!,TOP 09+STAN+NK,3,"080,166,721"
+7202,592005,Uherské Hradiště,1,7,768,768,ANO 2011,ANO 2011,ANO,1,768
+7202,592005,Uherské Hradiště,1,8,389,389,Občanští demokraté a nezávislé osobnosti,Občanští demokraté a nezávislé osobnosti,ODS+NK,2,"053,080"
+7202,592731,Uherský Brod,1,1,470,470,STAN A OBČANÉ UH. BRODU,STAN A OBČANÉ UH. BRODU,STAN+NK,2,"080,166"
+7202,592731,Uherský Brod,1,2,389,389,Občanští demokraté a nezávislé osobnosti,Občanští demokraté a nezávislé osobnosti,ODS+NK,2,"053,080"
+7202,592731,Uherský Brod,1,3,541,541,Mladí Broďani - zlepsimebrod.cz,Mladí Broďani - zlepsimebrod.cz,Piráti+NK,2,"080,720"
+7202,592731,Uherský Brod,1,4,355,355,Společně pro Brod - KDU-ČSL a nezávislí kandidáti,Společně pro Brod - KDU-ČSL a nezávislí kandidáti,KDU-ČSL+NK,2,"001,080"
+7202,592731,Uherský Brod,1,5,371,371,"Vstřícnost, slušnost, komunikace","Vstřícnost, slušnost, komunikace",SOCDEM+NK,2,"007,080"
+7202,592731,Uherský Brod,1,6,768,768,ANO 2011,ANO 2011,ANO,1,768
+7202,592731,Uherský Brod,1,7,511,511,Nezávislí za rozvoj města Uherský Brod,Nezávislí za rozvoj města Uherský Brod,ZVUK 12+NK,2,"080,775"
+6206,593583,Slavkov u Brna,1,1,1699,1699,MODERNÍ MĚSTO MORAVY SLAVKOV U BRNA,MODERNÍ MĚSTO MORAVY SLAVKOV U BRNA,HR+NK,2,"080,1715"
+6206,593583,Slavkov u Brna,1,2,1479,1479,PRO Slavkov u Brna,PRO Slavkov u Brna,MY+NK,2,"080,1228"
+6206,593583,Slavkov u Brna,1,3,181,181,Nestraníci,Nestraníci,Nestran.,1,181
+6206,593583,Slavkov u Brna,1,4,659,659,STAROSTOVÉ A NEZÁVISLÍ S PODPOROU TOP 09,STAROSTOVÉ A NEZÁVISLÍ S PODPOROU TOP 09,TOP+STAN,2,"166,721"
+6206,593583,Slavkov u Brna,1,5,389,389,Společně - ODS s podporou nezávislých,Společně - ODS s podporou nezávislých,ODS+NK,2,"053,080"
+6206,593583,Slavkov u Brna,1,6,541,541,Vize pro Slavkov,Vize pro Slavkov,Piráti+NK,2,"080,720"
+6206,593583,Slavkov u Brna,1,7,355,355,Noví lidovci a KDU-ČSL,Noví lidovci a KDU-ČSL,KDU-ČSL+NK,2,"001,080"
+6206,593583,Slavkov u Brna,1,8,1305,1305,SPD PRO SLAVKOV U BRNA,SPD PRO SLAVKOV U BRNA,SPD+NK,2,"080,1114"
+6207,593711,Znojmo,1,1,1853,1853,Domov je Znojmo,Domov je Znojmo,ČSSDDOMSměJaSaN,4,"759,1221,1248,1282"
+6207,593711,Znojmo,1,2,768,768,ANO 2011,ANO 2011,ANO,1,768
+6207,593711,Znojmo,1,3,470,470,STAROSTOVÉ PRO ZNOJMO,STAROSTOVÉ PRO ZNOJMO,STAN+NK,2,"080,166"
+6207,593711,Znojmo,1,4,463,463,Naše Znojmo,Naše Znojmo,SOM+NK,2,"080,158"
+6207,593711,Znojmo,1,5,1305,1305,SPD a nezávislí,SPD a nezávislí,SPD+NK,2,"080,1114"
+6207,593711,Znojmo,1,6,1327,1327,ODS + KDU-ČSL + TOP 09 SPOLU,ODS + KDU-ČSL + TOP 09 SPOLU,KDU+ODS+TOP 09,3,"001,053,721"
+6207,593711,Znojmo,1,7,541,541,ZNOJMO JSI TY!,ZNOJMO JSI TY!,Piráti+NK,2,"080,720"
+6207,593711,Znojmo,1,8,1958,1958,ZNOJMO LIDEM,ZNOJMO LIDEM,Svobodn+PŘÍSAHA,2,"714,1245"
+6207,593711,Znojmo,1,9,1699,1699,HLAS ZNOJMÁKŮ,HLAS ZNOJMÁKŮ,HR+NK,2,"080,1715"
+6105,596230,Nové Město na Moravě,1,1,1479,1479,Lepší Nové Město,Lepší Nové Město,MY+NK,2,"080,1228"
+6105,596230,Nové Město na Moravě,1,2,902,90,JEDNO MĚSTO,JEDNO MĚSTO,SNK,1,080
+6105,596230,Nové Město na Moravě,1,3,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+6105,596230,Nové Město na Moravě,1,4,901,90,Sdružení nezávislých kandidátů pro obce,Sdružení nezávislých kandidátů pro obce,SNK,1,080
+6105,596230,Nové Město na Moravě,1,5,541,541,Piráti a nezávislí,Piráti a nezávislí,Piráti+NK,2,"080,720"
+6105,596230,Nové Město na Moravě,1,6,532,532,ANO 2011 + NOVÝ SMĚR,ANO 2011 + NOVÝ SMĚR,ANO+NK,2,"080,768"
+6105,596230,Nové Město na Moravě,1,7,480,480,TOP 09 a nezávislí,TOP 09 a nezávislí,TOP 09+NK,2,"080,721"
+6105,596230,Nové Město na Moravě,1,8,463,463,Novoměšťáci,Novoměšťáci,SOM+NK,2,"080,158"
+8102,598003,Frýdek-Místek,1,1,1838,1838,LEVICE PRO FRÝDEK-MÍSTEK,LEVICE PRO FRÝDEK-MÍSTEK,KSČM+Stačilo+NK,3,"047,080,1298"
+8102,598003,Frýdek-Místek,1,2,1736,1736,rEvoluce,rEvoluce,Evo,1,1736
+8102,598003,Frýdek-Místek,1,3,1531,1531,SPOLEČNĚ PRO FRÝDEK-MÍSTEK,SPOLEČNĚ PRO FRÝDEK-MÍSTEK,KDU+ODS+STA+TOP,4,"001,053,166,721"
+8102,598003,Frýdek-Místek,1,4,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+8102,598003,Frýdek-Místek,1,5,799,799,Naše Město F-M,Naše Město F-M,NMFM,1,799
+8102,598003,Frýdek-Místek,1,6,768,768,ANO 2011,ANO 2011,ANO,1,768
+8102,598003,Frýdek-Místek,1,7,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+8102,598003,Frýdek-Místek,1,8,1178,1178,Motoristé sobě,Motoristé sobě,AUTO,1,1178
+8102,598003,Frýdek-Místek,1,9,371,371,Přátelé FM,Přátelé FM,SOCDEM+NK,2,"007,080"
+8103,598917,Karviná,1,1,759,759,ČSSD – Česká suverenita sociální demokracie,ČSSD – Česká suverenita sociální demokracie,ČSSD,1,759
+8103,598917,Karviná,1,2,371,371,Žijeme pro Karvinou,Žijeme pro Karvinou,SOCDEM+NK,2,"007,080"
+8103,598917,Karviná,1,3,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+8103,598917,Karviná,1,4,1912,1912,"Srdcem pro Karvinou - koalice STAN, ODS, PIRÁTI a TOP 09","Srdcem pro Karvinou - STAN, ODS, PIRÁTI a TOP 09",ODSSTANPirátTOP,4,"053,166,720,721"
+8103,598917,Karviná,1,5,355,355,"NOVÍ LIDOVCI, KDU-ČSL a další Karviňáci","NOVÍ LIDOVCI, KDU-ČSL a další Karviňáci",KDU-ČSL+NK,2,"001,080"
+8103,598917,Karviná,1,6,395,395,Změna pro Karvinou,Změna pro Karvinou,ND+NK,2,"079,080"
+8103,598917,Karviná,1,7,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+8103,598917,Karviná,1,8,768,768,ANO 2011,ANO 2011,ANO,1,768
+8103,598933,Český Těšín,1,1,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+8103,598933,Český Těšín,1,2,541,541,TĚŠÍN 2.0,TĚŠÍN 2.0,Piráti+NK,2,"080,720"
+8103,598933,Český Těšín,1,3,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+8103,598933,Český Těšín,1,4,1500,1500,SEN PRO TĚŠÍN,SEN PRO TĚŠÍN,SEN 21+NK,2,"080,1187"
+8103,598933,Český Těšín,1,5,88,88,NEZÁVISLÍ,NEZÁVISLÍ,NEZ,1,088
+8103,598933,Český Těšín,1,6,470,470,NESTRANÍCI ČESKÝ TĚŠÍN,NESTRANÍCI ČESKÝ TĚŠÍN,STAN+NK,2,"080,166"
+8103,598933,Český Těšín,1,7,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+8103,598933,Český Těšín,1,8,1702,1702,NE 2025,NE 2025,NE,1,1702
+8103,598933,Český Těšín,1,9,47,47,Komunistická strana Čech a Moravy,Komunistická strana Čech a Moravy,KSČM,1,047
+8103,598933,Český Těšín,1,10,7,7,Sociální demokracie,Sociální demokracie,SOCDEM,1,007
+8103,598933,Český Těšín,1,11,768,768,ANO 2011,ANO 2011,ANO,1,768
+8103,599069,Orlová,1,1,1298,1298,Stačilo!,Stačilo!,Stačilo!,1,1298
+8103,599069,Orlová,1,2,88,88,NEZÁVISLÍ,NEZÁVISLÍ,NEZ,1,088
+8103,599069,Orlová,1,3,768,768,ANO 2011,ANO 2011,ANO,1,768
+8103,599069,Orlová,1,4,1254,1254,Bezpečná země,Bezpečná země,BZ,1,1254
+8103,599069,Orlová,1,5,514,514,ČSSD PRO SILNOU ORLOVOU,ČSSD PRO SILNOU ORLOVOU,ČSSD+NK,2,"080,759"
+8103,599069,Orlová,1,6,371,371,Srdcem pro Orlovou,Srdcem pro Orlovou,SOCDEM+NK,2,"007,080"
+8103,599069,Orlová,1,7,1487,1487,SPD s podporou Trikolory,SPD s podporou Trikolory,SPD+Trikolora,2,"1114,1227"
+8103,599069,Orlová,1,8,733,733,„Volím Orlovou”,„Volím Orlovou”,„VO“,1,733
+8103,599069,Orlová,1,9,1821,1821,Sousedi Orlová,Sousedi Orlová,ODS+Piráti+NK,3,"053,080,720"
+8103,599107,Rychvald,1,1,759,759,ČSSD – Česká suverenita sociální demokracie,ČSSD – Česká suverenita sociální demokracie,ČSSD,1,759
+8103,599107,Rychvald,1,2,1820,1820,„ Opozice 26 ”,„ Opozice 26 ”,ODS+Pirát+TOP09,3,"053,720,721"
+8103,599107,Rychvald,1,3,1627,1627,PRO Právo Respekt Odbornost,PRO Právo Respekt Odbornost,PRO+NK,2,"080,1265"
+8103,599107,Rychvald,1,4,387,387,Sdružení Komunistická strana Čech a Moravy a nezávislých kandidátů,Sdružení KSČM a nezávislých kandidátů,KSČM+NK,2,"047,080"
+8103,599107,Rychvald,1,5,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+8103,599107,Rychvald,1,6,768,768,ANO 2011,ANO 2011,ANO,1,768
+8103,599107,Rychvald,1,7,1297,1297,GEN Rychvald,GEN Rychvald,GEN,1,1297
+8103,599107,Rychvald,1,8,88,88,NEZÁVISLÍ,NEZÁVISLÍ,NEZ,1,088
+8103,599107,Rychvald,1,9,166,166,STAROSTOVÉ A NEZÁVISLÍ,STAROSTOVÉ A NEZÁVISLÍ,STAN,1,166
+8104,599191,Nový Jičín,1,1,1,1,KDU-ČSL,KDU-ČSL,KDU-ČSL,1,001
+8104,599191,Nový Jičín,1,2,901,90,Náš Nový Jičín,Náš Nový Jičín,SNK,1,080
+8104,599191,Nový Jičín,1,3,1537,1537,Za krásný Nový Jičín,Za krásný Nový Jičín,PŘÍSAHA+NK,2,"080,1245"
+8104,599191,Nový Jičín,1,4,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+8104,599191,Nový Jičín,1,5,1351,1351,Zelení/Piráti/TOP 09/STAN,Zelení/Piráti/TOP 09/STAN,Ze+STAN+Pir+TOP,4,"005,166,720,721"
+8104,599191,Nový Jičín,1,6,371,371,Víc pro Nový Jičín - Sociální demokraté a nezávislí,Víc pro Nový Jičín- Sociální demokraté a nezávislí,SOCDEM+NK,2,"007,080"
+8104,599191,Nový Jičín,1,7,1895,1895,Stačilo! a PRO Jindřicha Rajchla,Stačilo! a PRO Jindřicha Rajchla,PRO+Stačilo!+NK,3,"080,1265,1298"
+8104,599191,Nový Jičín,1,8,477,477,PROJEKTY NJ,PROJEKTY NJ,Svobodní+NK,2,"080,714"
+8104,599191,Nový Jičín,1,9,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+8104,599191,Nový Jičín,1,10,768,768,ANO 2011,ANO 2011,ANO,1,768
+8104,599565,Kopřivnice,1,1,1291,1291,Hnutí Generace,Hnutí Generace,Generace,1,1291
+8104,599565,Kopřivnice,1,2,355,355,Lidovci Kopřivnice,Lidovci Kopřivnice,KDU-ČSL+NK,2,"001,080"
+8104,599565,Kopřivnice,1,3,482,482,"Demokratická strana zelených - ZA PRÁVA ZVÍŘAT, sdružení DSZ - ZA PRÁVA ZVÍŘAT a NK","Sdružení DSZ - ZA PRÁVA ZVÍŘAT, NK",DSZ+NK,2,"080,715"
+8104,599565,Kopřivnice,1,4,1802,1802,Pro Zdraví a Piráti,Pro Zdraví a Piráti,Pirát+PROZdraví,2,"720,785"
+8104,599565,Kopřivnice,1,5,1114,1114,Svoboda a přímá demokracie (SPD),Svoboda a přímá demokracie (SPD),SPD,1,1114
+8104,599565,Kopřivnice,1,6,1258,1258,KRÁSNÁ KOPŘIVNICE,KRÁSNÁ KOPŘIVNICE,KK,1,1258
+8104,599565,Kopřivnice,1,7,1947,1947,Komunistická strana Čech a Moravy a hnutí Stačilo!,Komunistická strana Čech a Moravy a hnutí Stačilo!,KSČM+Stačilo!,2,"047,1298"
+8104,599565,Kopřivnice,1,8,371,371,PATRIOTI PRO KOPŘIVNICI,PATRIOTI PRO KOPŘIVNICI,SOCDEM+NK,2,"007,080"
+8104,599565,Kopřivnice,1,9,53,53,Občanská demokratická strana,Občanská demokratická strana,ODS,1,053
+8104,599565,Kopřivnice,1,10,449,449,Sdružení nezávislých Kopřivnice,Sdružení nezávislých Kopřivnice,SNK ED+NK,2,"080,129"
+8104,599565,Kopřivnice,1,11,768,768,ANO 2011,ANO 2011,ANO,1,768
+8104,599565,Kopřivnice,1,12,1284,1284,REFERENDUM - Hlas Lidu,REFERENDUM - Hlas Lidu,REFERENDUM,1,1284

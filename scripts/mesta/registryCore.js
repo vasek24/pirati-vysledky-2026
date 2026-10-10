@@ -55,11 +55,11 @@ export function parseOwnerList(text) {
     return out;
 }
 
-// kvrzcoco -> Map<KODZASTUP (číslo), rada>; jen celá zastupitelstva (TYPZASTUP 1) mimo Prahu (DRUHZASTUP 4)
-export function wholeCouncils(rows) {
+// kvrzcoco -> Map<KODZASTUP (číslo), rada>; jen celá zastupitelstva (TYPZASTUP 1) mimo Prahu (DRUHZASTUP 4; `includePrague` ji ponechá pro extrakt)
+export function wholeCouncils(rows, { includePrague = false } = {}) {
     const out = new Map();
     for (const r of rows) {
-        if (r.TYPZASTUP !== '1' || r.DRUHZASTUP === '4') continue;
+        if (r.TYPZASTUP !== '1' || (r.DRUHZASTUP === '4' && !includePrague)) continue;
         const zastup = Number(r.KODZASTUP);
         let c = out.get(zastup);
         if (!c) {
@@ -199,7 +199,7 @@ export function classifyTown(zastup, { lists, candidates, cvs, cns }) {
 }
 
 // Jedno desetinné místo, zaokrouhlení půl nahoru z (opraveného) zdrojového čísla: 8.35 -> '8,4', 6.65 -> '6,7'
-function commaDecimal(v) {
+export function commaDecimal(v) {
     const tenths = Math.round(Number((v * 10).toFixed(6)));
     return `${Math.floor(tenths / 10)},${tenths % 10}`;
 }
@@ -292,7 +292,7 @@ export function disambiguateSlugs(published, okresNames) {
     return out;
 }
 
-const spaced = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+export const spaced = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
 // Důvod pro vyhledávání na indexu (spec §4.2): { reason: kód, text: česká věta }
 export function excludedReason({ type, population, inclusion, reason }) {
