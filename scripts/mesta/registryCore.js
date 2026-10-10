@@ -114,6 +114,16 @@ export function matchOwnerTowns(owner, councils) {
     return { matched, unmatched, ambiguous };
 }
 
+// Zobrazované názvy: ořez, jedna mezera, bez mezer uvnitř typografických uvozovek („ X ” -> „X“)
+export function cleanName(s) {
+    return String(s ?? '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/([„‚]) /g, '$1')
+        .replace(/ ([“”‘’])/g, '$1')
+        .replace(/([„‚][^„“”‚‘’]*)”/g, '$1“');
+}
+
 const KIND_BY_TYPVS = { K: 'coalition', D: 'association' };
 const listKey = (r) => `${r.COBVODU}|${r.POR_STR_HL}`;
 const personName = (c) => `${c.JMENO} ${c.PRIJMENI}`.trim();
@@ -138,16 +148,23 @@ export function classifyTown(zastup, { lists, candidates, cvs, cns }) {
     const others = [];
     for (const c of valid) {
         const row = listBy.get(listKey(c));
-        if (!row) continue;
+        if (!row) {
+            if (!flags.includes('candidate-without-list')) flags.push('candidate-without-list');
+            continue;
+        }
         if (chosen && row === chosen) {
             members.push({ list: Number(row.POR_STR_HL), n: Number(c.PORCISLO), name: personName(c) });
         } else {
             others.push({
-                list: Number(row.POR_STR_HL), listName: row.NAZEVCELK, n: Number(c.PORCISLO), name: personName(c),
+                list: Number(row.POR_STR_HL), listName: cleanName(row.NAZEVCELK), n: Number(c.PORCISLO), name: personName(c),
                 nominatedBy: c.NSTRANA ? shortOf(Number(c.NSTRANA)) ?? c.NSTRANA : '',
             });
         }
     }
+    const nominatedNonMembers = chosen
+        ? candidates.filter((c) => c.KODZASTUP === z && c.PLATNOST === 'A' && listKey(c) === listKey(chosen)
+            && c.NSTRANA === String(PIRATES_CODE) && c.PSTRANA !== String(PIRATES_CODE)).length
+        : 0;
     members.sort((a, b) => a.n - b.n);
     others.sort((a, b) => a.list - b.list || a.n - b.n);
 
@@ -172,13 +189,19 @@ export function classifyTown(zastup, { lists, candidates, cvs, cns }) {
     return {
         type,
         list: {
-            id: Number(chosen.POR_STR_HL), name: chosen.NAZEVCELK, short: chosen.ZKRATKAO30, short8: chosen.ZKRATKAO8,
-            vstrana, kind, partners, independents,
+            id: Number(chosen.POR_STR_HL), name: cleanName(chosen.NAZEVCELK), short: cleanName(chosen.ZKRATKAO30), short8: cleanName(chosen.ZKRATKAO8),
+            vstrana, kind, partners, independents, nominatedNonMembers,
         },
         members,
         others,
         flags,
     };
+}
+
+// Jedno desetinné místo, zaokrouhlení půl nahoru z (opraveného) zdrojového čísla: 8.35 -> '8,4', 6.65 -> '6,7'
+function commaDecimal(v) {
+    const tenths = Math.round(Number((v * 10).toFixed(6)));
+    return `${Math.floor(tenths / 10)},${tenths % 10}`;
 }
 
 // ctx: { ownerList:Set<zastup>, okresNames:Map<okres,název>, senateNames:Set<název>, pirates2022:Map<zastup,{pct,seats}>, override? }
@@ -188,13 +211,13 @@ export function borderlineReasons(town, ctx) {
     if (ctx.ownerList?.has(town.zastup)) out.push({ code: 'owner-list', text: 'na seznamu majitele', automatic: false });
     const okresName = ctx.okresNames?.get(town.okres);
     if (okresName && normName(okresName) === name) out.push({ code: 'okres-seat', text: `sídlo okresu ${okresName}`, automatic: true });
-    if ([...(ctx.senateNames || [])].some((n) => normName(n) === name)) {
+    if ((town.druh === 2 || town.druh === 3) && [...(ctx.senateNames || [])].some((n) => normName(n) === name)) {
         out.push({ code: 'senate-seat-2026', text: 'sídlo senátního obvodu (volby 2026)', automatic: true });
     }
     const p = ctx.pirates2022?.get(town.zastup);
     if (p && (p.pct >= 10 || p.seats >= 1)) {
         out.push({
-            code: 'pirates-2022', text: `Piráti 2022: ${p.pct.toFixed(1).replace('.', ',')} %, ${p.seats} mand.`, automatic: true,
+            code: 'pirates-2022', text: `Piráti 2022: ${commaDecimal(p.pct)} %, ${p.seats} mand.`, automatic: true,
         });
     }
     if (ctx.override?.borderlineReason) out.push({ code: 'manual', text: ctx.override.borderlineReason, automatic: false });
@@ -244,7 +267,8 @@ export function assignShards(published) {
 
 // `count` nejlidnatějších měst: první polovina `top-1`, druhá `top-2`
 export function assignFeatured(published, count = 12) {
-    const ranked = [...published].sort((a, b) => b.population - a.population || czechCompare(a.name, b.name));
+    // skrytá (low) města by zabrala místo v top-1/top-2, které pak nikdo neuvidí
+    const ranked = published.filter((t) => t.confidence !== 'low').sort((a, b) => b.population - a.population || czechCompare(a.name, b.name));
     const half = Math.ceil(count / 2);
     const feat = new Map(ranked.slice(0, count).map((t, i) => [t, i < half ? 'top-1' : 'top-2']));
     return published.map((t) => ({ ...t, featured: feat.get(t) ?? null }));
@@ -270,28 +294,30 @@ export function disambiguateSlugs(published, okresNames) {
 
 const spaced = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-// Text pro vyhledávání na indexu: proč město není mezi zveřejněnými
+// Důvod pro vyhledávání na indexu (spec §4.2): { reason: kód, text: česká věta }
 export function excludedReason({ type, population, inclusion, reason }) {
     const manual = /^override include:false: ?/.exec(reason || '');
-    if (manual) return `Vyřazeno ručně: ${reason.slice(manual[0].length)}`;
-    if (type === 'd') return 'Piráti tu nekandidují (podle registru ČSÚ)';
-    if (type === 'c') return 'Piráti kandidují jen na kandidátkách jiných stran';
+    if (manual) return { reason: 'override', text: `Vyřazeno ručně: ${reason.slice(manual[0].length)}` };
+    if (type === 'd') return { reason: 'no-pirate-list', text: 'Piráti tu nekandidují (podle registru ČSÚ)' };
+    if (type === 'c') return { reason: 'other-lists-only', text: 'Piráti tu jsou jen na kandidátkách jiných stran' };
     if (inclusion === 'borderline-excluded') {
-        return `Piráti tu kandidují, ale město má méně než 10 000 obyvatel (${spaced(population)}) a nezařadili jsme ho`;
+        return {
+            reason: 'borderline-no-reason',
+            text: `Piráti tu kandidují, ale město má méně než 10 000 obyvatel (${spaced(population)}) a nezařadili jsme ho`,
+        };
     }
-    if (population < BAND_BORDERLINE) return `Piráti tu kandidují, ale město má jen ${spaced(population)} obyvatel`;
-    return reason;
+    return { reason: 'below-10k', text: `Piráti tu kandidují, ale město má jen ${spaced(population)} obyvatel` };
 }
 
-// entries: [{ council:{zastup,name,kraj,krajName,population}, type, inclusion, reason, onOwnerList }]
+// entries: [{ council:{zastup,name,okres,kraj,krajName,population}, type, inclusion, reason, onOwnerList }]
 export function buildExcluded(entries) {
     return entries
         .filter((e) => (e.inclusion === 'excluded' || e.inclusion === 'borderline-excluded')
             && (e.council.population >= BAND_BORDERLINE || e.onOwnerList))
         .map((e) => ({
-            zastup: e.council.zastup, name: e.council.name, kraj: e.council.kraj, krajName: e.council.krajName,
-            population: e.council.population, inclusion: e.inclusion,
-            reason: excludedReason({ type: e.type, population: e.council.population, inclusion: e.inclusion, reason: e.reason }),
+            zastup: e.council.zastup, name: e.council.name, okres: e.council.okres,
+            ...excludedReason({ type: e.type, population: e.council.population, inclusion: e.inclusion, reason: e.reason }),
+            kraj: e.council.kraj, krajName: e.council.krajName, population: e.council.population, inclusion: e.inclusion,
         }))
         .sort((a, b) => czechCompare(a.name, b.name) || a.zastup - b.zastup);
 }
@@ -318,6 +344,8 @@ export function validateOverrides(overrides, { councils } = {}) {
         for (const k of Object.keys(o)) if (!OVERRIDE_KEYS.includes(k)) errors.push(`${at}: unknown key ${k}`);
         if ('pirates' in o) errors.push(`${at}: pirates must not be set (derived from list.id)`);
         if ('include' in o && typeof o.include !== 'boolean') errors.push(`${at}: include must be boolean`);
+        if ('reviewed' in o && typeof o.reviewed !== 'boolean') errors.push(`${at}: reviewed must be boolean`);
+        if ('borderlineReason' in o && !filled(o.borderlineReason)) errors.push(`${at}: borderlineReason must be a non-empty string`);
         if ('type' in o && !['a', 'b', 'c', 'd'].includes(o.type)) errors.push(`${at}: type must be a, b, c or d`);
         if (NEEDS_WHY.some((k) => k in o) && !filled(o.reason) && !filled(o.note)) {
             errors.push(`${at}: ${NEEDS_WHY.filter((k) => k in o).join('/')} needs a reason or note`);

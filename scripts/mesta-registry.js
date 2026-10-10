@@ -76,6 +76,7 @@ export function compute(src, ownerText, ovr = overrides) {
     const councils = wholeCouncils(src.kvrzcoco);
     const nuts = new Map(src.cnumnuts.map((r) => [Number(r.NUMNUTS), r.NAZEVNUTS]));
     const problems = [];
+    const warnings = [];
     for (const e of validateOverrides(ovr, { councils })) problems.push(`overrides: ${e}`);
 
     const owner = parseOwnerList(ownerText);
@@ -106,6 +107,7 @@ export function compute(src, ownerText, ovr = overrides) {
         const reasons = borderlineReasons(c, { ...reasonCtx, override });
         const dec = decideInclusion(c, { type: cls.type, reasons, override });
         const flags = [...(ownerBy.get(c.zastup)?.flags || []), ...cls.flags, ...dec.flags];
+        if (cls.flags.includes('candidate-without-list')) warnings.push(`${c.name} (${c.zastup}): Pirate candidate whose list row is missing in kvros`);
         records.push({
             council: { ...c, krajName: nuts.get(c.kraj) ?? String(c.kraj) },
             cls, reasons, dec, flags, onOwnerList: ownerBy.has(c.zastup),
@@ -125,7 +127,7 @@ export function compute(src, ownerText, ovr = overrides) {
         const r = pubBy.get(s.zastup);
         return {
             ...r.council, slug: s.slug, inclusion: r.dec.inclusion, inclusionReason: r.dec.reason, onOwnerList: r.onOwnerList,
-            flags: s.flags, cls: r.cls,
+            flags: s.flags, cls: r.cls, confidence: confidenceOf(s.flags),
         };
     });
     const placed = assignFeatured(assignShards(items), 12).sort((a, b) => a.kraj - b.kraj || czechCompare(a.name, b.name) || a.zastup - b.zastup);
@@ -136,13 +138,13 @@ export function compute(src, ownerText, ovr = overrides) {
         inclusion: t.inclusion, inclusionReason: t.inclusionReason, onOwnerList: t.onOwnerList,
     }));
     const specifics = placed.map((t) => ({
-        zastup: t.zastup, type: t.cls.type, confidence: confidenceOf(t.flags), list: t.cls.list, members: t.cls.members,
+        zastup: t.zastup, type: t.cls.type, confidence: t.confidence, list: t.cls.list, members: t.cls.members,
         others: t.cls.others, flags: t.flags,
     }));
     const excluded = buildExcluded(records.map((r) => ({
         council: r.council, type: r.cls.type, inclusion: r.dec.inclusion, reason: r.dec.reason, onOwnerList: r.onOwnerList,
     })));
-    return { councils, records, owner, match, towns, specifics, excluded, problems };
+    return { councils, records, owner, match, towns, specifics, excluded, problems, warnings };
 }
 
 const line = (items) => `[\n${items.map((i) => JSON.stringify(i)).join(',\n')}\n]\n`;
@@ -201,26 +203,34 @@ function summary(res, hashes) {
     return out.join('\n');
 }
 
+const writeOut = (texts) => {
+    for (const [k, text] of Object.entries(texts)) fs.writeFileSync(OUT[k], text);
+};
+
+// Vše po načtení dat: výpočet, výpis, kontroly, zápis. Vrací exit code (0 / 1); IO je injektovatelné pro testy.
+export function execute(src, ownerText, { ovr = overrides, write = writeOut, log = console.log, err = console.error } = {}) {
+    const res = compute(src, ownerText, ovr);
+    log(summary(res, src.hashes));
+    const pd = probeDiff(res.records);
+    if (pd) log(`probe diff (${PROBE_TSV.replace(`${ROOT}/`, '')}, ${pd.probe} rows vs ${pd.generated} generated a/b >= ${BAND_BORDERLINE}): ${pd.diff.length ? `\n  ${pd.diff.join('\n  ')}` : 'identical'}`);
+    for (const w of res.warnings) err(`WARNING: ${w}`);
+    if (res.problems.length) {
+        err(`\nSTOP (nothing written):\n  ${res.problems.join('\n  ')}`);
+        return 1;
+    }
+    const texts = { towns: line(res.towns), specifics: line(res.specifics), excluded: line(res.excluded) };
+    if (Buffer.byteLength(texts.excluded) > EXCLUDED_MAX_BYTES) {
+        err(`\nSTOP: excluded.generated.json is ${Buffer.byteLength(texts.excluded)} B (limit ${EXCLUDED_MAX_BYTES})`);
+        return 1;
+    }
+    write(texts);
+    log(`\nwritten: ${Object.entries(texts).map(([k, t]) => `${OUT[k].replace(`${ROOT}/`, '')} (${Buffer.byteLength(t)} B)`).join(', ')}`);
+    return 0;
+}
+
 export async function main(argv = process.argv.slice(2)) {
     const src = await loadSources(argv.includes('--fresh'));
-    const res = compute(src, fs.readFileSync(OWNER_LIST, 'utf8'));
-    console.log(summary(res, src.hashes));
-    const pd = probeDiff(res.records);
-    if (pd) console.log(`probe diff (${PROBE_TSV.replace(`${ROOT}/`, '')}, ${pd.probe} rows vs ${pd.generated} generated a/b >= ${BAND_BORDERLINE}): ${pd.diff.length ? `\n  ${pd.diff.join('\n  ')}` : 'identical'}`);
-    if (res.problems.length) {
-        console.error(`\nSTOP (nothing written):\n  ${res.problems.join('\n  ')}`);
-        return 1;
-    }
-    const excludedText = line(res.excluded);
-    if (Buffer.byteLength(excludedText) > EXCLUDED_MAX_BYTES) {
-        console.error(`\nSTOP: excluded.generated.json is ${Buffer.byteLength(excludedText)} B (limit ${EXCLUDED_MAX_BYTES})`);
-        return 1;
-    }
-    fs.writeFileSync(OUT.towns, line(res.towns));
-    fs.writeFileSync(OUT.specifics, line(res.specifics));
-    fs.writeFileSync(OUT.excluded, excludedText);
-    console.log(`\nwritten: ${Object.values(OUT).map((f) => `${f.replace(`${ROOT}/`, '')} (${fs.statSync(f).size} B)`).join(', ')}`);
-    return 0;
+    return execute(src, fs.readFileSync(OWNER_LIST, 'utf8'));
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

@@ -3,12 +3,14 @@ import { parse } from 'csv-parse/sync';
 import {
     normName, parseOwnerList, wholeCouncils, matchOwnerTowns, classifyTown, borderlineReasons,
     decideInclusion, assignShards, assignFeatured, disambiguateSlugs, confidenceOf, buildExcluded,
-    excludedReason, validateOverrides,
+    excludedReason, validateOverrides, cleanName,
 } from './registryCore.js';
 
 const csv = (header, lines) => parse([header, ...lines].join('\n'), { columns: true, skip_empty_lines: true });
 
-// Skutečné řádky z registru KV 2026 (KV2026reg20261007), viz spec §2
+// Řádky ve tvaru registru KV 2026 (KV2026reg20261007), viz spec §2. Kódy, názvy, počty obyvatel a čísla kandidátek jsou převzaté
+// ze skutečných řádků; syntetické jsou rozsahy okrsků Brna (upraveno na součet 95), druhý řádek Brna a vymyšlení kandidáti
+// (Jan Novák, Eva Malá, Petr Dvořák, Karel Sedlák…).
 const RZC_HEADER = 'KRAJ,OKRES,TYPZASTUP,DRUHZASTUP,KODZASTUP,NAZEVZAST,OBEC,NAZEVOBCE,ORP,CPOU,REGURAD,OBVODY,COBVODU,MANDATY,POCOBYV,'
     + 'MINOKRSEK1,MAXOKRSEK1,MINOKRSEK2,MAXOKRSEK2,MINOKRSEK3,MAXOKRSEK3,MINOKRSEK4,MAXOKRSEK4,MINOKRSEK5,MAXOKRSEK5,'
     + 'MINOKRSEK6,MAXOKRSEK6,MINOKRSEK7,MAXOKRSEK7,MINOKRSEK8,MAXOKRSEK8,MINOKRSEK9,MAXOKRSEK9,MINOKRSE10,MAXOKRSE10,'
@@ -115,7 +117,7 @@ describe('matchOwnerTowns', () => {
     });
 });
 
-// kvros / kvrk / cvs / cns (skutečné řádky)
+// kvros / cvs / cns: zkrácené skutečné řádky; kvrk: skutečná jména jen u Plzně, Hradce, Jablonce a Sokolova, ostatní syntetická
 const ROS_H = 'OKRES,KODZASTUP,NAZEVZAST,COBVODU,POR_STR_HL,OSTRANA,VSTRANA,NAZEVCELK,ZKRATKAO30,ZKRATKAO8,POCSTR_SLO,SLOZENI,HLASY_STR,PROCHLSTR,MAND_STR';
 const RK_H = 'OKRES,KODZASTUP,COBVODU,POR_STR_HL,OSTRANA,PORCISLO,JMENO,PRIJMENI,TITULPRED,TITULZA,VEK,POVOLANI,BYDLISTEN,PSTRANA,NSTRANA,PLATNOST,POCHLASU,PRESKOCENI,POCPROCVSE,MANDAT,PORADIMAND,PORADINAHR';
 const CVS_H = 'VSTRANA,NAZEVCELK,NAZEV_STRV,ZKRATKAV30,ZKRATKAV8,POCSTR_SLO,SLOZENI,ZKRATKA_OF,TYPVS,NAZEVPLNY';
@@ -171,7 +173,7 @@ describe('classifyTown', () => {
         expect(r.type).toBe('a');
         expect(r.list).toEqual({
             id: 11, name: 'Česká pirátská strana', short: 'Česká pirátská strana', short8: 'Piráti', vstrana: 720,
-            kind: 'party', partners: [], independents: false,
+            kind: 'party', partners: [], independents: false, nominatedNonMembers: 0,
         });
         expect(r.members).toEqual([{ list: 11, n: 1, name: 'Pavel Bosák' }, { list: 11, n: 2, name: 'Marek Habruň' }]);
         expect(r.others).toEqual([]);
@@ -256,6 +258,51 @@ describe('classifyTown', () => {
     });
 });
 
+describe('classifyTown: reported edge cases', () => {
+    it('a Pirate candidate whose list row is missing is flagged, not silently dropped', () => {
+        const lists = csv(ROS_H, ['1,903,W,1,1,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720,,,']);
+        const candidates = csv(RK_H, [
+            '1,903,1,1,720,1,A,B,,,30,x,W,720,720,A,0,N,0,N,0,0',
+            '1,903,1,7,999,2,C,D,,,30,x,W,720,720,A,0,N,0,N,0,0', // list 7 není v kvros
+        ]);
+        const r = classifyTown(903, { lists, candidates, cvs, cns });
+        expect(r.type).toBe('a');
+        expect(r.members).toHaveLength(1);
+        expect(r.flags).toEqual(['candidate-without-list']);
+    });
+
+    it('counts Pirate-nominated non-members on the Pirate list without making them members', () => {
+        const lists = csv(ROS_H, ['1,904,V,1,4,1350,1350,PIRÁTI a STAROSTOVÉ,PIRÁTI a STAROSTOVÉ,STAN+Piráti,2,"166,720",,,']);
+        const candidates = csv(RK_H, [
+            '1,904,1,4,1350,1,A,B,,,30,x,V,720,720,A,0,N,0,N,0,0', // člen
+            '1,904,1,4,1350,2,C,D,,,30,x,V,99,720,A,0,N,0,N,0,0', // navržen Piráty, bez členství
+            '1,904,1,4,1350,3,E,F,,,30,x,V,99,720,A,0,N,0,N,0,0',
+            '1,904,1,4,1350,4,G,H,,,30,x,V,99,720,N,0,N,0,N,0,0', // neplatný
+            '1,904,1,4,1350,5,I,J,,,30,x,V,166,166,A,0,N,0,N,0,0', // STAN
+        ]);
+        const r = classifyTown(904, { lists, candidates, cvs, cns });
+        expect(r.members.map((m) => m.n)).toEqual([1]);
+        expect(r.list.nominatedNonMembers).toBe(2);
+    });
+
+    it('cleans displayed list names (Rychvald: „ Opozice 26 ”)', () => {
+        const lists = csv(ROS_H, ['8103,599107,Rychvald,1,2,1820,1820,"„ Opozice 26 ”  s Piráty","„ Opozice 26 ”",Piráti+NK,2,"080,720",,,']);
+        const r = classifyTown(599107, { lists, candidates: [], cvs, cns });
+        expect(r.list.name).toBe('„Opozice 26“ s Piráty');
+        expect(r.list.short).toBe('„Opozice 26“');
+    });
+});
+
+describe('cleanName', () => {
+    it('trims, collapses whitespace, tightens typographic quotes', () => {
+        expect(cleanName('  PIRÁTI   a  STAROSTOVÉ ')).toBe('PIRÁTI a STAROSTOVÉ');
+        expect(cleanName('„ Opozice 26 ”')).toBe('„Opozice 26“');
+        expect(cleanName('„Opozice 26“')).toBe('„Opozice 26“');
+        expect(cleanName('NÁŠ HRADEC: koalice (MY, RH)')).toBe('NÁŠ HRADEC: koalice (MY, RH)');
+        expect(cleanName(undefined)).toBe('');
+    });
+});
+
 describe('borderlineReasons', () => {
     const base = { zastup: 596230, name: 'Nové Město na Moravě', okres: 6205 };
     const bctx = {
@@ -270,11 +317,18 @@ describe('borderlineReasons', () => {
     });
 
     it('okres seat and 2026 Senate seat are automatic', () => {
-        const prerov = { zastup: 7, name: 'Přerov', okres: 7101 };
+        const prerov = { zastup: 7, name: 'Přerov', okres: 7101, druh: 3 };
         const codes = borderlineReasons(prerov, bctx).map((r) => [r.code, r.automatic]);
         expect(codes).toEqual([['okres-seat', true], ['senate-seat-2026', true]]);
-        const litovel = borderlineReasons({ zastup: 8, name: 'Litovel', okres: 7102 }, bctx);
+        const litovel = borderlineReasons({ zastup: 8, name: 'Litovel', okres: 7102, druh: 2 }, bctx);
         expect(litovel.map((r) => r.code)).toEqual(['senate-seat-2026']);
+    });
+
+    it('the Senate-seat reason needs a town (druh 2/3), not a village sharing the name', () => {
+        const village = { zastup: 571580, name: 'Litovel', okres: 7102, druh: 1 };
+        expect(borderlineReasons(village, bctx)).toEqual([]);
+        expect(borderlineReasons({ ...village, druh: 6 }, bctx)).toEqual([]);
+        expect(borderlineReasons({ ...village, druh: 3 }, bctx).map((r) => r.code)).toEqual(['senate-seat-2026']);
     });
 
     it('pirates-2022 needs >= 10 % or a seat; text uses a decimal comma', () => {
@@ -282,6 +336,11 @@ describe('borderlineReasons', () => {
         const r1 = borderlineReasons(t, { ...bctx, pirates2022: new Map([[99, { pct: 11.68, seats: 2 }]]) });
         expect(r1).toEqual([{ code: 'pirates-2022', text: 'Piráti 2022: 11,7 %, 2 mand.', automatic: true }]);
         expect(borderlineReasons(t, { ...bctx, pirates2022: new Map([[99, { pct: 6, seats: 1 }]]) })).toHaveLength(1);
+        const text = (pct) => borderlineReasons(t, { ...bctx, pirates2022: new Map([[99, { pct, seats: 1 }]]) })[0].text;
+        expect(text(8.35)).toBe('Piráti 2022: 8,4 %, 1 mand.'); // toFixed(1) by dalo 8,3
+        expect(text(6.65)).toBe('Piráti 2022: 6,7 %, 1 mand.');
+        expect(text(10)).toBe('Piráti 2022: 10,0 %, 1 mand.');
+        expect(text(11.68)).toBe('Piráti 2022: 11,7 %, 1 mand.');
         expect(borderlineReasons(t, { ...bctx, pirates2022: new Map([[99, { pct: 9.9, seats: 0 }]]) })).toEqual([]);
     });
 
@@ -397,6 +456,16 @@ describe('assignFeatured', () => {
         expect(Math.min(...f('top-2'))).toBe(9000);
         expect(out.filter((t) => t.featured === null)).toHaveLength(8);
     });
+
+    it('hidden (low-confidence) towns never take a featured slot', () => {
+        const towns = Array.from({ length: 14 }, (_, i) => town(`T${i}`, {
+            zastup: i, population: 1000 * (i + 1), confidence: i >= 12 ? 'low' : 'high',
+        }));
+        const out = assignFeatured(towns, 12);
+        expect(out.filter((t) => t.featured).map((t) => t.name).sort()).toEqual(towns.slice(0, 12).map((t) => t.name).sort());
+        expect(out.filter((t) => t.confidence === 'low').every((t) => t.featured === null)).toBe(true);
+        expect(out.filter((t) => t.featured === 'top-1').map((t) => t.name).sort()).toEqual(['T11', 'T10', 'T9', 'T8', 'T7', 'T6'].sort());
+    });
 });
 
 describe('disambiguateSlugs', () => {
@@ -423,17 +492,18 @@ describe('disambiguateSlugs', () => {
 });
 
 describe('excluded.generated.json helpers', () => {
-    const c = (name, population, extra = {}) => ({ zastup: population, name, kraj: 8100, krajName: 'Moravskoslezský kraj', population, ...extra });
+    const c = (name, population, extra = {}) => ({ zastup: population, name, okres: 8103, kraj: 8100, krajName: 'Moravskoslezský kraj', population, ...extra });
 
-    it('excludedReason: user-facing Czech text per type', () => {
-        expect(excludedReason({ type: 'd', population: 67998, inclusion: 'excluded', reason: 'type d' })).toBe('Piráti tu nekandidují (podle registru ČSÚ)');
-        expect(excludedReason({ type: 'c', population: 21908, inclusion: 'excluded', reason: 'type c' })).toBe('Piráti kandidují jen na kandidátkách jiných stran');
-        expect(excludedReason({ type: 'b', population: 9270, inclusion: 'borderline-excluded', reason: 'borderline, no reason' }))
-            .toBe('Piráti tu kandidují, ale město má méně než 10 000 obyvatel (9 270) a nezařadili jsme ho');
-        expect(excludedReason({ type: 'a', population: 5000, inclusion: 'excluded', reason: 'population 5000' }))
-            .toBe('Piráti tu kandidují, ale město má jen 5 000 obyvatel');
-        expect(excludedReason({ type: 'a', population: 20000, inclusion: 'excluded', reason: 'override include:false: chyba v registru' }))
-            .toBe('Vyřazeno ručně: chyba v registru');
+    it('excludedReason: contract code + Czech sentence (spec §4.2)', () => {
+        const r = (type, population, inclusion, reason) => excludedReason({ type, population, inclusion, reason });
+        expect(r('d', 67998, 'excluded', 'type d')).toEqual({ reason: 'no-pirate-list', text: 'Piráti tu nekandidují (podle registru ČSÚ)' });
+        expect(r('c', 21908, 'excluded', 'type c')).toEqual({ reason: 'other-lists-only', text: 'Piráti tu jsou jen na kandidátkách jiných stran' });
+        expect(r('b', 9270, 'borderline-excluded', 'borderline, no reason')).toEqual({
+            reason: 'borderline-no-reason',
+            text: 'Piráti tu kandidují, ale město má méně než 10 000 obyvatel (9 270) a nezařadili jsme ho',
+        });
+        expect(r('a', 5000, 'excluded', 'population 5000')).toEqual({ reason: 'below-10k', text: 'Piráti tu kandidují, ale město má jen 5 000 obyvatel' });
+        expect(r('a', 20000, 'excluded', 'override include:false: chyba v registru')).toEqual({ reason: 'override', text: 'Vyřazeno ručně: chyba v registru' });
     });
 
     it('buildExcluded: Havířov and Litovel-like rows, Czech sort, only >= 7 000 or owner-list', () => {
@@ -450,11 +520,11 @@ describe('excluded.generated.json helpers', () => {
         const out = buildExcluded(entries);
         expect(out.map((e) => e.name)).toEqual(['Černošice', 'Havířov', 'Litovel', 'Malá obec', 'Sokolov', 'Tišnov']);
         expect(out.find((e) => e.name === 'Havířov')).toEqual({
-            zastup: 67998, name: 'Havířov', kraj: 8100, krajName: 'Moravskoslezský kraj', population: 67998,
-            inclusion: 'excluded', reason: 'Piráti tu nekandidují (podle registru ČSÚ)',
+            zastup: 67998, name: 'Havířov', okres: 8103, reason: 'no-pirate-list', text: 'Piráti tu nekandidují (podle registru ČSÚ)',
+            kraj: 8100, krajName: 'Moravskoslezský kraj', population: 67998, inclusion: 'excluded',
         });
-        expect(out.find((e) => e.name === 'Litovel').reason).toBe('Piráti tu nekandidují (podle registru ČSÚ)');
-        expect(out.find((e) => e.name === 'Sokolov').reason).toBe('Piráti kandidují jen na kandidátkách jiných stran');
+        expect(out.find((e) => e.name === 'Litovel')).toMatchObject({ reason: 'no-pirate-list', text: 'Piráti tu nekandidují (podle registru ČSÚ)' });
+        expect(out.find((e) => e.name === 'Sokolov')).toMatchObject({ reason: 'other-lists-only', text: 'Piráti tu jsou jen na kandidátkách jiných stran' });
         expect(out.find((e) => e.name === 'Tišnov').inclusion).toBe('borderline-excluded');
     });
 });

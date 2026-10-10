@@ -12,6 +12,8 @@
 //     lists?: { '<číslo>': { short?, tiny?, color?, note? } },
 //     confidence?: 'low', reviewed?: true,    // low jen s `note`; takto skryté město odemkne jen vlastní `reviewed: true`
 //   }
+// Do ZAŘAZENÍ měst (generátor, scripts/mesta-registry.js) zasahují jen `include` (+ `reason`/`note`) a `borderlineReason`;
+// `type`, `list`, `pirateCandidates` ovlivňují jen zobrazení (src/mesta/buildCouncils.js), nikoli to, zda je město zveřejněno.
 // `pirates` se nikdy nenastavuje přímo. `reviewedAt`: ISO datum, kdy majitel prošel generované (low) záznamy; null = nikdy.
 // Pravidla hlídá `validateOverrides` (scripts/mesta/registryCore.js), test `overrides.test.js`.
 export default {

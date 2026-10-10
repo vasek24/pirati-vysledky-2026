@@ -49,6 +49,14 @@ describe('mesta overrides', () => {
         expect(validateOverrides({ towns: {} })[0]).toMatch(/reviewedAt/);
     });
 
+    it('reviewed must be boolean and borderlineReason a non-empty string', () => {
+        expect(ok({ 1: { name: 'X', reviewed: 'ano' } })[0]).toMatch(/reviewed/);
+        expect(ok({ 1: { name: 'X', reviewed: true } })).toEqual([]);
+        expect(ok({ 1: { name: 'X', borderlineReason: '' } })[0]).toMatch(/borderlineReason/);
+        expect(ok({ 1: { name: 'X', borderlineReason: 42 } })[0]).toMatch(/borderlineReason/);
+        expect(ok({ 1: { name: 'X', borderlineReason: 'Domov kandidáta' } })).toEqual([]);
+    });
+
     it('rejects unknown keys and wrong types', () => {
         expect(ok({ 1: { name: 'X', nope: 1 } })[0]).toMatch(/nope/);
         expect(ok({ 1: { name: 'X', include: 'ano', reason: 'r' } })[0]).toMatch(/include/);
