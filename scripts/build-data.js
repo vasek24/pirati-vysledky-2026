@@ -29,8 +29,6 @@ import simplify from '@turf/simplify';
 import sharp from 'sharp';
 import { pathToFileURL } from 'node:url';
 import { COUNCILS, KV_BASE_URL, PIRATES_CODE } from '../src/councils.js';
-import { buildCouncils } from '../src/mesta/buildCouncils.js';
-import { isNearWhite } from '../src/mesta/color.js';
 import { ROOT, codes, csvFromZip, download, downloadJson, slugify, writeJson } from './lib/util.js';
 
 const URLS = {
@@ -68,11 +66,27 @@ const { mesta: MESTA, fresh, only } = parseArgs(process.argv.slice(2));
 const log = (...a) => console.log('·', ...a);
 // Kam se zapisuje: Praha public/…, produkt „mesta“ public-mesta/…
 export function outputDirs(council, mesta) {
+    if (mesta && !/^[a-z0-9-]+$/.test(council?.slug ?? '')) throw new Error(`Neplatný slug: ${JSON.stringify(council?.slug)}`);
     const root = mesta ? 'public-mesta' : 'public';
     return {
         dataDir: path.join(ROOT, `${root}/data`, council.slug),
         mediaDir: path.join(ROOT, `${root}/media`, council.slug),
     };
+}
+// Loga města se nejdřív stahují do logos.tmp; stávající logos se smaže a nahradí
+// až po úspěšném výpočtu celého města (neúspěšné město nechá předchozí data)
+export async function stageLogosDir(mediaDir) {
+    const tmp = path.join(mediaDir, 'logos.tmp');
+    await fs.rm(tmp, { recursive: true, force: true });
+    await fs.mkdir(tmp, { recursive: true });
+    return tmp;
+}
+export async function commitLogosDir(mediaDir) {
+    await fs.rm(path.join(mediaDir, 'logos'), { recursive: true, force: true });
+    await fs.rename(path.join(mediaDir, 'logos.tmp'), path.join(mediaDir, 'logos'));
+}
+export async function discardLogosDir(mediaDir) {
+    await fs.rm(path.join(mediaDir, 'logos.tmp'), { recursive: true, force: true });
 }
 export const emptyGeo = () => ({ type: 'FeatureCollection', features: [] });
 
@@ -84,6 +98,7 @@ export async function loadMestaCouncils(slugs = []) {
     const read = async (f) => JSON.parse(await fs.readFile(path.join(ROOT, 'src/mesta', f), 'utf8'));
     const [towns, specifics] = await Promise.all([read('towns.generated.json'), read('specifics.generated.json')]);
     const overrides = (await import('../src/mesta/overrides.js')).default;
+    const { buildCouncils } = await import('../src/mesta/buildCouncils.js');
     const all = buildCouncils(towns, specifics, overrides);
     const unknown = slugs.filter((s) => !all.some((c) => c.slug === s));
     if (unknown.length) throw new Error(`Neznámé město: ${unknown.join(', ')}`);
@@ -107,7 +122,10 @@ export async function runMesta(councils, buildOne, { log: out = console.log, err
     return { ok, total: councils.length, failed, exitCode: ok === 0 ? 1 : 0 };
 }
 
+let isNearWhite = () => false; // jen produkt „mesta“ (main() načte src/mesta/color.js)
+
 async function main() {
+    if (MESTA) ({ isNearWhite } = await import('../src/mesta/color.js'));
     const councils = MESTA
         ? await loadMestaCouncils(only)
         : (only.length ? COUNCILS.filter((c) => only.includes(c.slug)) : COUNCILS);
@@ -152,7 +170,12 @@ async function main() {
         const warnings = {};
         const res = await runMesta(councils, async (council) => {
             console.log(`\n=== ${council.name} (${council.zastup}) ===`);
-            warnings[council.slug] = await buildCouncil(council, shared);
+            try {
+                warnings[council.slug] = await buildCouncil(council, shared);
+            } catch (err) {
+                await discardLogosDir(outputDirs(council, true).mediaDir);
+                throw err;
+            }
         });
         const withWarnings = Object.entries(warnings).filter(([, w]) => w.length);
         if (withWarnings.length) console.log('\nvarování:');
@@ -215,8 +238,14 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
     const { dataDir, mediaDir } = outputDirs(council, MESTA);
     const warnings = []; // jen produkt „mesta“: co chybí / co se nahradilo
     // Vygenerovaná média smazat (vlastní fotky z councils.js zůstávají)
-    await fs.rm(path.join(mediaDir, 'logos'), { recursive: true, force: true });
-    await fs.mkdir(path.join(mediaDir, 'logos'), { recursive: true });
+    // (mesta: logos.tmp, přepíše se až na konci — viz stageLogosDir)
+    let logosDir = path.join(mediaDir, 'logos');
+    if (MESTA) {
+        logosDir = await stageLogosDir(mediaDir);
+    } else {
+        await fs.rm(logosDir, { recursive: true, force: true });
+        await fs.mkdir(logosDir, { recursive: true });
+    }
     if (!MESTA) {
         await fs.mkdir(path.join(mediaDir, 'photos'), { recursive: true });
         for (const f of await fs.readdir(path.join(mediaDir, 'photos'))) {
@@ -370,7 +399,7 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
         }
         l.logos = [];
         for (const [i, url] of logoUrls.entries()) {
-            const file = await saveMedia(url, path.join(mediaDir, 'logos'), `${l.id}-${i}`, 'logo');
+            const file = await saveMedia(url, logosDir, `${l.id}-${i}`, 'logo');
             if (file) l.logos.push(`/media/${council.slug}/logos/${file}`);
         }
         l.color = color;
@@ -444,6 +473,8 @@ async function buildCouncil(council, { ros2026, rk2026, ros2022, t3, hl, geo, pa
         log(`okrsky: ${features.length} polygonů${missing}`);
     }
 
+    // mesta: všechno je spočítané → teprve teď nahradit staré logos novými
+    if (MESTA) await commitLogosDir(mediaDir);
     await writeJson(path.join(dataDir, 'lists.json'), {
         generated: new Date().toISOString(),
         zastup: council.zastup,

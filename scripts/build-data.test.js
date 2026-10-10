@@ -1,7 +1,9 @@
+import fs from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, it, expect, vi } from 'vitest';
 import { ROOT } from './lib/util.js';
-import { parseArgs, outputDirs, runMesta, loadMestaCouncils, emptyGeo } from './build-data.js';
+import { parseArgs, outputDirs, runMesta, loadMestaCouncils, emptyGeo, stageLogosDir, commitLogosDir, discardLogosDir } from './build-data.js';
 
 describe('parseArgs', () => {
     it('Praha: bez --product, slugy a --fresh', () => {
@@ -29,6 +31,47 @@ describe('outputDirs', () => {
             dataDir: path.join(ROOT, 'public-mesta/data', 'brno'),
             mediaDir: path.join(ROOT, 'public-mesta/media', 'brno'),
         });
+    });
+});
+
+describe('outputDirs slug guard (mesta)', () => {
+    it.each(['', '../x', 'a/b', 'Brno', 'a b', undefined])('odmítne slug %j', (slug) => {
+        expect(() => outputDirs({ slug }, true)).toThrow(/slug/);
+    });
+    it('povolí a-z, 0-9 a pomlčku', () => {
+        expect(() => outputDirs({ slug: 'usti-nad-labem' }, true)).not.toThrow();
+    });
+});
+
+describe('logos staging (neúspěšné město nechá stará data)', () => {
+    const mk = async () => {
+        const media = await fs.mkdtemp(path.join(os.tmpdir(), 'mesta-logos-'));
+        await fs.mkdir(path.join(media, 'logos'));
+        await fs.writeFile(path.join(media, 'logos', '1-0.webp'), 'old');
+        return media;
+    };
+    it('stage + discard: staré logos zůstanou, tmp zmizí', async () => {
+        const media = await mk();
+        const tmp = await stageLogosDir(media);
+        await fs.writeFile(path.join(tmp, '1-0.webp'), 'new');
+        expect(await fs.readFile(path.join(media, 'logos', '1-0.webp'), 'utf8')).toBe('old');
+        await discardLogosDir(media);
+        expect(await fs.readdir(media)).toEqual(['logos']);
+        expect(await fs.readFile(path.join(media, 'logos', '1-0.webp'), 'utf8')).toBe('old');
+    });
+    it('stage + commit: logos nahrazena novými (staré soubory pryč)', async () => {
+        const media = await mk();
+        const tmp = await stageLogosDir(media);
+        await fs.writeFile(path.join(tmp, '2-0.webp'), 'new');
+        await commitLogosDir(media);
+        expect(await fs.readdir(path.join(media, 'logos'))).toEqual(['2-0.webp']);
+        expect(await fs.readdir(media)).toEqual(['logos']);
+    });
+    it('stage vytvoří i chybějící adresář média', async () => {
+        const media = path.join(await fs.mkdtemp(path.join(os.tmpdir(), 'mesta-logos-')), 'x', 'y');
+        await stageLogosDir(media);
+        await commitLogosDir(media);
+        expect(await fs.readdir(path.join(media, 'logos'))).toEqual([]);
     });
 });
 
