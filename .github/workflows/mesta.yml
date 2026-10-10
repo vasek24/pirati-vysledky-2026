@@ -10,6 +10,11 @@ on:
 permissions:
   contents: read
 
+# nová revize téže větve/PR ruší rozběhnutý běh
+concurrency:
+  group: mesta-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   check:
     # push na mesta/** vždy; pull request jen z větve mesta/*
@@ -41,16 +46,22 @@ jobs:
       - name: Build mesta
         run: bash scripts/mesta.sh build
 
+      # kroky níž běží i po selhání testů/lintu/buildu mesta, ať rozbitý build neschová signál o Praze
       - name: Merge base with main
+        if: ${{ !cancelled() }}
         id: base
-        run: echo "sha=$(git merge-base HEAD origin/main)" >> "$GITHUB_OUTPUT"
+        run: |
+          sha=$(git merge-base HEAD origin/main)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
 
       # strana base (Praha na merge-base) se staví jednou; klíč = sha merge-base
       - name: Cache Prague base hashes
+        if: ${{ !cancelled() }}
         uses: actions/cache@v4
         with:
           path: .cache/prague-base-*.sha256
-          key: prague-base-${{ steps.base.outputs.sha }}
+          key: prague-base-${{ steps.base.outputs.sha }}-${{ hashFiles('scripts/check-prague-unchanged.sh', 'package-lock.json', 'cloudflare/package-lock.json') }}
 
       - name: Prague unchanged
+        if: ${{ !cancelled() }}
         run: bash scripts/check-prague-unchanged.sh "${{ steps.base.outputs.sha }}"

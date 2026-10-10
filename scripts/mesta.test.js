@@ -81,6 +81,17 @@ describe('mesta.sh deploy-*', () => {
         expect(calls()).toEqual([]);
     });
 
+    it.each(['deploy-staging', 'deploy-prod'])('%s refuses a dirty tree unless MESTA_ALLOW_DIRTY=1', (cmd) => {
+        writeFileSync(path.join(repo, 'cloudflare/_headers'), 'dirty\n');
+        const r = run([cmd]);
+        expect(r.status).not.toBe(0);
+        expect(r.stderr).toMatch(/uncommitted/);
+        expect(calls()).toEqual([]);
+        const ok = run([cmd], { MESTA_ALLOW_DIRTY: '1' });
+        expect(ok.status).toBe(0);
+        expect(calls().some((c) => c.includes('wrangler deploy'))).toBe(true);
+    });
+
     it('refuses on a detached HEAD', () => {
         sh('git', ['checkout', '-q', '--detach']);
         const r = run(['deploy-prod']);
@@ -98,18 +109,18 @@ describe('mesta.sh deploy-*', () => {
         expect(calls().slice(0, 2)[1]).toBe('node scripts/mesta-build-check.mjs');
     });
 
-    it('deploy-prod has no --env', () => {
+    it('deploy-prod passes an empty --env= (no "multiple environments" warning) and never --env staging', () => {
         const r = run(['deploy-prod']);
         expect(r.status).toBe(0);
         expect(calls().slice(2)).toEqual([
-            'cloudflare: npx wrangler deployments list -c wrangler.mesta.jsonc',
-            'cloudflare: npx wrangler deploy -c wrangler.mesta.jsonc',
+            'cloudflare: npx wrangler deployments list -c wrangler.mesta.jsonc --env=',
+            'cloudflare: npx wrangler deploy -c wrangler.mesta.jsonc --env=',
         ]);
     });
 
     it('refuses when the config is not the pirati-mesta one, before any wrangler call', () => {
         put('cloudflare/wrangler.mesta.jsonc', '{ "name": "pirati-volby-zaloha" }\n');
-        const r = run(['deploy-prod']);
+        const r = run(['deploy-prod'], { MESTA_ALLOW_DIRTY: '1' });
         expect(r.status).not.toBe(0);
         expect(r.stderr).toContain('pirati-mesta');
         expect(calls().some((c) => c.includes('wrangler'))).toBe(false);

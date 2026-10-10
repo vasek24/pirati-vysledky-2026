@@ -5,7 +5,8 @@
 #   bash scripts/mesta.sh registry [args]  node scripts/mesta-registry.js
 #   bash scripts/mesta.sh check-prague [base]   scripts/check-prague-unchanged.sh
 #   bash scripts/mesta.sh deploy-staging   build + záznam nasazení + wrangler deploy --env staging
-#   bash scripts/mesta.sh deploy-prod      totéž bez --env (produkce, workers.dev + cron)
+#   bash scripts/mesta.sh deploy-prod      totéž s prázdným --env= (produkce, workers.dev + cron)
+# Špinavý strom: deploy ho odmítne, pokud není MESTA_ALLOW_DIRTY=1.
 # Nasazuje se JEN odsud, JEN z větve mesta/main. Nikdy ručně `wrangler deploy`
 # v cloudflare/ na větvi mesta/* — výchozí konfigurace tam je konfigurace Prahy.
 set -euo pipefail
@@ -24,8 +25,10 @@ deploy() { # deploy <staging|prod>
   local target=$1 branch envflag=() stamp
   branch=$(git rev-parse --abbrev-ref HEAD)
   [[ $branch == mesta/main ]] || die "deploy only from branch mesta/main (current: $branch)"
-  [[ -z $(git status --porcelain --untracked-files=no) ]] || echo "mesta.sh: warning: uncommitted changes in the working tree" >&2
-  [[ $target == staging ]] && envflag=(--env staging)
+  [[ -z $(git status --porcelain --untracked-files=no) || ${MESTA_ALLOW_DIRTY:-0} == 1 ]] \
+    || die "uncommitted changes in the working tree — commit them (or set MESTA_ALLOW_DIRTY=1)"
+  # prod: prázdné --env= (jinak wrangler varuje „multiple environments“ a zvolí top-level)
+  if [[ $target == staging ]]; then envflag=(--env staging); else envflag=(--env=); fi
 
   build
   grep -q '"name": "pirati-mesta"' cloudflare/wrangler.mesta.jsonc \
