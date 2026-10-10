@@ -96,10 +96,10 @@ function rejectedText(r, p2022) {
     const n = r.council.population;
     const ex = excludedReason({ type: r.cls.type, population: n, inclusion: r.dec.inclusion, reason: r.dec.reason });
     if (ex.reason === 'override') return ex.text;
-    if (r.cls.type === 'c' || r.cls.type === 'd') return `typ ${r.cls.type}: ${ex.text} (${spaced(n)} obyvatel)`;
+    if (r.cls.type === 'c' || r.cls.type === 'd') return `typ ${r.cls.type}: ${ex.text}; ${spaced(n)} obyvatel`;
     if (r.dec.inclusion === 'borderline-excluded') {
-        const y = p2022 ? `; Piráti 2022: ${commaDecimal(p2022.pct)} %, ${p2022.seats} mand.` : '; Piráti 2022: bez kandidátky s výsledkem';
-        return `hraniční (${spaced(n)} obyvatel), bez důvodu k zařazení${y}`;
+        const y = p2022 ? `Piráti 2022: ${commaDecimal(p2022.pct)} %, ${p2022.seats} mand.` : 'Piráti 2022: nekandidovali';
+        return `${spaced(n)} obyvatel, bez důvodu k zařazení; ${y}`;
     }
     return `${spaced(n)} obyvatel (pod hranicí ${spaced(BAND_BORDERLINE)})`;
 }
@@ -167,7 +167,7 @@ Tato tabulka ukazuje, **která města se na webu „města“ zveřejní** a **j
 
 ## Co znamená „confidence low / skryto“
 
-Když si generátor není jistý (hraniční město zařazené jen automatickým důvodem, rozdíl proti druhému zdroji, nejasné složení kandidátky), dá městu **confidence low**. Takové město je **skryto**: na webu se nezobrazí ani v seznamu, ani v hledání jako město s Piráty, dokud ho nepotvrdíte. Je to pojistka proti omylu, ne verdikt. Řádky označené „low (skryto)“ jsou ty, které je třeba schválit.
+Když si generátor není jistý (hraniční město zařazené jen automatickým důvodem, rozdíl proti druhému zdroji, nejasné složení kandidátky), dá městu **confidence low**. Takové město je **skryto**: na webu nemá vlastní stránku a není v seznamu měst, dokud ho nepotvrdíte. Je to pojistka proti omylu, ne verdikt. Řádky označené „low (skryto)“ jsou ty, které je třeba schválit.
 
 ## Jak změnit město (\`src/mesta/overrides.js\`)
 
@@ -232,7 +232,7 @@ ${added.length ? table(['Město', 'KODZASTUP', 'Obyvatel', 'Typ', 'Kandidátka']
 
 **Otázka: souhlasíte?** Pokud některé chcete mít přesto, použijte \`include: true\` (příklad 3). Typ c/d se pak zobrazí s vysvětlením „Piráti tu nekandidují“ / „jen na cizích kandidátkách“.
 
-${rej.length ? table(['Město', 'KODZASTUP', 'Obyvatel', 'Důvod zamítnutí'], rej.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.reasonText])) : '_Žádná._\n'}${mentioned.length ? `\nMimo soubor seznamu, zmíněno majitelem: ${mentioned.map((r) => `**${r.name}** (${spaced(r.population)} obyvatel) – ${r.reasonText}; ${r.note}`).join('; ')}.\n` : ''}`);
+${rej.length ? table(['Město', 'KODZASTUP', 'Obyvatel', 'Důvod zamítnutí'], rej.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.reasonText])) : '_Žádná._\n'}${mentioned.length ? `\nMimo soubor seznamu, zmíněno majitelem: ${mentioned.map((r) => `**${r.name}** – ${r.reasonText}; ${r.note}`).join('; ')}.\n` : ''}`);
 
     const nn = sorted.filter((r) => r.published && r.members.length === 0 && nominated(r) > 0);
     const allNominated = rows.filter((r) => r.published).reduce((s, r) => s + nominated(r), 0);
@@ -249,7 +249,7 @@ ${nn.length ? table(['Město', 'KODZASTUP', 'Kandidátka', 'Nominovaných nečle
 Zde se zdroje rozcházejí (jmenný seznam, počet obyvatel 2025, více pirátských kandidátek, neznámý partner).
 
 ${odd.length ? table(['Město', 'KODZASTUP', 'Příznaky', 'Obyvatel (2026 / 2025)', 'Stav'], odd.map((r) => [nameOf(r), r.zastup, r.flags.join(', '), popCell(r), confidenceCell(r)])) : '_Žádná – kontroly sedí._\n'}`);
-    return sections.join('\n');
+    return `${sections.map((x) => x.trimEnd()).join('\n\n')}\n`;
 }
 
 export function renderSpecificsTable(rows, meta = {}) {
@@ -284,16 +284,16 @@ ${table(['Typ kandidatury (zveřejněná města)', 'Počet'], ['a', 'b', 'c', 'd
 
 ${INTRO}
 
-## Zdroje a kontroly
-
-${sourcesBlock(meta)}
-
 ${counts}
 ## K rozhodnutí vlastníka
 
 Níže je vše, co generátor nemůže rozhodnout sám. U každé skupiny je otázka a návod, jak odpovědět.
 
 ${decisionRows(rows)}
+## Zdroje a kontroly
+
+${sourcesBlock(meta)}
+
 ## Tabulka všech měst
 
 Nejdřív zveřejněná města (podle kraje a abecedy), na konci města ze seznamu majitele, která jsme vyřadili. Členy Pirátů registr ČSÚ vede u kandidáta (PSTRANA 720); **příznivci bez členství se z dat poznat nedají** – ty by majitel doplnil v \`overrides.js\` (\`pirateCandidates\`).
@@ -375,7 +375,7 @@ function readme(ctx, scope, counts) {
 
 Deterministic extract of the ČSÚ open data that \`scripts/mesta-registry.js\` used. It lets a reviewer verify the generated files (\`src/mesta/{towns,specifics,excluded}.generated.json\`, \`docs/analysis/mesta-specifics.md\`, \`docs/analysis/mesta-list-verification.md\`) offline. Regenerate with \`node scripts/mesta-registry.js\`; do not edit by hand. (The older Haiku probe in \`docs/analysis/mesta-registry-extract/\` is a different, independent artefact and is not part of this extract.)
 
-Fetched: ${when(meta.fetchedAt)} UTC (per-source times below are the modification times of the cached downloads).
+Fetched: ${when(meta.fetchedAt)} UTC (per-source times are the modification times of the cached downloads; a cache copied from another worktree shows the copy time, not the original download time).
 
 ## Sources
 
@@ -411,6 +411,14 @@ All CSV rows are sorted by KODZASTUP (then list number, position) so reruns are 
 - A Pirate is \`PSTRANA = 720\` (member); \`NSTRANA = 720\` with another \`PSTRANA\` is a nominated non-member (\`nominatedNonMembers\` in \`specifics.generated.json\`).
 - \`SLOZENI\` is the list composition by nominating-party codes (720 = Piráti, 080 = NK, independents).
 `;
+}
+
+// Jeden řádek na město a jeden na kandidáta (čitelný diff, malý soubor)
+function jmsezText(j) {
+    if (!j.towns) return `${JSON.stringify(j, null, 1)}\n`;
+    const { towns, ...head } = j;
+    const parts = Object.entries(towns).map(([z, { rows, ...t }]) => ` ${JSON.stringify(z)}: {${JSON.stringify(t).slice(1, -1)}, "rows": [${rows.length ? `\n${rows.map((r) => `  ${JSON.stringify(r)}`).join(',\n')}\n ` : ''}]}`);
+    return `${JSON.stringify(head, null, 1).replace(/\n}$/, '')},\n "towns": {\n${parts.join(',\n')}\n }\n}\n`;
 }
 
 /**
@@ -490,6 +498,6 @@ export function extractFiles({ src, res, meta = {} }) {
         'cns.csv': toCsv(unionKeys(cnsRows), cnsRows),
         'regions-okresy.csv': toCsv(unionKeys(nutsRows), nutsRows),
         'senate-2026.json': `${JSON.stringify({ obvody: (src.senate?.obvody || []).map((o) => ({ obvod: o.obvod, nazevObvodu: o.nazevObvodu })) }, null, 2)}\n`,
-        'jmsez-pirati.json': `${JSON.stringify(jmsezJson, null, 1)}\n`,
+        'jmsez-pirati.json': jmsezText(jmsezJson),
     };
 }

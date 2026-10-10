@@ -251,6 +251,20 @@ describe('fetchJmsez', () => {
     });
 });
 
+describe('buildDocs: notes', () => {
+    it('names unpublished towns with a Pirate list whose band differs in the 2025 table (flag is not used there)', () => {
+        const src = source();
+        src.kvrzcoco.push(rzc(1008, 'Zeta', 6990, 2));
+        src.kvros.push(ros(1008, 1, '720', 720));
+        src.kvrk.push(rk(1008, 1, 1, 720));
+        src.pop2025 = new Map([[1008, { name: 'Zeta', population: 7010 }]]);
+        const res = compute(src, OWNER, { reviewedAt: null, towns: {} });
+        const md = buildDocs(res, src, { reviewedAt: null, towns: {} }, res.owner.length)['docs/analysis/mesta-list-verification.md'];
+        expect(md).toMatch(/Zeta \(6 990 \/ 7 010\)/);
+        expect(res.towns.map((t) => t.name)).not.toContain('Zeta');
+    });
+});
+
 describe('buildDocs: Litovel note and the three tables', () => {
     it('adds a mentioned-by-owner town (Litovel 503444) with the Senate note when the registry has it without a Pirate list', () => {
         const src = source();
@@ -261,7 +275,7 @@ describe('buildDocs: Litovel note and the three tables', () => {
         const files = buildDocs(res, src, { reviewedAt: null, towns: {} }, res.owner.length);
         const md = files['docs/analysis/mesta-list-verification.md'];
         const line = md.split('\n').find((l) => l.startsWith('|') && l.includes('Litovel'));
-        expect(line).toMatch(/obvodu 66/);
+        expect(line).toMatch(/senátní obvod 66/);
         expect(line).toMatch(/typ d/);
         expect(md).toMatch(/potvrzeno: 2/);
         expect(md).toMatch(/zamítnuto ze seznamu majitele: 1\n/); // Gama; Litovel je mimo soubor seznamu

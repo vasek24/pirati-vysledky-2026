@@ -13,7 +13,7 @@ import { KV_BASE_URL } from '../src/councils.js';
 import {
     PIRATES_CODE, BAND_BORDERLINE, czechCompare, parseOwnerList, wholeCouncils, matchOwnerTowns, classifyTown,
     borderlineReasons, decideInclusion, confidenceOf, disambiguateSlugs, assignShards, assignFeatured, buildExcluded,
-    validateOverrides,
+    validateOverrides, spaced,
 } from './mesta/registryCore.js';
 import { xlsxFromZip, csuPopulation } from './mesta/xlsxRows.js';
 import {
@@ -325,9 +325,11 @@ function mentionedNotes(res, src) {
         if (!rec || rec.council.name !== m.name) continue;
         const ob = (src.senate?.obvody || []).find((o) => o.nazevObvodu === m.senateName);
         const hasPirate = rec.cls.type === 'a' || rec.cls.type === 'b' || rec.cls.members.length || rec.cls.others.length;
-        extra[m.zastup] = `${hasPirate ? 'V registru tu Pirátská kandidatura je' : 'V registru ČSÚ tu není pirátská kandidátka ani kandidát'}; `
-            + `${ob ? `pirátská vazba je senátní kandidát v obvodu ${ob.obvod} – ${ob.nazevObvodu} (Senát, ne tento produkt)` : 'senátní obvod tohoto jména v roce 2026 nehlasuje'}; `
-            + 'není v souboru seznamu, majitel ho uvedl jako příklad';
+        extra[m.zastup] = [
+            hasPirate ? 'v registru tu pirátská kandidatura je (zkontrolujte)' : null,
+            ob ? `${ob.nazevObvodu} je senátní obvod ${ob.obvod} (volby 2026); pirátská vazba je podle majitele senátní kandidát (Senát, ne tento produkt)` : 'senátní obvod tohoto jména v roce 2026 nehlasuje',
+            'není v souboru seznamu, majitel ho uvedl jako příklad',
+        ].filter(Boolean).join('; ');
     }
     return extra;
 }
@@ -345,6 +347,12 @@ export function buildDocs(res, src, ovr, ownerCount) {
     if (hidden.length) notes.push(`Skryto do ověření majitelem (confidence low): ${hidden.map((r) => `${r.name} [${r.flags.join(', ')}]`).join('; ')}.`);
     if (!meta.pop2025?.ok) notes.push(`Kontrola počtu obyvatel 2025 NEPROBĚHLA (${meta.pop2025?.reason ?? 'bez dat'}): populationCsu2025 je null a příznak population-band-differs se nepočítal.`);
     if (!meta.jmsez || meta.jmsez.status === 'not-run') notes.push(`Kontrola jmenným seznamem (jmsez) NEPROBĚHLA${meta.jmsez?.reason ? ` (${meta.jmsez.reason})` : ''}: příznak jmsez-mismatch se nepočítal.`);
+    // Nezveřejněná města, kde by tabulka 2025 změnila pásmo: příznak se tu nepoužije (pásmo rozhoduje POCOBYV, spec §4.1), ale majitel to má vidět
+    const offBand = res.pop2025 ? res.records.filter((r) => !PUBLISHED.includes(r.dec.inclusion) && (r.cls.type === 'a' || r.cls.type === 'b')
+        && res.pop2025.get(r.council.zastup) && bandOf(res.pop2025.get(r.council.zastup).population) !== bandOf(r.council.population)) : [];
+    if (offBand.length) {
+        notes.push(`Nezveřejněná města, kde Piráti kandidují a tabulka ČSÚ 2025 dává jiné pásmo než registr 2026 (zařazení rozhoduje registr 2026, příznak population-band-differs se tu nepoužívá): ${offBand.map((r) => `${r.council.name} (${spaced(r.council.population)} / ${spaced(res.pop2025.get(r.council.zastup).population)})`).join(', ')}.`);
+    }
     for (const w of res.warnings) notes.push(`Varování generátoru: ${w}`);
     const files = {
         [`${DOCS}/mesta-specifics.md`]: renderSpecificsTable(rows, meta),
