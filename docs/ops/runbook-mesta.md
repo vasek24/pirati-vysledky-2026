@@ -27,12 +27,13 @@ bash scripts/mesta.sh deploy-prod      # totéž pro produkci (prázdné --env=)
 3. Města s nízkou jistotou (Mikulov, Rychvald a případné další) jsou na indexu **skrytá**, dokud vlastník v `src/mesta/overrides.js` nenastaví `reviewed: true` u města (a/nebo globální `reviewedAt`), pak build + deploy-prod.
 
 ## Kontroly po nasazení
+- **Hned po `deploy-prod` a před připojením domény:** `node scripts/mesta-smoke.mjs https://pirati-mesta.vasek24.workers.dev` — projde všech 81 měst (zahřeje i feedy, které cron nezahřívá; první dotaz na studený feed může vrátit 503, další už ne) a musí skončit `PASS`.
 `<URL>` = produkce nebo staging.
 - `/`, `/brno`, `/klatovy`, `/neexistuje` → index/stránka 200; `/version.json` 200 (`mesta-…`); `/humans.txt`, `/kontakt.txt` 200.
 - `/api/volby?z=582786` (Brno) 200 JSON; `/api/volby?z=1` 400; `/api/kraj?s=top-1`, `/api/kraj?s=top-2` 200; `/api/kraj?s=nic` 400.
 - Index na 375 px: první načtení ≤ 3 požadavky na `/api/kraj`; konzole bez chyb.
 - Logy: `npx wrangler tail pirati-mesta --format json` — každou minutu `warmup-ok` pro všech klíčů první třídy do 2 min po nasazení.
-- Ověření proti ČSÚ po začátku sčítání (spec §8): Brno, Plzeň, Hradec Králové, Jablonec nad Nisou, Klatovy + Moravskoslezský kraj (2 shardy): stejné `generated`, počet sečtených okrsků, účast, hlasy a % prvních 5 kandidátek a pirátské kandidátky. Rozdíl jen při jiném `generated`; za minutu zopakovat.
+- Ověření proti ČSÚ po začátku sčítání (spec §8): Brno, Plzeň, Hradec Králové, Jablonec nad Nisou, Klatovy + Moravskoslezský kraj (2 shardy): stejné `generated`, počet sečtených okrsků, účast, hlasy a % prvních 5 kandidátek a pirátské kandidátky. Rozdíl jen při jiném `generated`; za minutu zopakovat. Karta na indexu bere čas a počet okrsků jen z výsledkového souboru, stránka města i z účasti — o minutu starší čas na kartě není chyba.
 
 ## Poznámky
 - Města první třídy (feedy zahřívané cronem) jsou 12 největších (`featured`); ostatní se obnovují jen když je někdo otevře (shard feedy po krajích, max. 8 měst).
