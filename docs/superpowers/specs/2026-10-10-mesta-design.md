@@ -59,7 +59,7 @@ Success criteria:
 - **ČSÚ (conditional GET, mostly 304), counting phase:** region shards N + featured 12 + warm town feeds 12 × 2 + on-demand town feeds ≤ (N − 12) × 2 ⇒ **≤ 3N + 12 ≈ 270 GET/min ≈ 4.5/s at N = 85**; ceiling at the 20 s floor everywhere ≈ 810/min. Independent of viewer count. No precinct files.
 
 ### 3.5 Partial builds and freshness
-Shard keeps a failed town's last good summary (overview merge); a town without data shows "zatím bez dat". Each card shows **its own** ČSÚ time (`parseCsuTime(generated)` HH:MM) and progress; no headline sums. Region header "Sečteno N z M měst" (towns with `counted ≥ total > 0`, counting only shown towns). Shard `stale:true` ⇒ orange line on that region only.
+Shard keeps a failed town's last good summary (overview merge); a town without data shows "zatím bez dat". Each town row shows **its own** ČSÚ time (`parseCsuTime(generated)` HH:MM) and progress; no headline sums. Region header "Sečteno N z M měst" (towns with `counted ≥ total > 0`, counting only shown towns). Shard `stale:true` ⇒ orange line on that region only.
 
 ## 4. Data: generator, inclusion, overrides, data build
 ### 4.1 Inclusion rule (generator `inclusion` field)
