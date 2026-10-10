@@ -1,0 +1,46 @@
+// Worker mesta.dg12.cz (pirati-mesta). NASAZOVAT JEN PŘES scripts/mesta.sh
+// (staging: deploy-staging) — nikdy holé `wrangler deploy` ve složce
+// cloudflare/ na větvi mesta/*: výchozí konfigurace tam je pražská (wrangler.jsonc).
+// Vlastní skript = vlastní Durable Object namespace; žádné KV, analytics ani
+// hlášení chyb. Statika se staví do ../.cache/dist-mesta (scripts/mesta.sh build).
+// Vlastní doména se přidává až podle spec mesta §9.5 (jen na nejvyšší úrovni):
+//   "routes": [{ "pattern": "mesta.dg12.cz", "custom_domain": true }]
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "pirati-mesta",
+  "account_id": "741febb7a315a409b83e5a9a1b62954d",
+  "main": "mesta-worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../.cache/dist-mesta",
+    "binding": "ASSETS"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "FEED", "class_name": "Feed" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Feed"] }],
+  "workers_dev": true,
+  "observability": { "enabled": true },
+  // Warm-up první třídy feedů (mestaWiring.firstClassKeys) — jen produkce, ne staging
+  "triggers": { "crons": ["* * * * *"] },
+
+  // Staging: samostatný skript (vlastní Durable Object storage), jen workers.dev,
+  // bez routes a cronů. Wrangler nededí assets, DO ani migrace — proto jsou níže.
+  "env": {
+    "staging": {
+      "name": "pirati-mesta-staging",
+      // triggers se dědí z produkce — prázdný seznam vypne cron na stagingu
+      "triggers": { "crons": [] },
+      "routes": [],
+      "workers_dev": true,
+      "assets": {
+        "directory": "../.cache/dist-mesta",
+        "binding": "ASSETS"
+      },
+      "durable_objects": {
+        "bindings": [{ "name": "FEED", "class_name": "Feed" }]
+      },
+      "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Feed"] }]
+    }
+  }
+}
