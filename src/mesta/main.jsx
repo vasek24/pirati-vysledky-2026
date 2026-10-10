@@ -4,6 +4,7 @@ import '../index.css'
 import { councilBySlug } from './councils.js'
 import UpdateManager from '../components/UpdateManager.jsx'
 import WelcomeGuide from '../components/WelcomeGuide.jsx'
+import ReloadOnStale from '../components/ReloadOnStale.jsx'
 
 // Vstup produktu „mesta“ (vite.mesta.config.js přepíše v index.html /src/main.jsx
 // na tento soubor). Jako src/main.jsx Prahy, jen s mestským rozcestníkem místo
@@ -18,9 +19,11 @@ const council = councilBySlug(slug)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <Suspense fallback={<div className="h-dvh bg-black" />}>
-      {council ? <CouncilApp council={council} /> : <MestaIndex />}
-    </Suspense>
+    <ReloadOnStale>
+      <Suspense fallback={<div className="h-dvh bg-black" />}>
+        {council ? <CouncilApp council={council} /> : <MestaIndex />}
+      </Suspense>
+    </ReloadOnStale>
     <UpdateManager />
     <WelcomeGuide />
   </StrictMode>,
