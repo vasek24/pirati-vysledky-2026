@@ -17,14 +17,19 @@
   --ok:#7fd29c; --ok-bg:#173a26; --adv:#8db7f2; --adv-bg:#172b4a; --warn:#f0c46a; --warn-bg:#40300c; --out:#a3a9af; --out-bg:#262a2e;
   --pirate:#f4f5f1; --pirate-fg:#111315; --hatch:#3a3f45; color-scheme:dark}
 *{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
 body{background:var(--paper);color:var(--ink);font:16px/1.5 var(--f-body);margin:0;padding-inline:0}
 .snt-wrap{max-width:1120px;margin-inline:auto;padding-inline:16px}
-.snt-num{font-variant-numeric:tabular-nums}
+.snt-num{font-variant-numeric:normal} /* tabular-nums jen na samostatná čísla (b): ve větách font rozevře čárky, tečky a dvojtečky */
+b.snt-num,.snt-v b{font-variant-numeric:tabular-nums}
 a{color:inherit}
 :focus-visible{outline:3px solid var(--adv);outline-offset:2px}
 h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;font-weight:600;letter-spacing:-.01em}
 .snt-band{background:var(--band);color:var(--band-fg)}
 .snt-band .snt-wrap{padding-block:18px 20px;display:grid;gap:14px}
+.snt-back{justify-self:start;font-size:14px;font-weight:500;color:var(--band-fg);text-decoration:none;padding:6px 0;min-height:44px;display:inline-flex;align-items:center}
+.snt-jump{display:none}
+.snt-back:hover,.snt-back:focus-visible{text-decoration:underline}
 .snt-band-top{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;justify-content:space-between;font-size:14px;color:var(--band-dim)}
 .snt-pill{display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border:1px solid currentColor;border-radius:99px;padding:3px 11px;color:var(--band-fg)}
 .snt-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
@@ -73,7 +78,7 @@ section{padding-block:26px}
 .snt-cname{font:600 20px/1.2 var(--f-display)}
 .snt-why{font-size:13px;color:var(--ink-2);line-height:1.4}
 .snt-big .snt-rk{font-size:14px;font-weight:600;color:var(--ink);border:1.5px solid var(--ink);border-radius:6px;padding:1px 9px}
-.snt-lbl{font-size:12px;color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.snt-lbl{font-size:13px;line-height:1.35;color:var(--ink-2);overflow-wrap:anywhere} /* nikdy neořezávat: za názvem na lístku je zmínka o Pirátech */
 .snt-cname small{display:block;font:400 13px/1.4 var(--f-body);color:var(--ink-2);margin-top:3px}
 .snt-big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .snt-big b{font:700 34px/1 var(--f-display)}
@@ -100,7 +105,7 @@ section{padding-block:26px}
 .snt-row:last-child{border-bottom:0}
 .snt-row.snt-pir{background:color-mix(in srgb,var(--ink) 5%,var(--card))}
 .snt-rk2{font:700 22px/1 var(--f-display);color:var(--ink-3);padding-top:2px}
-.snt-nm{font:600 18px/1.25 var(--f-display)}
+.snt-nm{font:600 18px/1.25 var(--f-display);overflow-wrap:anywhere}
 .snt-nm .snt-bn{display:inline-grid;place-items:center;width:22px;height:22px;border:1.5px solid var(--ink-3);border-radius:50%;font:600 12px var(--f-body);margin-right:8px;vertical-align:2px;color:var(--ink-2)}
 .snt-pt{font-size:14px;color:var(--ink-2)}
 .snt-bio{font-size:13px;color:var(--ink-3)}
@@ -115,10 +120,55 @@ section{padding-block:26px}
 footer{border-top:1px solid var(--line);padding-block:22px 40px;font-size:13px;color:var(--ink-3)}
 footer .snt-wrap{display:grid;gap:6px}
 @media (max-width:520px){
-  .snt-row{grid-template-columns:28px minmax(0,1fr)}
+  /* mobil: vizuální pořadí přes `order` (DOM i pořadí tabulátoru zůstává jako na desktopu):
+     hlavička → souhrn → Piráti + karty → pás obvodů → detail → návod */
+  main.snt-wrap{display:flex;flex-direction:column}
+  .snt-s-over{order:1}.snt-s-pir{order:2}.snt-s-strip{order:3}.snt-s-det{order:4}.snt-s-how{order:5}
+  section{padding-block:16px}
+  .snt-eyebrow{margin-bottom:6px}
+  /* hlavička */
+  .snt-band .snt-wrap{padding-block:2px 14px;gap:6px}
+  .snt-band-top{gap:6px 12px;font-size:13px;line-height:1.35}
+  .snt-pill{font-size:11px;padding:2px 10px}
+  .snt-title-row{gap:4px}
+  h1{font-size:28px}
+  .snt-sub{font-size:13px;line-height:1.4;max-width:none}
+  .snt-jump{display:flex;margin:2px -16px -14px;border-top:1px solid color-mix(in srgb,var(--band-fg) 18%,transparent)}
+  .snt-jump a{flex:1;display:flex;align-items:center;justify-content:center;min-height:44px;font-size:14px;font-weight:600;color:var(--band-fg);text-decoration:none}
+  .snt-jump a+a{border-left:1px solid color-mix(in srgb,var(--band-fg) 18%,transparent)}
+  .snt-jump a:active{background:color-mix(in srgb,var(--band-fg) 10%,transparent)}
+  /* dlaždice: 3 sloupce, kompaktně */
+  .snt-tiles{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .snt-tile{padding:9px 10px 10px;border-radius:8px}
+  .snt-tile b{font-size:26px}
+  .snt-tile b small{font-size:12px}
+  .snt-tile span{font-size:12px;line-height:1.3;margin-top:4px;overflow-wrap:break-word;hyphens:auto}
+  /* karty */
+  .snt-cards{grid-template-columns:minmax(0,1fr);gap:10px}
+  .snt-card{padding:11px 13px 12px;gap:6px;border-radius:10px}
+  .snt-ctop{flex-wrap:wrap;gap:4px 8px}
+  .snt-ob{min-width:0;font-size:13px}
+  .snt-cname{font-size:18px}
+  .snt-cname small{font-size:12px;margin-top:2px}
+  .snt-big b{font-size:28px}
+  .snt-big span{font-size:14px}
+  .snt-chip{font-size:12px;padding:2px 9px}
+  .snt-why{font-size:12px}
+  .snt-legend{font-size:12px}
+  /* pás obvodů */
+  .snt-strip{gap:5px}
+  /* detail */
+  .snt-dhead{padding:14px;gap:10px}
+  .snt-dhead label{width:100%}
+  .snt-dhead select{width:100%;min-height:44px;font-size:16px}
+  .snt-row{grid-template-columns:26px minmax(0,1fr);gap:6px 10px;padding:12px 14px}
   .snt-row .snt-v{grid-column:2;text-align:left;justify-items:start;display:flex;gap:4px 12px;flex-wrap:wrap;align-items:baseline}
   .snt-rbar{grid-column:2}
-  .snt-cards{grid-template-columns:minmax(0,1fr)}
+  .snt-note{padding:12px 14px}
+  /* patička: odkazy ≥ 44 px (záporný margin drží řádkování textu) */
+  footer{padding-block:16px 32px}
+  footer .snt-wrap{gap:30px}
+  footer a{display:inline-block;padding:13px 4px;margin:-13px -4px}
 }
 /* Přidáno oproti náhledu: bannery stavu spojení (náhled měl jen ukázkový pruh) */
 .snt-banner{background:var(--warn-bg);color:var(--warn);font-size:14px;border-bottom:1px solid var(--line)}

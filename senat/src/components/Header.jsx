@@ -1,4 +1,4 @@
-import { T } from '../text.js'
+import { HOME_URL, T } from '../text.js'
 import { headerModel } from '../freshness.js'
 
 export default function Header({ snapshot, serverNow, nextAt }) {
@@ -6,12 +6,13 @@ export default function Header({ snapshot, serverNow, nextAt }) {
   return (
     <header className="snt-band">
       <div className="snt-wrap">
+        <a className="snt-back" href={HOME_URL} title={T.backHomeTitle}>{T.backHome}</a>
         <div className="snt-band-top">
           <span className={`snt-pill${live ? ' snt-live' : ''}`}>
             <i className="snt-dot" />
             <span>{pill}</span>
           </span>
-          <span className="snt-num">{fresh}</span>
+          <span>{fresh}</span>
         </div>
         <div className="snt-title-row">
           <div>
@@ -19,6 +20,13 @@ export default function Header({ snapshot, serverNow, nextAt }) {
           </div>
           <p className="snt-sub" style={{ margin: 0 }}>{T.subtitle}</p>
         </div>
+        {snapshot && (
+          <nav className="snt-jump" aria-label={T.jumpLabel}>
+            <a href="#h-pir">{T.jumpCandidacies}</a>
+            <a href="#h-strip">{T.jumpDistricts}</a>
+            <a href="#h-det">{T.jumpDetail}</a>
+          </nav>
+        )}
       </div>
     </header>
   )

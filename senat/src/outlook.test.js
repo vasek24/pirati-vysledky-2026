@@ -30,8 +30,8 @@ describe('outlookView', () => {
     expect(view(50, [cand(1, { official: true, status: 'advancing', outlook: 'out', gap: 5 })]).chip).toBe('Postup do 2. kola')
   })
 
-  test('waiting (outlook null, nothing counted)', () => {
-    expect(view(0, [cand(1, { status: 'waiting' })])).toEqual({ cls: 'waiting', chip: 'Čeká na sčítání', why: 'Sčítání zatím nezačalo.' })
+  test('waiting (outlook null, nothing counted): no reason line, chip and progress say it', () => {
+    expect(view(0, [cand(1, { status: 'waiting' })])).toEqual({ cls: 'waiting', chip: 'Čeká na sčítání', why: '' })
   })
 
   test('older snapshot (no outlook field): status chip with the provisional marker, no reason', () => {

@@ -12,12 +12,12 @@ export default function Board({ snapshot, selected, onSelect }) {
   const { summary } = snapshot
   return (
     <>
-      <section aria-labelledby="h-over">
+      <section aria-labelledby="h-over" className="snt-s-over">
         <div className="snt-eyebrow" id="h-over">{T.eyebrowOverview}</div>
         <OverviewTiles summary={summary} />
       </section>
 
-      <section aria-labelledby="h-strip" style={{ paddingTop: 0 }}>
+      <section aria-labelledby="h-strip" className="snt-s-strip" style={{ paddingTop: 0 }}>
         <div className="snt-eyebrow" id="h-strip">{T.eyebrowStrip}</div>
         <Strip obvody={snapshot.obvody} selected={selected} onSelect={onSelect} />
         <div className="snt-legend">
@@ -29,7 +29,7 @@ export default function Board({ snapshot, selected, onSelect }) {
         </div>
       </section>
 
-      <section aria-labelledby="h-pir" style={{ paddingTop: 0 }}>
+      <section aria-labelledby="h-pir" className="snt-s-pir" style={{ paddingTop: 0 }}>
         <div className="snt-eyebrow" id="h-pir">{T.eyebrowPirates(summary.pirates.total)}</div>
         <PirateTiles summary={summary} />
         <Cards snapshot={snapshot} selected={selected} onSelect={onSelect} />
@@ -41,12 +41,12 @@ export default function Board({ snapshot, selected, onSelect }) {
         </div>
       </section>
 
-      <section aria-labelledby="h-det">
+      <section aria-labelledby="h-det" className="snt-s-det">
         <div className="snt-eyebrow" id="h-det">{T.eyebrowDetail}</div>
         <Detail snapshot={snapshot} selected={selected} onSelect={onSelect} />
       </section>
 
-      <section aria-labelledby="h-how" style={{ paddingTop: 0 }}>
+      <section aria-labelledby="h-how" className="snt-s-how" style={{ paddingTop: 0 }}>
         <div className="snt-eyebrow" id="h-how">{T.eyebrowGuide}</div>
         <Guide />
       </section>

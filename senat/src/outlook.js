@@ -27,8 +27,8 @@ export function outlookView(o, c) {
   const kind = c.outlook
   if (kind === undefined) return { cls: c.status, chip: CHIP[c.status] + T.provisional, why: '' } // starší snapshot
   if (kind === null) {
-    const waiting = c.status === 'waiting'
-    return { cls: c.status, chip: CHIP[c.status] + (waiting ? '' : T.provisional), why: waiting ? T.whyWaiting : '' }
+    // čekající kandidatura: čip + „sečteno 0 z N“ už říkají všechno, věta navíc by jen opakovala
+    return { cls: c.status, chip: CHIP[c.status] + (c.status === 'waiting' ? '' : T.provisional), why: '' }
   }
   const r = roundStats(o, currentRound(o))
   const pre = !r || r.okrskyZprac < r.okrskyCelkem ? T.prelim : T.counted // bez počtů okrsků kola vždy „Předběžně“

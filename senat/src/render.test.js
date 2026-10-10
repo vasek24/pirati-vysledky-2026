@@ -69,12 +69,29 @@ describe('render', () => {
     expect(out.match(/class="snt-why"/g).length).toBeGreaterThanOrEqual(2)
   })
 
-  test('waiting cards show "bez pořadí" and the waiting reason when outlook is null', () => {
+  test('waiting cards show "bez pořadí" and no extra reason line when outlook is null', () => {
     const w = waiting()
     for (const o of w.obvody) for (const c of o.candidates) { c.outlook = null; c.gap = null }
     const out = html(w, 3)
     expect(out.match(/class="snt-rk">bez pořadí</g)).toHaveLength(18)
-    expect(out).toContain(T.whyWaiting)
+    expect(out).not.toContain('class="snt-why"') // chip + „sečteno 0 z N“ stačí
+    expect(out).not.toContain('Sčítání zatím nezačalo.')
+  })
+
+  test('mobile jump row: three anchors that point at existing section ids (only with a snapshot)', () => {
+    const s = waiting()
+    const out = html(s, 3)
+    const hrefs = [...out.matchAll(/<nav class="snt-jump"[^>]*>(.*?)<\/nav>/g)][0][1].match(/href="#[^"]+"/g).map((x) => x.slice(7, -1))
+    expect(hrefs).toEqual(['h-pir', 'h-strip', 'h-det'])
+    for (const id of hrefs) expect(out).toContain(`id="${id}"`)
+    expect(out).toContain(`>${T.jumpCandidacies}<`)
+    expect(out).toContain(`aria-label="${T.jumpLabel}"`)
+    expect(renderToStaticMarkup(h(Header, { snapshot: null, serverNow: 0, nextAt: null }))).not.toContain('snt-jump')
+  })
+
+  test('board sections carry the classes the mobile CSS `order` relies on', () => {
+    const out = html(waiting(), 3)
+    for (const c of ['snt-s-over', 'snt-s-strip', 'snt-s-pir', 'snt-s-det', 'snt-s-how']) expect(out).toContain(`class="${c}"`)
   })
 
   test('runoff scenario shows round-2 progress, round-1 line and a tie', () => {

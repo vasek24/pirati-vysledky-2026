@@ -5,6 +5,7 @@
 // Registrové údaje (jména, tituly, povolání, názvy na lístku) se zobrazují
 // doslova tak, jak je publikuje ČSÚ, a tento soubor se jich netýká.
 
+export const HOME_URL = 'https://volby.pirati.cz'
 export const SOURCE_URL = 'https://volby.gov.cz/app/senat/20261009/cs/home'
 export const CONTACT_TEL = '+420777954389'
 
@@ -67,7 +68,7 @@ export const T = {
   ofTotal: (n) => ` z ${n}`,
 
   // pás obvodů
-  eyebrowStrip: '27 obvodů podle čísla · kliknutím otevřete detail',
+  eyebrowStrip: '27 obvodů podle čísla · klepnutím nebo kliknutím otevřete detail',
   legendElected: 'mandát získán (oficiálně)',
   legendRunoff: '2. kolo',
   legendCounted: 'sečteno, čeká na potvrzení ČSÚ',
@@ -101,7 +102,6 @@ export const T = {
   outLead: 'vede 2. kolo',
   outTrail: 'zaostává ve 2. kole',
   outTie: 'shoda hlasů ve 2. kole',
-  whyWaiting: 'Sčítání zatím nezačalo.',
   whyElectedR2: 'Ve 2. kole nejvíce hlasů',
   whyElectedR1: 'Nad 50 % platných hlasů, 2. kolo se nekoná',
   whyAdvancing: 'Nikdo nezískal přes 50 %: postupují dvě kandidatury s nejvíce hlasy',
@@ -119,6 +119,12 @@ export const T = {
   whyOut: (tieFirst, gap) => `${tieFirst ? 'Ztráta na 1. místo (shoda): ' : 'Ztráta na 2. místo: '}${gap}.`,
 
   // karta
+  backHome: '← volby.pirati.cz',
+  backHomeTitle: 'Zpět na volby.pirati.cz',
+  jumpLabel: 'Přejít na část stránky', // mobilní lišta odkazů pod hlavičkou
+  jumpCandidacies: 'Kandidatury',
+  jumpDistricts: 'Obvody',
+  jumpDetail: 'Detail',
   cardAria: (n, name) => `Otevřít detail obvodu ${n} ${name}`,
   party: (p) => `Navrhující strana: ${p}`,
   cardMeta: (no, age) => `č. ${no} na lístku${age == null ? '' : ` · ${age} let`}`,
