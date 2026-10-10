@@ -82,6 +82,15 @@ export const HTML_PATCHES = [
         from: 'content="Živé výsledky komunálních voleb 2026 — Praha 3, Praha 6, Praha 11. Mandáty, zvolení zastupitelé, koalice a mapa okrsků."',
         to: 'content="Živé výsledky komunálních voleb 2026 ve městech, kde kandidují Piráti. Mandáty, zvolení zastupitelé a koalice."',
     },
+    // komentář a <noscript>: jinak by mesta tvrdila, že je „záložní kopií originálu“
+    {
+        from: '<!-- Záložní kopie originálu jsemfast/pirati-vysledky-2026.\n         Václav Vislous spravuje tuto kopii a její úpravy: +420 777 954 389 (tel:+420777954389) -->',
+        to: '<!-- Postaveno na kódu jsemfast/pirati-vysledky-2026 · správce: Václav Vislous, +420 777 954 389 -->',
+    },
+    {
+        from: 'Záložní kopie originálu jsemfast/pirati-vysledky-2026 ·\n        Václav Vislous spravuje tuto kopii a její úpravy ·',
+        to: 'Postaveno na kódu jsemfast/pirati-vysledky-2026 · správce: Václav Vislous ·',
+    },
 ];
 
 const occurrences = (text, needle) => text.split(needle).length - 1;

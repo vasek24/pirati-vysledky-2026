@@ -96,8 +96,9 @@ function mestaVersion() {
   }
 }
 
-// (4) Sdílené statické soubory z public/ Prahy (publicDir je public-mesta).
-const SHARED = ['brand', 'humans.txt', 'kontakt.txt']
+// (4) Sdílené statické soubory z public/ Prahy (publicDir je public-mesta): jen brand/.
+//     humans.txt a kontakt.txt jsou vlastní, v public-mesta/ (správce všech tří přehledů).
+const SHARED = ['brand'] // humans.txt a kontakt.txt jsou vlastní: public-mesta/
 
 function* walk(rel) {
   const full = abs(path.join('public', rel))

@@ -1,0 +1,8 @@
+/* MAINTAINER */
+Name: Václav Vislous
+Role: manages these election trackers (praha.dg12.cz, mesta.dg12.cz, senat.dg12.cz) and this fork's modifications
+Phone: +420 777 954 389 (tel:+420777954389)
+
+/* ABOUT */
+Live results of the 2026 Czech municipal elections in towns where the Pirates run.
+Built on the code of jsemfast/pirati-vysledky-2026. Data source: ČSÚ (volby.gov.cz).

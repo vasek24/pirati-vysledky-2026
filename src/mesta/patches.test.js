@@ -121,6 +121,15 @@ describe('index.html patches', () => {
         expect(out).toMatch(/<meta name="description" content="[^"]*městech/);
     });
 
+    it('leaves no Prague "backup copy" wording in the HTML, keeps the phone and the tel: link', () => {
+        const out = applyHtmlPatches(html);
+        expect(out).not.toContain('Záložní kopie');
+        expect(out).not.toContain('spravuje tuto kopii');
+        expect(out).toContain('<!-- Postaveno na kódu jsemfast/pirati-vysledky-2026 · správce: Václav Vislous, +420 777 954 389 -->');
+        expect(out).toContain('Postaveno na kódu jsemfast/pirati-vysledky-2026 · správce: Václav Vislous ·');
+        expect(out).toContain('<a href="tel:+420777954389" style="color:inherit">777 954 389</a>');
+    });
+
     it('throws on a missing anchor', () => {
         expect(() => applyHtmlPatches('<html></html>')).toThrow(/0×/);
     });

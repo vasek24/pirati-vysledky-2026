@@ -22,6 +22,8 @@ function fixture(mutate = () => {}) {
         'version.json': JSON.stringify({ version: `mesta-${BUILD}` }),
         'assets/index-AAA.js': `const b="${BUILD}",v="mesta-"+b,t="Piráti ve městech";`,
         'assets/MestaIndex-BBB.js': 'export default 1',
+        'humans.txt': 'MAINTAINER Václav Vislous, Phone +420 777 954 389',
+        'kontakt.txt': 'Václav Vislous, tel. +420 777 954 389',
         'assets/CouncilApp-CCC.js': 'a="Kandidátka s Piráty";b="pražských výsledcích 2022";c="Ostatní města";d="Postaveno na kódu"',
     };
     mutate(files);
@@ -88,6 +90,21 @@ describe('checkDist', () => {
         expect(a.join('\n')).toMatch(/MestaIndex/);
         const b = checkDist(fixture((f) => { f['index.html'] = f['index.html'].replace('Piráti ve městech', 'Piráti Praha'); }));
         expect(b.join('\n')).toMatch(/index\.html/);
+    });
+
+    it('fails on Prague wording left in index.html', () => {
+        for (const bad of ['<!-- Záložní kopie originálu x -->', 'Václav Vislous spravuje tuto kopii']) {
+            const problems = checkDist(fixture((f) => { f['index.html'] += bad; }));
+            expect(problems.join('\n')).toMatch(/index\.html contains/);
+        }
+    });
+
+    it('requires mesta humans.txt and kontakt.txt with the maintainer name and phone', () => {
+        for (const name of ['humans.txt', 'kontakt.txt']) {
+            expect(checkDist(fixture((f) => { f[name] = null; })).join('\n')).toContain(name);
+            expect(checkDist(fixture((f) => { f[name] = 'Václav Vislous'; })).join('\n')).toContain(name);
+            expect(checkDist(fixture((f) => { f[name] = '+420 777 954 389'; })).join('\n')).toContain(name);
+        }
     });
 
     it('reads files from disk (sanity)', () => {

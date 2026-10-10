@@ -39,6 +39,14 @@ export function checkDist(dir) {
   else if (!existsSync(path.join(dir, entry[1]))) problems.push(`index.html: entry ${entry[1]} missing`)
   else if (!read(dir, entry[1]).includes(MARKER)) problems.push(`entry chunk ${entry[1]} does not contain "${MARKER}"`)
 
+  for (const text of ['Záložní kopie', 'spravuje tuto kopii']) if (html.includes(text)) problems.push(`index.html contains Prague wording "${text}"`)
+
+  // mesta mají vlastní humans.txt / kontakt.txt (jméno + telefon správce)
+  for (const f of ['humans.txt', 'kontakt.txt']) {
+    const body = existsSync(path.join(dir, f)) ? read(dir, f) : ''
+    if (!body.includes('Václav Vislous') || !body.includes('+420 777 954 389')) problems.push(`${f} missing or lacks the maintainer name and phone`)
+  }
+
   // version.json
   let version = ''
   try {
