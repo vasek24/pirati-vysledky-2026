@@ -7,6 +7,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import BaseMapLayer from './BaseMapLayer';
 import { getMapMode } from '../volby/mapModes';
+import { setScaleSource } from '../volby/mapScale';
 import { UNCOUNTED_FILL } from '../volby/colors';
 import { activeCouncil, partyMeta } from '../volby/council';
 import { baselineShare } from '../volby/compute';
@@ -136,7 +137,11 @@ export default function ResultsMap({
     onBackgroundClick,
 }) {
     const okrsky = snapshot?.okrsky || {};
-    const mode = useMemo(() => getMapMode(modeId, { partyId, results2022 }), [modeId, partyId, results2022]);
+    const mode = useMemo(() => getMapMode(modeId, { partyId, results2022, okrsky }), [modeId, partyId, results2022, okrsky]);
+    useEffect(() => {
+        setScaleSource(okrsky);
+        return () => setScaleSource(null);
+    }, [okrsky]);
     const fresh = useMemo(() => new Set(freshIds || []), [freshIds]);
 
     const style = (feature) => {

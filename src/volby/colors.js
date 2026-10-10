@@ -19,7 +19,7 @@ export function mix(a, b, t) {
 // Pirátská škála: od světle žluté přes pirátskou žlutou do černé
 export const PIRATE_RAMP = ['#FFF8DB', '#FFEFAD', '#FEE070', '#FEC900', '#D9A800', '#9C7900', '#4D3C00', '#000000'];
 
-export function sequentialScale(breaks, color, { unit = '%', ramp = null } = {}) {
+export function sequentialScale(breaks, color, { unit = '%', ramp = null, fmt = (n) => n } = {}) {
     const n = breaks.length + 1;
     const colors = ramp
         ? Array.from({ length: n }, (_, i) => ramp[Math.round((i * (ramp.length - 1)) / (n - 1))])
@@ -32,10 +32,10 @@ export function sequentialScale(breaks, color, { unit = '%', ramp = null } = {})
     const legend = colors.map((c, i) => ({
         color: c,
         label: i === 0
-            ? `< ${breaks[0]} ${unit}`
+            ? `< ${fmt(breaks[0])} ${unit}`
             : i === n - 1
-                ? `${breaks[n - 2]}+ ${unit}`
-                : `${breaks[i - 1]}–${breaks[i]} ${unit}`,
+                ? `${fmt(breaks[n - 2])}+ ${unit}`
+                : `${fmt(breaks[i - 1])}–${fmt(breaks[i])} ${unit}`,
     })).reverse();
     return { color: (v) => colors[classOf(v)], legend };
 }
