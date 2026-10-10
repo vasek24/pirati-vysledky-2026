@@ -1,0 +1,174 @@
+OKRES,KODZASTUP,NAZEVZAST,COBVODU,POR_STR_HL,OSTRANA,VSTRANA,NAZEVCELK,ZKRATKAO30,ZKRATKAO8,POCSTR_SLO,SLOZENI
+1100,500054,Praha 1,1,13,541,541,Piráti a nezávislí pro Prahu 1,Piráti a nezávislí pro Prahu 1,Piráti+NK,2,"080,720"
+1100,500089,Praha 2,1,8,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+1100,500097,Praha 3,1,1,1888,1888,"Piráti, PRAHA 3 SOBĚ a Edita Janečková","Piráti, PRAHA 3 SOBĚ a Edita Janečková",Pir+PHASOBĚ+NK,3,"080,720,1180"
+1100,500119,Praha 4,1,2,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+1100,500143,Praha 5,1,8,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+1100,500178,Praha 6,1,4,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+1100,500186,Praha 7,1,6,1350,1350,Piráti a Starostové,Piráti a Starostové,STAN+Piráti,2,"166,720"
+1100,500208,Praha 8,1,6,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+1100,500216,Praha 9,1,7,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+1100,500224,Praha 10,1,7,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+7102,500496,Olomouc,1,9,1369,1369,"MILUJEME OLOMOUC - Piráti, TOP 09, Zelení","MILUJEME OLOMOUC - Piráti, TOP 09, Zelení",Zelen+Pirát+TOP,3,"005,720,721"
+4207,501298,Ústí nad Labem-Severní Terasa,1,3,1933,1933,JEDNO ÚSTÍ,JEDNO ÚSTÍ,ZSTAPTOPUFONČNK,7,"005,080,166,720,721,1012,1722"
+4207,502081,Ústí nad Labem-Neštěmice,1,3,1933,1933,JEDNO ÚSTÍ,JEDNO ÚSTÍ,ZSTAPTOPUFONČNK,7,"005,080,166,720,721,1012,1722"
+4207,502316,Ústí nad Labem-Střekov,1,5,1933,1933,JEDNO ÚSTÍ,JEDNO ÚSTÍ,ZSTAPTOPUFONČNK,7,"005,080,166,720,721,1012,1722"
+7102,503738,Majetín,1,1,541,541,ZMĚNA PRO MAJETÍN,ZMĚNA PRO MAJETÍN,Piráti+NK,2,"080,720"
+7102,505587,Uničov,1,6,541,541,Česká pirátská strana,Česká pirátská strana,Piráti+NK,2,"080,720"
+8105,505927,Opava,1,7,1331,1331,VIZE PRO OPAVU,VIZE PRO OPAVU,Piráti+TOP09+NK,3,"080,720,721"
+4102,506486,Boží Dar,1,2,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+8105,507016,Hlučín,1,7,541,541,Hlučíňáci,Hlučíňáci,Piráti+NK,2,"080,720"
+7104,511382,Přerov,1,2,1483,1483,Změna pro Přerov,Změna pro Přerov,STAN+Piráti+NK,3,"080,166,720"
+7104,512800,Brodek u Přerova,1,2,541,541,ZMĚNA PRO BRODEK,ZMĚNA PRO BRODEK,Piráti+NK,2,"080,720"
+2101,529303,Benešov,1,3,571,571,Piráti s podporou lidovců pro Benešov,Piráti s podporou lidovců pro Benešov,KDU+Piráti+NK,3,"001,080,720"
+2101,530166,Miličín,1,2,1836,1836,Sousedé z Miličínska s Piráty a Voltem,Sousedé z Miličínska s Piráty a Voltem,Piráti+Volt+NK,3,"080,720,1272"
+2101,530883,Vlašim,1,6,541,541,Piráti pro Vlašim,Piráti pro Vlašim,Piráti+NK,2,"080,720"
+2102,531189,Hořovice,1,5,552,552,Hořovičtí s podporou Pirátů,Hořovičtí s podporou Pirátů,Piráti+LES+NK,3,"080,720,795"
+2103,532053,Kladno,1,8,1696,1696,KLADEŇÁCI,KLADEŇÁCI,KDUZelSTANPirNK,5,"001,005,080,166,720"
+2104,533165,Kolín,1,6,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+2105,533955,Kutná Hora,1,2,1833,1833,"LIPISTAN - LIDOVCI, PIRÁTI, STAROSTOVÉ, NEZÁVISLÍ","LIPISTAN - LIDOVCI, PIRÁTI, STAROSTOVÉ, NEZÁVISLÍ",KDU+STAN+Pir+NK,4,"001,080,166,720"
+2106,535273,Veltrusy,1,1,541,541,Sousedé VELTRUSY,Sousedé VELTRUSY,Piráti+NK,2,"080,720"
+2107,535419,Mladá Boleslav,1,4,1370,1370,Šance pro Mladou Boleslav,Šance pro Mladou Boleslav,KDU+Zel+Pir+NK,4,"001,005,080,720"
+4102,537969,Otovice,1,1,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+2109,538094,Brandýs nad Labem-Stará Boleslav,1,5,541,541,Piráti a Nezávislí,Piráti a Nezávislí,Piráti+NK,2,"080,720"
+2109,538132,Čelákovice,1,3,1577,1577,SPOLEČNĚ pro Čelákovice,SPOLEČNĚ pro Čelákovice,KDU+Piráti+TOP,3,"001,720,721"
+2109,538728,Říčany,1,4,529,529,Piráti se Zelení a nestranní,Piráti se Zelení a nestranní,Zel.+Piráti+NK,3,"005,080,720"
+1100,538931,Praha 22,1,4,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+2110,539139,Černošice,1,2,541,541,Futurista s podporou Pirátů,Futurista s podporou Pirátů,Piráti+NK,2,"080,720"
+2110,539236,Horoměřice,1,1,1483,1483,"ZA LEPŠÍ HOROMĚŘICE (STAN, Piráti, nezávislí)","ZA LEPŠÍ HOROMĚŘICE (STAN, Piráti, nezávislí)",STAN+Piráti+NK,3,"080,166,720"
+1100,539601,Praha 16,1,4,541,541,Piráti a nezávislí kandidáti,Piráti a nezávislí kandidáti,Piráti+NK,2,"080,720"
+1100,539635,Praha-Řeporyje,1,3,1691,1691,PŘÍVĚTIVÉ ŘEPORYJE,PŘÍVĚTIVÉ ŘEPORYJE,KDU+STAN+Piráti,3,"001,166,720"
+1100,539694,Praha 13,1,5,1066,1066,Zelení a Piráti pro 13,Zelení a Piráti pro 13,Zelení+Piráti,2,"005,720"
+1100,539864,Praha-Zbraslav,1,2,1920,1920,100pro Zbraslav,100pro Zbraslav,ZelPirPHASOBĚNK,4,"005,080,720,1180"
+2111,539911,Příbram,1,1,529,529,"Příbram zdola - sdružení Pirátů, Zelených a nezávislých kandidátů","Příbram zdola-sdr. Pirátů,Zelených a nez.kandidátů",Zel.+Piráti+NK,3,"005,080,720"
+3101,544256,České Budějovice,1,6,1066,1066,Piráti a Budějčáci s podporou Zelených,Piráti a Budějčáci s podporou Zelených,Zelení+Piráti,2,"005,720"
+7203,544841,Rožnov pod Radhoštěm,1,4,541,541,Zdravý Rožnov s podporou Pirátů,Zdravý Rožnov s podporou Pirátů,Piráti+NK,2,"080,720"
+3103,545881,Jindřichův Hradec,1,1,541,541,Společně s Piráty,Společně s Piráty,Piráti+NK,2,"080,720"
+8106,545911,Moravská Ostrava a Přívoz,1,8,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3203,545970,Plzeň 1,1,3,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3203,545988,Plzeň 2-Slovany,1,4,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3203,546003,Plzeň 3,1,1,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+8106,546046,Slezská Ostrava,1,5,1841,1841,"Slezská lidem s podporou KDU-ČSL, České pirátské strany a nezávislých kandidátů","Slezská lidem s podporou KDU-ČSL, Piráti a NK",KDU+Pir+Slez+NK,4,"001,080,720,1196"
+8106,546135,Ostrava-Jih,1,9,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3203,546208,Plzeň 4,1,4,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+8106,546224,Poruba,1,5,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3103,546542,Kardašova Řečice,1,1,529,529,Kardaška žije,Kardaška žije,Zel.+Piráti+NK,3,"005,080,720"
+1100,547034,Praha 11,1,6,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+1100,547107,Praha 12,1,9,541,541,Piráti Praha 12,Piráti Praha 12,Piráti+NK,2,"080,720"
+1100,547361,Praha 14,1,7,1905,1905,"MY pro Prahu 14 - Piráti, Praha 14 sobě, Zelení","MY pro Prahu 14 - Piráti, Praha 14 sobě, Zelení",Zel+Pir+PHASOBĚ,3,"005,720,1180"
+1100,547387,Praha 15,1,9,1922,1922,Piráti a Praha 15 sobě,Piráti a Praha 15 sobě,Piráti+PHA SOBĚ,2,"720,1180"
+1100,547395,Praha-Petrovice,1,5,541,541,Žijeme Petrovice,Žijeme Petrovice,Piráti+NK,2,"080,720"
+1100,547417,Praha 18,1,6,1823,1823,"Zdravé Letňany s podporou Prahy sobě, Pirátů, Lidovců a Zelených",Zdravé Letňany,KDUZelPirPHASNK,5,"001,005,080,720,1180"
+6103,547492,Pelhřimov,1,7,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+6103,547999,Humpolec,1,6,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3104,549240,Písek,1,6,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3104,549771,Protivín,1,7,1331,1331,"TOP 09, Piráti a nezávislí","TOP 09, Piráti a nezávislí",Piráti+TOP09+NK,3,"080,720,721"
+3105,550094,Prachatice,1,7,562,562,Živé Prachatice,Živé Prachatice,Zel+STAN+Pir+NK,4,"005,080,166,720"
+3105,550671,Volary,1,2,541,541,ODVÁŽNĚ PRO VOLARY,ODVÁŽNĚ PRO VOLARY,Piráti+NK,2,"080,720"
+6202,550973,Brno-střed,1,9,1835,1835,Piráti a Fakt Brno TU! pro Střed,Piráti a Fakt Brno TU! pro Střed,Pir+FaktBr+GEN,3,"720,1246,1297"
+6202,550990,Brno-Žabovřesky,1,6,1913,1913,Piráti a Fakt Brno TU! pro Žabiny,Piráti a Fakt Brno TU! pro Žabiny,Piráti+FaktBrno,2,"720,1246"
+6202,551007,Brno-Královo Pole,1,5,1845,1845,Piráti a Zelení TU! pro Královo Pole,Piráti a Zelení TU! pro Královo Pole,ZelPirIdeaFaktB,4,"005,720,1233,1246"
+6202,551031,Brno-sever,1,4,1956,1956,TÝM SEVER - SPOLEČNĚ TU! ODS + TOP 09 + Piráti + Fakt Brno,TÝM SEVER-SPOLEČNĚ TU! ODS+TOP09+Piráti+Fakt Brno,ODSPirTOPFaBrNK,5,"053,080,720,721,1246"
+6202,551058,Brno-Židenice,1,7,1913,1913,Piráti a Fakt Brno TU! pro Židenice,Piráti a Fakt Brno TU! pro Židenice,Piráti+FaktBrno,2,"720,1246"
+6202,551074,Brno-jih,1,1,1913,1913,Piráti a Fakt Brno TU! pro Jih,Piráti a Fakt Brno TU! pro Jih,Piráti+FaktBrno,2,"720,1246"
+6202,551082,Brno-Bohunice,1,3,1817,1817,"Změna v Bohunicích (TOP 09, Piráti, Brno Plus, STAROSTOVÉ, Fakt Brno)","Změna v Boh.(TOP09,Piráti,BrnoPlus, STAN,FaktBr.)",STANPirTOPFBrNK,5,"080,166,720,721,1246"
+6202,551091,Brno-Starý Lískovec,1,7,1066,1066,Piráti a Zelení,Piráti a Zelení,Zelení+Piráti,2,"005,720"
+6202,551147,Brno-Kohoutovice,1,3,1833,1833,"Kohoutovice, jak je chceme","Kohoutovice, jak je chceme",KDU+STAN+Pir+NK,4,"001,080,166,720"
+6202,551198,Brno-Bystrc,1,7,1831,1831,"Bystrčáci, Piráti, TOP 09 a nezávislí pro Bystrc","Bystrčáci, Piráti, TOP 09 a nezávislí pro Bystrc",Pir+TOP+BST+NK,4,"080,720,721,1130"
+6202,551244,Brno-Řečkovice a Mokrá Hora,1,6,1885,1885,Piráti a Fakt Brno TU! pro Řečkovice a Mokrou Horu,Piráti a Fakt Brno TU! pro Řečkovice a Mokrou Horu,PirIdealFaktBrn,3,"720,1233,1246"
+6202,551279,Brno-Vinohrady,1,5,1900,1900,"Máme rádi Vinohrady + Piráti, Zelení, Starostové a osobnosti","Máme rádi Vinohrady + Pir., Zel., Starost. a osob.",Zel+SOM+Pir+NK,4,"005,080,158,720"
+6202,551287,Brno-Líšeň,1,5,1882,1882,Piráti a Fakt Brno TU! pro Líšeň,Piráti a Fakt Brno TU! pro Líšeň,Pir+FaktBrno+NK,3,"080,720,1246"
+3106,551970,Volyně,1,1,1821,1821,ZA ŽIVOU VOLYNI,ZA ŽIVOU VOLYNI,ODS+Piráti+NK,3,"053,080,720"
+3107,552046,Tábor,1,7,529,529,Živý Tábor,Živý Tábor,Zel.+Piráti+NK,3,"005,080,720"
+3107,552585,Košice,1,7,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3201,553425,Domažlice,1,5,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+8106,554286,Mariánské Hory a Hulváky,1,1,1936,1936,Budoucnost Mariánských Hor a Hulvák,Budoucnost Mariánských Hor a Hulvák,Zel+Pir+Bud+NK,4,"005,080,720,1232"
+4101,554481,Cheb,1,6,1523,1523,Koalice pro Cheb,Koalice pro Cheb,KDUZelPirTOPNK,5,"001,005,080,720,721"
+4101,554642,Mariánské Lázně,1,9,541,541,Za lepší Mariánské Lázně,Za lepší Mariánské Lázně,Piráti+NK,2,"080,720"
+1100,554782,Praha hl.m.,1,7,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3203,554791,Plzeň,1,11,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+4207,554804,Ústí nad Labem,1,5,1933,1933,JEDNO ÚSTÍ,JEDNO ÚSTÍ,ZSTAPTOPUFONČNK,7,"005,080,166,720,721,1012,1722"
+8106,554821,Ostrava,1,12,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+8104,554910,Vražné,1,2,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+4102,554961,Karlovy Vary,1,4,1961,1961,VARY+,VARY+,KDU+KOA+Pir+TOP,4,"001,182,720,721"
+5302,555126,Pardubice II,1,6,1351,1351,"Progresivní Pardubice (TOP 09, Piráti, Zelení) a STAN","Progresivní Pardubice (TOP, Piráti, Zelení) a STAN",Ze+STAN+Pir+TOP,4,"005,166,720,721"
+5302,555134,Pardubice,1,3,1897,1897,Progresivní Pardubice (Piráti a TOP 09 s podporou Zelených a nezávislých osobností),"Prog. Pard. (Piráti, TOP, podpora Zel, nez.osob.)",Piráti+TOP 09,2,"720,721"
+4102,555398,Nová Role,1,2,541,541,Mladá Role,Mladá Role,Piráti+NK,2,"080,720"
+4102,555690,Valeč,1,1,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3202,555771,Klatovy,1,4,571,571,KLATOVY21,KLATOVY21,KDU+Piráti+NK,3,"001,080,720"
+5302,557072,Pardubice V,1,4,1849,1849,"Progresivní Pardubice (Piráti, TOP 09, Zelení) a Noví lidovci","Progr. Pard. (Piráti,TOP 09,Zelení) a Noví lidovci",KDU+Zel+Pir+TOP,4,"001,005,720,721"
+3202,557153,Sušice,1,4,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+3205,558885,Horní Bříza,1,4,1821,1821,Živá Horní Bříza,Živá Horní Bříza,ODS+Piráti+NK,3,"053,080,720"
+3205,559580,Vejprnice,1,2,541,541,Zdravé Vejprnice (s podporou Pirátů),Zdravé Vejprnice (s podporou Pirátů),Piráti+NK,2,"080,720"
+3206,559717,Rokycany,1,1,541,541,Naše Rokycany,Naše Rokycany,Piráti+NK,2,"080,720"
+5101,561380,Česká Lípa,1,8,1066,1066,Piráti a Zelení,Piráti a Zelení,Zelení+Piráti,2,"005,720"
+4201,562335,Děčín,1,2,1930,1930,HLAS DĚČÍNA (Piráti Děčín + Hlas regionů),HLAS DĚČÍNA (Piráti Děčín + Hlas regionů),Piráti+HR,2,"720,1715"
+4201,562882,Varnsdorf,1,6,1483,1483,NÁŠ VARNSDORF,NÁŠ VARNSDORF,STAN+Piráti+NK,3,"080,166,720"
+4202,562971,Chomutov,1,5,1825,1825,JsmePRO! Chomutov,JsmePRO! Chomutov,KDUZPiTOPJPRONK,6,"001,005,080,720,721,1126"
+4202,563102,Kadaň,1,3,541,541,Spojení pro změnu,Spojení pro změnu,Piráti+NK,2,"080,720"
+5102,563510,Jablonec nad Nisou,1,4,541,541,Piráti a nezávislí,Piráti a nezávislí,Piráti+NK,2,"080,720"
+5102,563668,Kořenov,1,6,541,541,Martinské Údolí pro Kořenov,Martinské Údolí pro Kořenov,Piráti+NK,2,"080,720"
+5102,563871,Železný Brod,1,4,541,541,Živý Brod,Živý Brod,Piráti+NK,2,"080,720"
+5103,563889,Liberec,1,6,1066,1066,Liberec otevřený lidem a Piráti,Liberec otevřený lidem a Piráti,Zelení+Piráti,2,"005,720"
+4203,565555,Roudnice nad Labem,1,6,541,541,Tým Roudnice,Tým Roudnice,Piráti+NK,2,"080,720"
+4204,565971,Louny,1,5,529,529,"LOUNY SPOLEČNĚ: Piráti, Zelení, nezávislí","LOUNY SPOLEČNĚ: Piráti, Zelení, nezávislí",Zel.+Piráti+NK,3,"005,080,720"
+4204,566985,Žatec,1,5,541,541,Piráti a nezávislí pro Žatec,Piráti a nezávislí pro Žatec,Piráti+NK,2,"080,720"
+4205,567027,Most,1,6,1894,1894,"Piráti, Zelení a Starostové","Piráti, Zelení a Starostové",Zele+STAN+Pirát,3,"005,166,720"
+4205,567256,Litvínov,1,2,529,529,Litvínov DO TOHO!,Litvínov DO TOHO!,Zel.+Piráti+NK,3,"005,080,720"
+4206,567442,Teplice,1,9,1370,1370,Volba pro Teplice,Volba pro Teplice,KDU+Zel+Pir+NK,4,"001,005,080,720"
+4206,567451,Bílina,1,10,1331,1331,MOJE BÍLINA s podporou Pirátů,MOJE BÍLINA s podporou Pirátů,Piráti+TOP09+NK,3,"080,720,721"
+4207,567892,Ústí nad Labem-město,1,1,1933,1933,JEDNO ÚSTÍ,JEDNO ÚSTÍ,ZSTAPTOPUFONČNK,7,"005,080,166,720,721,1012,1722"
+6101,568414,Havlíčkův Brod,1,7,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+6101,569569,Světlá nad Sázavou,1,3,1896,1896,Srdcem pro Světlou,Srdcem pro Světlou,ODS+Piráti,2,"053,720"
+8104,569666,Hladké Životice,1,5,541,541,Mládí pro Hladké Životice,Mládí pro Hladké Životice,Piráti+NK,2,"080,720"
+5201,569810,Hradec Králové,1,4,1350,1350,PIRÁTI a STAROSTOVÉ,PIRÁTI a STAROSTOVÉ,STAN+Piráti,2,"166,720"
+5301,571164,Chrudim,1,7,541,541,Lidi z Chrudimi - Piráti a nezávislí,Lidi z Chrudimi - Piráti a nezávislí,Piráti+NK,2,"080,720"
+5301,571539,Chrast,1,2,541,541,Nová volba pro Chrast,Nová volba pro Chrast,Piráti+NK,2,"080,720"
+5301,572454,Vápenný Podol,1,1,541,541,Podoláci,Podoláci,Piráti+NK,2,"080,720"
+5202,572659,Jičín,1,9,541,541,JIČÍN SRDCEM s podporou Pirátů,JIČÍN SRDCEM s podporou Pirátů,Piráti+NK,2,"080,720"
+5203,573868,Náchod,1,5,1523,1523,SOUSEDÉ za lepší Náchod,SOUSEDÉ za lepší Náchod,KDUZelPirTOPNK,5,"001,005,080,720,721"
+5203,573922,Broumov,1,3,541,541,Mladý Broumov,Mladý Broumov,Piráti+NK,2,"080,720"
+5203,574121,Jaroměř,1,6,529,529,Nová vlna pro Jaroměř,Nová vlna pro Jaroměř,Zel.+Piráti+NK,3,"005,080,720"
+5302,574716,Pardubice I,1,1,1369,1369,Progresivní Pardubice,Progresivní Pardubice,Zelen+Pirát+TOP,3,"005,720,721"
+5204,576069,Rychnov nad Kněžnou,1,3,1483,1483,PROSTOR 516 01 s podporou Pirátů a Starostů,PROSTOR 516 01 s podporou Pirátů a Starostů,STAN+Piráti+NK,3,"080,166,720"
+5204,576174,Byzhradec,1,6,541,541,Byzhradec s p.p.,Byzhradec s p.p.,Piráti+NK,2,"080,720"
+5104,577626,Turnov,1,2,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+5205,579203,Dvůr Králové nad Labem,1,1,1370,1370,Klíč ke Dvoru,Klíč ke Dvoru,KDU+Zel+Pir+NK,4,"001,005,080,720"
+5205,579297,Hostinné,1,3,541,541,PRO Zdravé Hostinné,PRO Zdravé Hostinné,Piráti+NK,2,"080,720"
+5304,580031,Česká Třebová,1,2,1331,1331,Stateční & Piráti,Stateční & Piráti,Piráti+TOP09+NK,3,"080,720,721"
+6201,581283,Blansko,1,1,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+6202,582786,Brno,1,15,1870,1870,Piráti a Fakt Brno TU!,Piráti a Fakt Brno TU!,PirIdeFaktBrGEN,4,"720,1233,1246,1297"
+6203,583952,Šlapanice,1,6,541,541,Piráti Šlapanice & friends,Piráti Šlapanice & friends,Piráti+NK,2,"080,720"
+6203,584002,Tišnov,1,7,541,541,SPOLKY pro TIŠNOV,SPOLKY pro TIŠNOV,Piráti+NK,2,"080,720"
+6204,584291,Břeclav,1,1,1483,1483,MLADÍ A NEKLIDNÍ BŘECLAV,MLADÍ A NEKLIDNÍ BŘECLAV,STAN+Piráti+NK,3,"080,166,720"
+6204,584622,Lanžhot,1,3,541,541,Srdcem pro Lanžhot,Srdcem pro Lanžhot,Piráti+NK,2,"080,720"
+6204,584649,Mikulov,1,2,541,541,Piráti Mikulov,Piráti Mikulov,Piráti+NK,2,"080,720"
+7204,585068,Zlín,1,5,1949,1949,ZLÍN SRDCEM a Piráti,ZLÍN SRDCEM a Piráti,Piráti+ZS+NK,3,"080,720,1751"
+7204,585513,Napajedla,1,4,541,541,Napajedla pro život,Napajedla pro život,Piráti+NK,2,"080,720"
+7204,585599,Otrokovice,1,1,541,541,Občané OE s podporou Pirátů,Občané OE s podporou Pirátů,Piráti+NK,2,"080,720"
+6205,586722,Veselí nad Moravou,1,2,541,541,ZA NAŠE VESELÍ,ZA NAŠE VESELÍ,Piráti+NK,2,"080,720"
+6102,586846,Jihlava,1,1,529,529,Piráti a Fórum Jihlava s podporou Zelených,Piráti a Fórum Jihlava s podporou Zelených,Zel.+Piráti+NK,3,"005,080,720"
+6102,586943,Brtnice,1,5,1876,1876,Srdcem pro Brtnici,Srdcem pro Brtnici,Zel+Pir+Genera,3,"005,720,1291"
+6102,588024,Telč,1,4,529,529,Společně pro Telč - Piráti a Zelení,Společně pro Telč - Piráti a Zelení,Zel.+Piráti+NK,3,"005,080,720"
+7201,588296,Kroměříž,1,7,541,541,První volba pro Kroměříž a místní části,První volba pro Kroměříž a místní části,Piráti+NK,2,"080,720"
+7201,588458,Holešov,1,2,1331,1331,AKCE Holešovských Občanů,AKCE Holešovských Občanů,Piráti+TOP09+NK,3,"080,720,721"
+7103,589250,Prostějov,1,1,541,541,Prostějov 2:0,Prostějov 2:0,Piráti+NK,2,"080,720"
+6104,590266,Třebíč,1,7,529,529,Piráti - Břehy - Zelení,Piráti - Břehy - Zelení,Zel.+Piráti+NK,3,"005,080,720"
+6104,591181,Moravské Budějovice,1,1,1896,1896,Za lepší Budějovice,Za lepší Budějovice,ODS+Piráti,2,"053,720"
+7202,592005,Uherské Hradiště,1,2,541,541,TOŽ HRADIŠTĚ s podporou Pirátů,TOŽ HRADIŠTĚ s podporou Pirátů,Piráti+NK,2,"080,720"
+7202,592617,Strání,1,3,541,541,Za Dědinu!,Za Dědinu!,Piráti+NK,2,"080,720"
+7202,592731,Uherský Brod,1,3,541,541,Mladí Broďani - zlepsimebrod.cz,Mladí Broďani - zlepsimebrod.cz,Piráti+NK,2,"080,720"
+6206,592943,Bučovice,1,4,541,541,Mladí Bučováci,Mladí Bučováci,Piráti+NK,2,"080,720"
+6206,593583,Slavkov u Brna,1,6,541,541,Vize pro Slavkov,Vize pro Slavkov,Piráti+NK,2,"080,720"
+6207,593711,Znojmo,1,7,541,541,ZNOJMO JSI TY!,ZNOJMO JSI TY!,Piráti+NK,2,"080,720"
+6105,596230,Nové Město na Moravě,1,5,541,541,Piráti a nezávislí,Piráti a nezávislí,Piráti+NK,2,"080,720"
+8102,598003,Frýdek-Místek,1,4,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
+8102,598348,Krmelín,1,3,541,541,Krmelínská patnáctka,Krmelínská patnáctka,Piráti+NK,2,"080,720"
+2112,598526,Roztoky,1,1,541,541,Srdcem v Roztokách,Srdcem v Roztokách,Piráti+NK,2,"080,720"
+8103,598917,Karviná,1,4,1912,1912,"Srdcem pro Karvinou - koalice STAN, ODS, PIRÁTI a TOP 09","Srdcem pro Karvinou - STAN, ODS, PIRÁTI a TOP 09",ODSSTANPirátTOP,4,"053,166,720,721"
+8103,598933,Český Těšín,1,2,541,541,TĚŠÍN 2.0,TĚŠÍN 2.0,Piráti+NK,2,"080,720"
+8103,599069,Orlová,1,9,1821,1821,Sousedi Orlová,Sousedi Orlová,ODS+Piráti+NK,3,"053,080,720"
+8103,599107,Rychvald,1,2,1820,1820,„ Opozice 26 ”,„ Opozice 26 ”,ODS+Pirát+TOP09,3,"053,720,721"
+8104,599191,Nový Jičín,1,5,1351,1351,Zelení/Piráti/TOP 09/STAN,Zelení/Piráti/TOP 09/STAN,Ze+STAN+Pir+TOP,4,"005,166,720,721"
+8104,599565,Kopřivnice,1,4,1802,1802,Pro Zdraví a Piráti,Pro Zdraví a Piráti,Pirát+PROZdraví,2,"720,785"
+8104,599832,Sedlnice,1,1,720,720,Česká pirátská strana,Česká pirátská strana,Piráti,1,720
