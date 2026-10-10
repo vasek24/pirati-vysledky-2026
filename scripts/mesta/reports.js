@@ -30,10 +30,16 @@ export function jmsezPirates(jmsez) {
     return out.sort((a, b) => a.list - b.list || a.n - b.n);
 }
 
-// true, když některý štítek "Piráti" z jmsez chybí v members ∪ others generátoru (nezávislý druhý zdroj, spec §2)
+// Obousměrná kontrola proti jmsez (nezávislý druhý zdroj, spec §2): true, když
+//  (1) některý štítek "Piráti" z jmsez chybí v members ∪ others generátoru, nebo
+//  (2) člen (members, ne others/nominovaní nečlenové) nemá v jmsez štítek "Piráti" – ale jen u kandidátky, kterou jmsez zná
+//      (kandidátka bez dat v jmsez = neznámo, ne nesoulad; město bez jmsez = neznámo).
 export function jmsezMismatch(jmsez, spec) {
+    const labelled = new Set(jmsezPirates(jmsez).map((r) => `${r.list}:${r.n}`));
     const have = new Set([...(spec?.members || []), ...(spec?.others || [])].map((m) => `${m.list}:${m.n}`));
-    return jmsezPirates(jmsez).some((r) => !have.has(`${r.list}:${r.n}`));
+    if ([...labelled].some((k) => !have.has(k))) return true;
+    const known = (list) => (jmsez?.platni?.[list]?.seznam || []).length > 0;
+    return (spec?.members || []).some((m) => known(m.list) && !labelled.has(`${m.list}:${m.n}`));
 }
 
 const csvCell = (v) => {

@@ -153,6 +153,14 @@ describe('compute: jmsez cross-check (jmsez-mismatch)', () => {
         expect(res.towns.map((t) => t.name)).toEqual(['Alfa', 'Beta', 'Delta']);
     });
 
+    it('reverse direction: a registry member without a Piráti label in jmsez flags the town; a list absent from jmsez does not', () => {
+        const noLabel = jm([[1, 'P1 Jan', 40, 'BEZPP', 'BEZPP']]); // člen 3:1 nemá štítek
+        const res = compute({ ...source(), jmsez: new Map([[1001, noLabel], [1002, jm([[1, 'X', 40, 'BEZPP', 'BEZPP']])]]) }, OWNER, { reviewedAt: null, towns: {} });
+        const s = (z) => res.specifics.find((x) => x.zastup === z);
+        expect(s(1001).flags).toContain('jmsez-mismatch');
+        expect(s(1002).flags).not.toContain('jmsez-mismatch'); // jmsez zná jen kandidátku 3, 1002 má kandidátku 4
+    });
+
     it('exposes the 2022 results and the chosen list row for the reports', () => {
         const res = compute(source(), OWNER, { reviewedAt: null, towns: {} });
         expect(res.pirates2022.get(1005)).toEqual({ pct: 5, seats: 0 });

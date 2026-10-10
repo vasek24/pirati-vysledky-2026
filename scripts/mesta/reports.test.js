@@ -45,6 +45,22 @@ describe('jmsezMismatch / jmsezPirates', () => {
         expect(jmsezMismatch(jmsez, { members: [{ list: 3, n: 1 }], others: [] })).toBe(true);
         expect(jmsezMismatch(jmsez, { members: [], others: [{ list: 5, n: 7 }] })).toBe(true);
     });
+    it('is true when a registry member is not labelled Piráti in jmsez (reverse direction)', () => {
+        const spec = { members: [{ list: 3, n: 1 }, { list: 3, n: 2 }], others: [{ list: 5, n: 7 }] }; // 3:2 je v jmsez BEZPP
+        expect(jmsezMismatch(jmsez, spec)).toBe(true);
+        expect(jmsezMismatch(jmsez, { members: [{ list: 3, n: 1 }, { list: 3, n: 99 }], others: [{ list: 5, n: 7 }] })).toBe(true); // pozice 99 v jmsez není
+    });
+    it('only members count in the reverse direction: others and nominated non-members need no label', () => {
+        const spec = { members: [{ list: 3, n: 1 }], others: [{ list: 5, n: 7 }, { list: 5, n: 8 }] }; // 5:8 v jmsez nemá štítek
+        expect(jmsezMismatch(jmsez, spec)).toBe(false);
+    });
+    it('unknown stays unknown: no platni, or a list without data in jmsez, is not a mismatch', () => {
+        const spec = { members: [{ list: 3, n: 1 }, { list: 9, n: 1 }], others: [{ list: 5, n: 7 }] }; // kandidátka 9 v jmsez chybí
+        expect(jmsezMismatch(jmsez, spec)).toBe(false);
+        expect(jmsezMismatch({ platni: {} }, spec)).toBe(false);
+        expect(jmsezMismatch({}, spec)).toBe(false);
+        expect(jmsezMismatch({ platni: { 9: { seznam: [] } } }, spec)).toBe(false);
+    });
     it('no jmsez -> no mismatch', () => {
         expect(jmsezMismatch(null, { members: [], others: [] })).toBe(false);
     });
