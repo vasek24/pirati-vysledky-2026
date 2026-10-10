@@ -62,4 +62,12 @@ describe('csuPopulation', () => {
         expect(m.has(0)).toBe(false);
         expect(m.size).toBe(3);
     });
+
+    it('accepts text-stored numbers: spaces/NBSP as thousands separators and a decimal comma', () => {
+        const rows = [[], [], [], [], [], [], ['CZ', ' 582 786 ', 'Brno', '402\u00a0739'], ['CZ', '554791', 'Plzeň', '187 928,0'], ['CZ', '1', 'x', '1,5,2']];
+        const m = csuPopulation(rows);
+        expect(m.get(582786)).toEqual({ name: 'Brno', population: 402739 });
+        expect(m.get(554791)).toEqual({ name: 'Plzeň', population: 187928 });
+        expect(m.has(1)).toBe(false);
+    });
 });

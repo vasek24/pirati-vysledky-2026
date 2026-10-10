@@ -5,542 +5,542 @@
  "failed": [],
  "towns": {
  "500496": {"name":"Olomouc","okres":7102,"generated":"2026-10-08T16:40:31","mismatch":false, "rows": [
-  {"list":9,"n":2,"name":"Žák Zdeněk","age":49,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":5,"name":"Langer Michal Bc.","age":27,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":7,"name":"Bednařík Vlastimil Ing.","age":67,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":9,"name":"Kapounek Petr","age":39,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":13,"name":"Kopková Zuzana Mgr.","age":34,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":15,"name":"Zeman Petr","age":22,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":22,"name":"Hájek Radka Mgr. BCBA","age":39,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":23,"name":"Dvořák Jan Ing.","age":55,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":25,"name":"Štěpán Antonín","age":38,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":9,"n":2,"name":"Žák Zdeněk","prislusnost":"Piráti"},
+  {"list":9,"n":5,"name":"Langer Michal Bc.","prislusnost":"Piráti"},
+  {"list":9,"n":7,"name":"Bednařík Vlastimil Ing.","prislusnost":"Piráti"},
+  {"list":9,"n":9,"name":"Kapounek Petr","prislusnost":"Piráti"},
+  {"list":9,"n":13,"name":"Kopková Zuzana Mgr.","prislusnost":"Piráti"},
+  {"list":9,"n":15,"name":"Zeman Petr","prislusnost":"Piráti"},
+  {"list":9,"n":22,"name":"Hájek Radka Mgr. BCBA","prislusnost":"Piráti"},
+  {"list":9,"n":23,"name":"Dvořák Jan Ing.","prislusnost":"Piráti"},
+  {"list":9,"n":25,"name":"Štěpán Antonín","prislusnost":"Piráti"}
  ]},
  "505587": {"name":"Uničov","okres":7102,"generated":"2026-10-08T16:40:31","mismatch":false, "rows": [
-  {"list":6,"n":1,"name":"Koppová Hana RNDr.","age":68,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":2,"name":"Fabrik Tomáš B.A. dr. h. c.","age":46,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":3,"name":"Motal Jan Mgr.","age":29,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":1,"name":"Koppová Hana RNDr.","prislusnost":"Piráti"},
+  {"list":6,"n":2,"name":"Fabrik Tomáš B.A. dr. h. c.","prislusnost":"Piráti"},
+  {"list":6,"n":3,"name":"Motal Jan Mgr.","prislusnost":"Piráti"}
  ]},
  "505927": {"name":"Opava","okres":8105,"generated":"2026-10-08T16:40:23","mismatch":false, "rows": [
-  {"list":7,"n":2,"name":"Kořízek Pavel Ing.","age":54,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":4,"name":"Brňáková Hana Bc.","age":54,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":6,"name":"Rell Martin Ing.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":8,"name":"Lacková Gabriela Bc.","age":54,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":16,"name":"Machura Patrik","age":29,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":2,"name":"Kořízek Pavel Ing.","prislusnost":"Piráti"},
+  {"list":7,"n":4,"name":"Brňáková Hana Bc.","prislusnost":"Piráti"},
+  {"list":7,"n":6,"name":"Rell Martin Ing.","prislusnost":"Piráti"},
+  {"list":7,"n":8,"name":"Lacková Gabriela Bc.","prislusnost":"Piráti"},
+  {"list":7,"n":16,"name":"Machura Patrik","prislusnost":"Piráti"}
  ]},
  "507016": {"name":"Hlučín","okres":8105,"generated":"2026-10-08T16:40:39","mismatch":false, "rows": [
-  {"list":7,"n":1,"name":"Matuška Rostislav Ing. MBA","age":39,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":1,"name":"Matuška Rostislav Ing. MBA","prislusnost":"Piráti"}
  ]},
  "511382": {"name":"Přerov","okres":7104,"generated":"2026-10-08T16:40:38","mismatch":false, "rows": [
-  {"list":2,"n":1,"name":"Dostalík Petr doc. JUDr. Ph.D.","age":46,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":4,"name":"Krejčí Jaroslav Mgr.","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":5,"name":"Hošek David","age":29,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":8,"name":"Špajs Vlastimil","age":36,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":9,"name":"Michálek Zbyněk","age":29,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":18,"name":"Horká Jitka  DiS.","age":27,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":19,"name":"Jüngling Lenka Ing.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":20,"name":"Chmelař Petr","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":21,"name":"Nezval Vojtěch Bc.","age":29,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":22,"name":"Hrubý František Ing.","age":67,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":25,"name":"Čermák Jaroslav","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":31,"name":"Stoklásek Petr","age":30,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":1,"name":"Dostalík Petr doc. JUDr. Ph.D.","prislusnost":"Piráti"},
+  {"list":2,"n":4,"name":"Krejčí Jaroslav Mgr.","prislusnost":"Piráti"},
+  {"list":2,"n":5,"name":"Hošek David","prislusnost":"Piráti"},
+  {"list":2,"n":8,"name":"Špajs Vlastimil","prislusnost":"Piráti"},
+  {"list":2,"n":9,"name":"Michálek Zbyněk","prislusnost":"Piráti"},
+  {"list":2,"n":18,"name":"Horká Jitka  DiS.","prislusnost":"Piráti"},
+  {"list":2,"n":19,"name":"Jüngling Lenka Ing.","prislusnost":"Piráti"},
+  {"list":2,"n":20,"name":"Chmelař Petr","prislusnost":"Piráti"},
+  {"list":2,"n":21,"name":"Nezval Vojtěch Bc.","prislusnost":"Piráti"},
+  {"list":2,"n":22,"name":"Hrubý František Ing.","prislusnost":"Piráti"},
+  {"list":2,"n":25,"name":"Čermák Jaroslav","prislusnost":"Piráti"},
+  {"list":2,"n":31,"name":"Stoklásek Petr","prislusnost":"Piráti"}
  ]},
  "529303": {"name":"Benešov","okres":2101,"generated":"2026-10-08T16:40:19","mismatch":false, "rows": [
-  {"list":3,"n":1,"name":"Chaluš Petr Mgr.","age":53,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":2,"name":"Machová Magdaléna Mgr.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":4,"name":"Elšíková Franková Nikola","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":5,"name":"Bradna Jiří Bc.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":20,"name":"Chalušová Hana","age":52,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":3,"n":1,"name":"Chaluš Petr Mgr.","prislusnost":"Piráti"},
+  {"list":3,"n":2,"name":"Machová Magdaléna Mgr.","prislusnost":"Piráti"},
+  {"list":3,"n":4,"name":"Elšíková Franková Nikola","prislusnost":"Piráti"},
+  {"list":3,"n":5,"name":"Bradna Jiří Bc.","prislusnost":"Piráti"},
+  {"list":3,"n":20,"name":"Chalušová Hana","prislusnost":"Piráti"}
  ]},
  "530883": {"name":"Vlašim","okres":2101,"generated":"2026-10-08T16:40:27","mismatch":false, "rows": [
-  {"list":6,"n":1,"name":"Švingr Petr Ing.","age":36,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":2,"name":"Pacholík Lukáš Ing.","age":32,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":4,"name":"Brabenec Jan Ing.","age":59,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":1,"name":"Švingr Petr Ing.","prislusnost":"Piráti"},
+  {"list":6,"n":2,"name":"Pacholík Lukáš Ing.","prislusnost":"Piráti"},
+  {"list":6,"n":4,"name":"Brabenec Jan Ing.","prislusnost":"Piráti"}
  ]},
  "532053": {"name":"Kladno","okres":2103,"generated":"2026-10-08T16:40:19","mismatch":false, "rows": [
-  {"list":8,"n":2,"name":"Kodera Martin Ing.","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":8,"n":4,"name":"Hažlinský Michal Ing.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":8,"n":11,"name":"Částová Barbora Mgr.","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":8,"n":17,"name":"Hažlinská Veronika Bc.","age":30,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":8,"n":2,"name":"Kodera Martin Ing.","prislusnost":"Piráti"},
+  {"list":8,"n":4,"name":"Hažlinský Michal Ing.","prislusnost":"Piráti"},
+  {"list":8,"n":11,"name":"Částová Barbora Mgr.","prislusnost":"Piráti"},
+  {"list":8,"n":17,"name":"Hažlinská Veronika Bc.","prislusnost":"Piráti"}
  ]},
  "533165": {"name":"Kolín","okres":2104,"generated":"2026-10-08T16:40:22","mismatch":false, "rows": [
-  {"list":6,"n":1,"name":"Boček Svatopluk Ing.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":3,"name":"Snížek Jiří Ing. Bc.","age":37,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":1,"name":"Boček Svatopluk Ing.","prislusnost":"Piráti"},
+  {"list":6,"n":3,"name":"Snížek Jiří Ing. Bc.","prislusnost":"Piráti"}
  ]},
  "533955": {"name":"Kutná Hora","okres":2105,"generated":"2026-10-08T16:40:19","mismatch":false, "rows": [
-  {"list":2,"n":2,"name":"Zelený Milan Ing.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":4,"name":"Šnajdr Vít Mgr. Bc.","age":53,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":9,"name":"Jiráň Robin Ing.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":27,"name":"Bartoš Martin Mgr.","age":35,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":2,"name":"Zelený Milan Ing.","prislusnost":"Piráti"},
+  {"list":2,"n":4,"name":"Šnajdr Vít Mgr. Bc.","prislusnost":"Piráti"},
+  {"list":2,"n":9,"name":"Jiráň Robin Ing.","prislusnost":"Piráti"},
+  {"list":2,"n":27,"name":"Bartoš Martin Mgr.","prislusnost":"Piráti"}
  ]},
  "535419": {"name":"Mladá Boleslav","okres":2107,"generated":"2026-10-08T16:40:28","mismatch":false, "rows": [
-  {"list":4,"n":2,"name":"Javůrek Michal Bc.","age":26,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":2,"name":"Javůrek Michal Bc.","prislusnost":"Piráti"}
  ]},
  "538094": {"name":"Brandýs nad Labem-Stará Boleslav","okres":2109,"generated":"2026-10-08T16:40:33","mismatch":false, "rows": [
-  {"list":5,"n":1,"name":"Zandl Patrick","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":4,"name":"Prokop Jan","age":45,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":1,"name":"Zandl Patrick","prislusnost":"Piráti"},
+  {"list":5,"n":4,"name":"Prokop Jan","prislusnost":"Piráti"}
  ]},
  "538132": {"name":"Čelákovice","okres":2109,"generated":"2026-10-08T16:40:19","mismatch":false, "rows": [
-  {"list":3,"n":1,"name":"Petřík Petr RNDr. Ph.D.","age":50,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":3,"n":1,"name":"Petřík Petr RNDr. Ph.D.","prislusnost":"Piráti"}
  ]},
  "538728": {"name":"Říčany","okres":2109,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":4,"n":1,"name":"Chán Aleš","age":46,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":5,"name":"Dušek Libor doc. Mgr. Ph.D.","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":12,"name":"Mihulka Vojtěch Ing.","age":26,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":1,"name":"Chán Aleš","prislusnost":"Piráti"},
+  {"list":4,"n":5,"name":"Dušek Libor doc. Mgr. Ph.D.","prislusnost":"Piráti"},
+  {"list":4,"n":12,"name":"Mihulka Vojtěch Ing.","prislusnost":"Piráti"}
  ]},
  "539911": {"name":"Příbram","okres":2111,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
-  {"list":1,"n":2,"name":"Luftová Simona Mgr.","age":53,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":3,"name":"Schejbal Antonín Mgr.","age":30,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":8,"name":"Kotlan Jiří Ing. Ph.D.","age":39,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":1,"n":2,"name":"Luftová Simona Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":3,"name":"Schejbal Antonín Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":8,"name":"Kotlan Jiří Ing. Ph.D.","prislusnost":"Piráti"}
  ]},
  "544256": {"name":"České Budějovice","okres":3101,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":6,"n":1,"name":"Tůma Pavel Ing.","age":49,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":2,"name":"Heyduková Pavla Bc.","age":29,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":3,"name":"Ferchenbauer Erik Bc.","age":24,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":4,"name":"Novotný Martin Ing.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":7,"name":"Vicková Petra","age":53,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":9,"name":"Kraus Jindřich Bc.","age":32,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":14,"name":"Hošek Jan Bc.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":15,"name":"Leština Dan Mgr.","age":36,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":17,"name":"Špak Josef","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":21,"name":"Soldán Drahomír","age":66,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":42,"name":"Vicek Radek","age":53,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":1,"name":"Tůma Pavel Ing.","prislusnost":"Piráti"},
+  {"list":6,"n":2,"name":"Heyduková Pavla Bc.","prislusnost":"Piráti"},
+  {"list":6,"n":3,"name":"Ferchenbauer Erik Bc.","prislusnost":"Piráti"},
+  {"list":6,"n":4,"name":"Novotný Martin Ing.","prislusnost":"Piráti"},
+  {"list":6,"n":7,"name":"Vicková Petra","prislusnost":"Piráti"},
+  {"list":6,"n":9,"name":"Kraus Jindřich Bc.","prislusnost":"Piráti"},
+  {"list":6,"n":14,"name":"Hošek Jan Bc.","prislusnost":"Piráti"},
+  {"list":6,"n":15,"name":"Leština Dan Mgr.","prislusnost":"Piráti"},
+  {"list":6,"n":17,"name":"Špak Josef","prislusnost":"Piráti"},
+  {"list":6,"n":21,"name":"Soldán Drahomír","prislusnost":"Piráti"},
+  {"list":6,"n":42,"name":"Vicek Radek","prislusnost":"Piráti"}
  ]},
  "544841": {"name":"Rožnov pod Radhoštěm","okres":7203,"generated":"2026-10-08T16:40:39","mismatch":false, "rows": [
-  {"list":4,"n":2,"name":"Adámek Libor","age":54,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":4,"name":"Babincová Marie","age":29,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":2,"name":"Adámek Libor","prislusnost":"Piráti"},
+  {"list":4,"n":4,"name":"Babincová Marie","prislusnost":"Piráti"}
  ]},
  "545881": {"name":"Jindřichův Hradec","okres":3103,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":1,"n":7,"name":"Urban Václav Mgr.","age":62,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":1,"n":7,"name":"Urban Václav Mgr.","prislusnost":"Piráti"}
  ]},
  "547492": {"name":"Pelhřimov","okres":6103,"generated":"2026-10-08T16:40:33","mismatch":false, "rows": [
-  {"list":7,"n":1,"name":"Knežik Pavel","age":46,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":2,"name":"Lišková Zdeňka","age":62,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":3,"name":"Bitman Tomáš","age":22,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":6,"name":"Babincová Iva Mgr.","age":44,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":7,"name":"Karafiát Jiří","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":10,"name":"Sukdoláková Klára Bc.","age":41,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":1,"name":"Knežik Pavel","prislusnost":"Piráti"},
+  {"list":7,"n":2,"name":"Lišková Zdeňka","prislusnost":"Piráti"},
+  {"list":7,"n":3,"name":"Bitman Tomáš","prislusnost":"Piráti"},
+  {"list":7,"n":6,"name":"Babincová Iva Mgr.","prislusnost":"Piráti"},
+  {"list":7,"n":7,"name":"Karafiát Jiří","prislusnost":"Piráti"},
+  {"list":7,"n":10,"name":"Sukdoláková Klára Bc.","prislusnost":"Piráti"}
  ]},
  "547999": {"name":"Humpolec","okres":6103,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
-  {"list":6,"n":1,"name":"Hendrych Martin","age":55,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":1,"name":"Hendrych Martin","prislusnost":"Piráti"}
  ]},
  "549240": {"name":"Písek","okres":3104,"generated":"2026-10-08T16:40:31","mismatch":false, "rows": [
-  {"list":6,"n":1,"name":"Soumar Josef  EFP","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":2,"name":"Posekaný Tomáš Ing. EFA","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":3,"name":"Soušek Petr","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":4,"name":"Hrdý Tomáš Bc.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":5,"name":"Horák Michal Ing.","age":61,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":6,"name":"Lid Říšský Jan Bc.","age":37,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":1,"name":"Soumar Josef  EFP","prislusnost":"Piráti"},
+  {"list":6,"n":2,"name":"Posekaný Tomáš Ing. EFA","prislusnost":"Piráti"},
+  {"list":6,"n":3,"name":"Soušek Petr","prislusnost":"Piráti"},
+  {"list":6,"n":4,"name":"Hrdý Tomáš Bc.","prislusnost":"Piráti"},
+  {"list":6,"n":5,"name":"Horák Michal Ing.","prislusnost":"Piráti"},
+  {"list":6,"n":6,"name":"Lid Říšský Jan Bc.","prislusnost":"Piráti"}
  ]},
  "550094": {"name":"Prachatice","okres":3105,"generated":"2026-10-08T16:40:38","mismatch":false, "rows": [
-  {"list":7,"n":1,"name":"Koritenská Barbora Mgr. et Mgr.","age":35,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":1,"name":"Koritenská Barbora Mgr. et Mgr.","prislusnost":"Piráti"}
  ]},
  "552046": {"name":"Tábor","okres":3107,"generated":"2026-10-08T16:40:38","mismatch":false, "rows": [
-  {"list":7,"n":1,"name":"Mareda Martin Mgr.","age":50,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":4,"name":"Příbramský Jan  DiS.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":12,"name":"Klecanda Václav Mgr.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":16,"name":"Vangelov Tadeáš Bc.","age":25,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":18,"name":"Justová Jindra","age":58,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":1,"name":"Mareda Martin Mgr.","prislusnost":"Piráti"},
+  {"list":7,"n":4,"name":"Příbramský Jan  DiS.","prislusnost":"Piráti"},
+  {"list":7,"n":12,"name":"Klecanda Václav Mgr.","prislusnost":"Piráti"},
+  {"list":7,"n":16,"name":"Vangelov Tadeáš Bc.","prislusnost":"Piráti"},
+  {"list":7,"n":18,"name":"Justová Jindra","prislusnost":"Piráti"}
  ]},
  "553425": {"name":"Domažlice","okres":3201,"generated":"2026-10-08T16:40:38","mismatch":false, "rows": [
-  {"list":5,"n":1,"name":"Pachl Jan","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":2,"name":"Kincler Jan","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":3,"name":"Soldán Jan Ing. Ph.D.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":4,"name":"Žižka Petr","age":45,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":6,"name":"Pachlová Radka Bc.","age":40,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":1,"name":"Pachl Jan","prislusnost":"Piráti"},
+  {"list":5,"n":2,"name":"Kincler Jan","prislusnost":"Piráti"},
+  {"list":5,"n":3,"name":"Soldán Jan Ing. Ph.D.","prislusnost":"Piráti"},
+  {"list":5,"n":4,"name":"Žižka Petr","prislusnost":"Piráti"},
+  {"list":5,"n":6,"name":"Pachlová Radka Bc.","prislusnost":"Piráti"}
  ]},
  "554481": {"name":"Cheb","okres":4101,"generated":"2026-10-08T16:40:30","mismatch":false, "rows": [
-  {"list":6,"n":5,"name":"Tkaczyszyn Ladislav","age":58,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":17,"name":"Kaprálová Barbora Mgr.","age":35,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":5,"name":"Tkaczyszyn Ladislav","prislusnost":"Piráti"},
+  {"list":6,"n":17,"name":"Kaprálová Barbora Mgr.","prislusnost":"Piráti"}
  ]},
  "554642": {"name":"Mariánské Lázně","okres":4101,"generated":"2026-10-08T16:40:27","mismatch":false, "rows": [
-  {"list":9,"n":1,"name":"Franta Vojtěch Ing. arch.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":3,"name":"Pavlovic Josef Bc.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":4,"name":"Pivcová Žaneta","age":46,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":8,"name":"Kalina Martin Ing.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":12,"name":"Třešňák Zdeněk Ing.","age":70,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":19,"name":"Pavlicová Kateřina Bc. DiS.","age":42,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":9,"n":1,"name":"Franta Vojtěch Ing. arch.","prislusnost":"Piráti"},
+  {"list":9,"n":3,"name":"Pavlovic Josef Bc.","prislusnost":"Piráti"},
+  {"list":9,"n":4,"name":"Pivcová Žaneta","prislusnost":"Piráti"},
+  {"list":9,"n":8,"name":"Kalina Martin Ing.","prislusnost":"Piráti"},
+  {"list":9,"n":12,"name":"Třešňák Zdeněk Ing.","prislusnost":"Piráti"},
+  {"list":9,"n":19,"name":"Pavlicová Kateřina Bc. DiS.","prislusnost":"Piráti"}
  ]},
  "554791": {"name":"Plzeň","okres":3203,"generated":"2026-10-08T16:40:19","mismatch":false, "rows": [
-  {"list":11,"n":1,"name":"Bosák Pavel","age":56,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":2,"name":"Habruň Marek Ing.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":3,"name":"Evelynn Vanessa","age":26,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":4,"name":"Holzman Martin Ing.","age":27,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":5,"name":"Zalabák Tomáš","age":26,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":6,"name":"Tomšíková Jana Mgr.","age":57,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":7,"name":"Kůs Daniel Mgr.","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":8,"name":"Hanousek Jiří Ing.","age":51,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":9,"name":"Šrámek Pavel Mgr.","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":10,"name":"Rezek Jiří doc. Ing. Ph.D.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":11,"name":"Kubin Martin Bc.","age":48,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":12,"name":"Hulínská Kateřina Bc.","age":26,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":13,"name":"Telínová Karolína Bc.","age":39,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":14,"name":"Krejčí Radek Bc.","age":34,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":15,"name":"Proch Radek Ing.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":16,"name":"Kováč Jan","age":36,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":17,"name":"Pelc Marek Mgr. Bc.","age":51,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":18,"name":"Ptáček Martin Ing.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":19,"name":"Nováková Kateřina","age":53,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":20,"name":"Čorňák Jakub","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":21,"name":"Benešová Kateřina Mgr.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":22,"name":"Vaňáček Miroslav Bc.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":23,"name":"Reithmaier Jan Ing.","age":53,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":24,"name":"Šrámková Jindřiška","age":60,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":25,"name":"Sedláček Roman","age":58,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":27,"name":"Staněk Karel","age":32,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":28,"name":"Kalčíková Tereza","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":29,"name":"Paulová Kristýna Mgr.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":30,"name":"Ouda Martin Ing.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":31,"name":"Veselý Vojtěch Mgr.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":33,"name":"Vápeník Vladimír","age":65,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":34,"name":"Nikodím Jan","age":48,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":36,"name":"Malina Jan","age":30,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":42,"name":"Cuchal Miroslav Ing.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":43,"name":"Hrubant Jaroslav","age":36,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":44,"name":"Tušek Jan Ing.","age":48,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":45,"name":"Hagara František","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":11,"n":47,"name":"Šrámková Eva MUDr.","age":34,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":11,"n":1,"name":"Bosák Pavel","prislusnost":"Piráti"},
+  {"list":11,"n":2,"name":"Habruň Marek Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":3,"name":"Evelynn Vanessa","prislusnost":"Piráti"},
+  {"list":11,"n":4,"name":"Holzman Martin Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":5,"name":"Zalabák Tomáš","prislusnost":"Piráti"},
+  {"list":11,"n":6,"name":"Tomšíková Jana Mgr.","prislusnost":"Piráti"},
+  {"list":11,"n":7,"name":"Kůs Daniel Mgr.","prislusnost":"Piráti"},
+  {"list":11,"n":8,"name":"Hanousek Jiří Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":9,"name":"Šrámek Pavel Mgr.","prislusnost":"Piráti"},
+  {"list":11,"n":10,"name":"Rezek Jiří doc. Ing. Ph.D.","prislusnost":"Piráti"},
+  {"list":11,"n":11,"name":"Kubin Martin Bc.","prislusnost":"Piráti"},
+  {"list":11,"n":12,"name":"Hulínská Kateřina Bc.","prislusnost":"Piráti"},
+  {"list":11,"n":13,"name":"Telínová Karolína Bc.","prislusnost":"Piráti"},
+  {"list":11,"n":14,"name":"Krejčí Radek Bc.","prislusnost":"Piráti"},
+  {"list":11,"n":15,"name":"Proch Radek Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":16,"name":"Kováč Jan","prislusnost":"Piráti"},
+  {"list":11,"n":17,"name":"Pelc Marek Mgr. Bc.","prislusnost":"Piráti"},
+  {"list":11,"n":18,"name":"Ptáček Martin Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":19,"name":"Nováková Kateřina","prislusnost":"Piráti"},
+  {"list":11,"n":20,"name":"Čorňák Jakub","prislusnost":"Piráti"},
+  {"list":11,"n":21,"name":"Benešová Kateřina Mgr.","prislusnost":"Piráti"},
+  {"list":11,"n":22,"name":"Vaňáček Miroslav Bc.","prislusnost":"Piráti"},
+  {"list":11,"n":23,"name":"Reithmaier Jan Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":24,"name":"Šrámková Jindřiška","prislusnost":"Piráti"},
+  {"list":11,"n":25,"name":"Sedláček Roman","prislusnost":"Piráti"},
+  {"list":11,"n":27,"name":"Staněk Karel","prislusnost":"Piráti"},
+  {"list":11,"n":28,"name":"Kalčíková Tereza","prislusnost":"Piráti"},
+  {"list":11,"n":29,"name":"Paulová Kristýna Mgr.","prislusnost":"Piráti"},
+  {"list":11,"n":30,"name":"Ouda Martin Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":31,"name":"Veselý Vojtěch Mgr.","prislusnost":"Piráti"},
+  {"list":11,"n":33,"name":"Vápeník Vladimír","prislusnost":"Piráti"},
+  {"list":11,"n":34,"name":"Nikodím Jan","prislusnost":"Piráti"},
+  {"list":11,"n":36,"name":"Malina Jan","prislusnost":"Piráti"},
+  {"list":11,"n":42,"name":"Cuchal Miroslav Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":43,"name":"Hrubant Jaroslav","prislusnost":"Piráti"},
+  {"list":11,"n":44,"name":"Tušek Jan Ing.","prislusnost":"Piráti"},
+  {"list":11,"n":45,"name":"Hagara František","prislusnost":"Piráti"},
+  {"list":11,"n":47,"name":"Šrámková Eva MUDr.","prislusnost":"Piráti"}
  ]},
  "554804": {"name":"Ústí nad Labem","okres":4207,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":5,"n":9,"name":"Baudis Jiří Ing. Mgr.","age":44,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":13,"name":"Kozák Vladimír","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":20,"name":"Blažej Chorovský Lukáš Mgr.","age":30,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":22,"name":"Přibyl Jakub Ing.","age":44,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":9,"name":"Baudis Jiří Ing. Mgr.","prislusnost":"Piráti"},
+  {"list":5,"n":13,"name":"Kozák Vladimír","prislusnost":"Piráti"},
+  {"list":5,"n":20,"name":"Blažej Chorovský Lukáš Mgr.","prislusnost":"Piráti"},
+  {"list":5,"n":22,"name":"Přibyl Jakub Ing.","prislusnost":"Piráti"}
  ]},
  "554821": {"name":"Ostrava","okres":8106,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
-  {"list":12,"n":1,"name":"Řeha Rostislav Ing.","age":53,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":2,"name":"Dušková Martina Mgr.","age":39,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":3,"name":"Vontroba Jakub Ing. Ph.D.","age":31,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":4,"name":"Minkovičová Nikola Mgr.","age":32,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":5,"name":"Fischer Zacharias Samuel Bc.","age":23,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":7,"name":"Enenkl Samuel","age":21,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":9,"name":"Polášková Pavlína MgA.","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":12,"name":"Macečková Gabriela","age":29,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":13,"name":"Hořejší Jaroslav Ing.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":16,"name":"Monsport Jakub Ing.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":17,"name":"Okon Aleš Bc. et Bc.","age":51,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":18,"name":"Rajnoch Jiří Ing.","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":19,"name":"Vyka Barbora Mgr.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":22,"name":"Ručka Ondřej JUDr.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":23,"name":"Parchaňský Václav Ing. Ph.D.","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":24,"name":"Pawlas Daniel Bc.","age":30,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":25,"name":"Piechowicz Adam","age":25,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":26,"name":"Ojha Raman  LL.M.","age":23,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":27,"name":"Topiarzová Zoja","age":19,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":28,"name":"Jandačka Petr Mgr. Ph.D.","age":51,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":34,"name":"Holiš Stanislav","age":56,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":38,"name":"Svozil Vít Mgr.","age":39,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":12,"n":42,"name":"Kučera Martin Mgr.","age":55,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":12,"n":1,"name":"Řeha Rostislav Ing.","prislusnost":"Piráti"},
+  {"list":12,"n":2,"name":"Dušková Martina Mgr.","prislusnost":"Piráti"},
+  {"list":12,"n":3,"name":"Vontroba Jakub Ing. Ph.D.","prislusnost":"Piráti"},
+  {"list":12,"n":4,"name":"Minkovičová Nikola Mgr.","prislusnost":"Piráti"},
+  {"list":12,"n":5,"name":"Fischer Zacharias Samuel Bc.","prislusnost":"Piráti"},
+  {"list":12,"n":7,"name":"Enenkl Samuel","prislusnost":"Piráti"},
+  {"list":12,"n":9,"name":"Polášková Pavlína MgA.","prislusnost":"Piráti"},
+  {"list":12,"n":12,"name":"Macečková Gabriela","prislusnost":"Piráti"},
+  {"list":12,"n":13,"name":"Hořejší Jaroslav Ing.","prislusnost":"Piráti"},
+  {"list":12,"n":16,"name":"Monsport Jakub Ing.","prislusnost":"Piráti"},
+  {"list":12,"n":17,"name":"Okon Aleš Bc. et Bc.","prislusnost":"Piráti"},
+  {"list":12,"n":18,"name":"Rajnoch Jiří Ing.","prislusnost":"Piráti"},
+  {"list":12,"n":19,"name":"Vyka Barbora Mgr.","prislusnost":"Piráti"},
+  {"list":12,"n":22,"name":"Ručka Ondřej JUDr.","prislusnost":"Piráti"},
+  {"list":12,"n":23,"name":"Parchaňský Václav Ing. Ph.D.","prislusnost":"Piráti"},
+  {"list":12,"n":24,"name":"Pawlas Daniel Bc.","prislusnost":"Piráti"},
+  {"list":12,"n":25,"name":"Piechowicz Adam","prislusnost":"Piráti"},
+  {"list":12,"n":26,"name":"Ojha Raman  LL.M.","prislusnost":"Piráti"},
+  {"list":12,"n":27,"name":"Topiarzová Zoja","prislusnost":"Piráti"},
+  {"list":12,"n":28,"name":"Jandačka Petr Mgr. Ph.D.","prislusnost":"Piráti"},
+  {"list":12,"n":34,"name":"Holiš Stanislav","prislusnost":"Piráti"},
+  {"list":12,"n":38,"name":"Svozil Vít Mgr.","prislusnost":"Piráti"},
+  {"list":12,"n":42,"name":"Kučera Martin Mgr.","prislusnost":"Piráti"}
  ]},
  "554961": {"name":"Karlovy Vary","okres":4102,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
-  {"list":4,"n":2,"name":"Čermák Jindřich Mgr.","age":44,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":6,"name":"Vaněk Bohdan Ing. M.A.","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":13,"name":"Špecián Karel","age":22,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":31,"name":"Michková Jana Ing.","age":62,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":2,"name":"Čermák Jindřich Mgr.","prislusnost":"Piráti"},
+  {"list":4,"n":6,"name":"Vaněk Bohdan Ing. M.A.","prislusnost":"Piráti"},
+  {"list":4,"n":13,"name":"Špecián Karel","prislusnost":"Piráti"},
+  {"list":4,"n":31,"name":"Michková Jana Ing.","prislusnost":"Piráti"}
  ]},
  "555134": {"name":"Pardubice","okres":5302,"generated":"2026-10-08T16:40:33","mismatch":false, "rows": [
-  {"list":3,"n":2,"name":"Klát Stanislav Bc.","age":30,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":4,"name":"Havlenová Žaneta Bc.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":6,"name":"Jirsa Vojtěch Ing. Ph.D.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":8,"name":"Gudrun Vavrečková Anna","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":11,"name":"Vařecha Filip Ing.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":13,"name":"Kadlec Petr Mgr. Ph.D.","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":15,"name":"Slavík Stanislav MUDr.","age":30,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":18,"name":"Valášek Fialová Kateřina Bc.","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":20,"name":"Zavacká Markéta","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":27,"name":"Jirsová Kateřina MgA.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":31,"name":"Havlena Lukáš Ing.","age":43,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":3,"n":2,"name":"Klát Stanislav Bc.","prislusnost":"Piráti"},
+  {"list":3,"n":4,"name":"Havlenová Žaneta Bc.","prislusnost":"Piráti"},
+  {"list":3,"n":6,"name":"Jirsa Vojtěch Ing. Ph.D.","prislusnost":"Piráti"},
+  {"list":3,"n":8,"name":"Gudrun Vavrečková Anna","prislusnost":"Piráti"},
+  {"list":3,"n":11,"name":"Vařecha Filip Ing.","prislusnost":"Piráti"},
+  {"list":3,"n":13,"name":"Kadlec Petr Mgr. Ph.D.","prislusnost":"Piráti"},
+  {"list":3,"n":15,"name":"Slavík Stanislav MUDr.","prislusnost":"Piráti"},
+  {"list":3,"n":18,"name":"Valášek Fialová Kateřina Bc.","prislusnost":"Piráti"},
+  {"list":3,"n":20,"name":"Zavacká Markéta","prislusnost":"Piráti"},
+  {"list":3,"n":27,"name":"Jirsová Kateřina MgA.","prislusnost":"Piráti"},
+  {"list":3,"n":31,"name":"Havlena Lukáš Ing.","prislusnost":"Piráti"}
  ]},
  "555771": {"name":"Klatovy","okres":3202,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":4,"n":8,"name":"Haviar Stanislav doc. RNDr. Ph.D.","age":40,"navrh":"NK","prislusnost":"Piráti"}
+  {"list":4,"n":8,"name":"Haviar Stanislav doc. RNDr. Ph.D.","prislusnost":"Piráti"}
  ]},
  "557153": {"name":"Sušice","okres":3202,"generated":"2026-10-08T16:40:19","mismatch":false, "rows": [
-  {"list":4,"n":1,"name":"Janda Jan","age":45,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":2,"name":"Mikulová Lucie Bc.","age":34,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":3,"name":"Mikušová Věra Mgr.","age":35,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":1,"name":"Janda Jan","prislusnost":"Piráti"},
+  {"list":4,"n":2,"name":"Mikulová Lucie Bc.","prislusnost":"Piráti"},
+  {"list":4,"n":3,"name":"Mikušová Věra Mgr.","prislusnost":"Piráti"}
  ]},
  "559717": {"name":"Rokycany","okres":3206,"generated":"2026-10-08T16:40:28","mismatch":false, "rows": [
-  {"list":1,"n":2,"name":"Frühauf Jakub","age":28,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":1,"n":2,"name":"Frühauf Jakub","prislusnost":"Piráti"}
  ]},
  "561380": {"name":"Česká Lípa","okres":5101,"generated":"2026-10-08T16:40:38","mismatch":false, "rows": [
-  {"list":8,"n":1,"name":"Víteček Ondřej","age":45,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":8,"n":4,"name":"Halamová Kateřina","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":8,"n":6,"name":"Martyčák Stanislav Mgr.","age":41,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":8,"n":1,"name":"Víteček Ondřej","prislusnost":"Piráti"},
+  {"list":8,"n":4,"name":"Halamová Kateřina","prislusnost":"Piráti"},
+  {"list":8,"n":6,"name":"Martyčák Stanislav Mgr.","prislusnost":"Piráti"}
  ]},
  "562335": {"name":"Děčín","okres":4201,"generated":"2026-10-08T16:40:33","mismatch":false, "rows": [
-  {"list":2,"n":3,"name":"Strnad Martin","age":50,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":5,"name":"Andráš Petr","age":66,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":11,"name":"Maixner Jan","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":17,"name":"Rezková Miroslava","age":53,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":3,"name":"Strnad Martin","prislusnost":"Piráti"},
+  {"list":2,"n":5,"name":"Andráš Petr","prislusnost":"Piráti"},
+  {"list":2,"n":11,"name":"Maixner Jan","prislusnost":"Piráti"},
+  {"list":2,"n":17,"name":"Rezková Miroslava","prislusnost":"Piráti"}
  ]},
  "562882": {"name":"Varnsdorf","okres":4201,"generated":"2026-10-08T16:40:22","mismatch":false, "rows": [
-  {"list":6,"n":15,"name":"Štěpánek Zdeněk Bc.","age":43,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":15,"name":"Štěpánek Zdeněk Bc.","prislusnost":"Piráti"}
  ]},
  "562971": {"name":"Chomutov","okres":4202,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":5,"n":15,"name":"Kindl František","age":73,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":15,"name":"Kindl František","prislusnost":"Piráti"}
  ]},
  "563102": {"name":"Kadaň","okres":4202,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":3,"n":1,"name":"Hladová Jana Ing. Bc.","age":49,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":3,"name":"Vodrážková Hana Mgr.","age":54,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":5,"name":"Kopica Jiří Mgr.","age":47,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":3,"n":1,"name":"Hladová Jana Ing. Bc.","prislusnost":"Piráti"},
+  {"list":3,"n":3,"name":"Vodrážková Hana Mgr.","prislusnost":"Piráti"},
+  {"list":3,"n":5,"name":"Kopica Jiří Mgr.","prislusnost":"Piráti"}
  ]},
  "563510": {"name":"Jablonec nad Nisou","okres":5102,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
-  {"list":4,"n":3,"name":"Šída Jaroslav Mgr.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":5,"name":"Žáková Kateřina Mgr.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":6,"name":"Drápalíková Veronika","age":36,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":7,"name":"Polák Jan","age":48,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":9,"name":"Picko Jan MgA.","age":45,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":10,"name":"Linhart Zdeněk","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":11,"name":"Andar Malikdin MUDr.","age":53,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":15,"name":"Novosad Ondřej Ing. arch.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":16,"name":"Mastník Filip","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":20,"name":"Klápště Pavel Ing.","age":43,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":3,"name":"Šída Jaroslav Mgr.","prislusnost":"Piráti"},
+  {"list":4,"n":5,"name":"Žáková Kateřina Mgr.","prislusnost":"Piráti"},
+  {"list":4,"n":6,"name":"Drápalíková Veronika","prislusnost":"Piráti"},
+  {"list":4,"n":7,"name":"Polák Jan","prislusnost":"Piráti"},
+  {"list":4,"n":9,"name":"Picko Jan MgA.","prislusnost":"Piráti"},
+  {"list":4,"n":10,"name":"Linhart Zdeněk","prislusnost":"Piráti"},
+  {"list":4,"n":11,"name":"Andar Malikdin MUDr.","prislusnost":"Piráti"},
+  {"list":4,"n":15,"name":"Novosad Ondřej Ing. arch.","prislusnost":"Piráti"},
+  {"list":4,"n":16,"name":"Mastník Filip","prislusnost":"Piráti"},
+  {"list":4,"n":20,"name":"Klápště Pavel Ing.","prislusnost":"Piráti"}
  ]},
  "563889": {"name":"Liberec","okres":5103,"generated":"2026-10-08T16:40:39","mismatch":false, "rows": [
-  {"list":6,"n":1,"name":"Hruška Jan Mgr.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":4,"name":"Macháčková Jiřina RNDr. Ph.D.","age":54,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":7,"name":"Slanina Petr Mgr. Ph.D., LL.M., MBA","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":10,"name":"Jägerová Klára Mgr.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":11,"name":"Strouhal Václav  DiS.","age":63,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":14,"name":"Gistrová Lucie Mgr.","age":31,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":17,"name":"Bednář Martin","age":27,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":21,"name":"Křeček Leoš Mgr.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":27,"name":"Vančo Filip Bc.","age":26,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":31,"name":"Váňa Pavel","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":34,"name":"Churá Karolína","age":20,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":37,"name":"Šuška Andrej  DiS.","age":36,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":1,"name":"Hruška Jan Mgr.","prislusnost":"Piráti"},
+  {"list":6,"n":4,"name":"Macháčková Jiřina RNDr. Ph.D.","prislusnost":"Piráti"},
+  {"list":6,"n":7,"name":"Slanina Petr Mgr. Ph.D., LL.M., MBA","prislusnost":"Piráti"},
+  {"list":6,"n":10,"name":"Jägerová Klára Mgr.","prislusnost":"Piráti"},
+  {"list":6,"n":11,"name":"Strouhal Václav  DiS.","prislusnost":"Piráti"},
+  {"list":6,"n":14,"name":"Gistrová Lucie Mgr.","prislusnost":"Piráti"},
+  {"list":6,"n":17,"name":"Bednář Martin","prislusnost":"Piráti"},
+  {"list":6,"n":21,"name":"Křeček Leoš Mgr.","prislusnost":"Piráti"},
+  {"list":6,"n":27,"name":"Vančo Filip Bc.","prislusnost":"Piráti"},
+  {"list":6,"n":31,"name":"Váňa Pavel","prislusnost":"Piráti"},
+  {"list":6,"n":34,"name":"Churá Karolína","prislusnost":"Piráti"},
+  {"list":6,"n":37,"name":"Šuška Andrej  DiS.","prislusnost":"Piráti"}
  ]},
  "565555": {"name":"Roudnice nad Labem","okres":4203,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":6,"n":1,"name":"Hrstka Miroslav Ing. DiS.","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":6,"n":6,"name":"Majerčík Milan","age":22,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":1,"name":"Hrstka Miroslav Ing. DiS.","prislusnost":"Piráti"},
+  {"list":6,"n":6,"name":"Majerčík Milan","prislusnost":"Piráti"}
  ]},
  "565971": {"name":"Louny","okres":4204,"generated":"2026-10-08T16:40:39","mismatch":false, "rows": [
-  {"list":5,"n":2,"name":"Nadolecki Pavel Ing.","age":44,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":4,"name":"Miličevič Radek Mgr.","age":32,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":6,"name":"Šťastný Petr Felix","age":37,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":2,"name":"Nadolecki Pavel Ing.","prislusnost":"Piráti"},
+  {"list":5,"n":4,"name":"Miličevič Radek Mgr.","prislusnost":"Piráti"},
+  {"list":5,"n":6,"name":"Šťastný Petr Felix","prislusnost":"Piráti"}
  ]},
  "566985": {"name":"Žatec","okres":4204,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":5,"n":1,"name":"Bartoš Tobiáš","age":20,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":2,"name":"Vlach Vladimír","age":50,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":3,"name":"Koutecká Kalousová Marta","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":4,"name":"Kranda Jan Mgr.","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":6,"name":"Weidisch Tomáš","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":19,"name":"Sudek Petr","age":48,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":1,"name":"Bartoš Tobiáš","prislusnost":"Piráti"},
+  {"list":5,"n":2,"name":"Vlach Vladimír","prislusnost":"Piráti"},
+  {"list":5,"n":3,"name":"Koutecká Kalousová Marta","prislusnost":"Piráti"},
+  {"list":5,"n":4,"name":"Kranda Jan Mgr.","prislusnost":"Piráti"},
+  {"list":5,"n":6,"name":"Weidisch Tomáš","prislusnost":"Piráti"},
+  {"list":5,"n":19,"name":"Sudek Petr","prislusnost":"Piráti"}
  ]},
  "567027": {"name":"Most","okres":4205,"generated":"2026-10-08T16:40:33","mismatch":false, "rows": [
-  {"list":6,"n":2,"name":"Zlata Jakub","age":18,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":2,"name":"Zlata Jakub","prislusnost":"Piráti"}
  ]},
  "567256": {"name":"Litvínov","okres":4205,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":2,"n":3,"name":"Marko Filip","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":9,"name":"Tvrzník Matyáš Šimon","age":22,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":3,"name":"Marko Filip","prislusnost":"Piráti"},
+  {"list":2,"n":9,"name":"Tvrzník Matyáš Šimon","prislusnost":"Piráti"}
  ]},
  "567442": {"name":"Teplice","okres":4206,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":9,"n":4,"name":"Sobek Martin Mgr.","age":43,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":9,"n":4,"name":"Sobek Martin Mgr.","prislusnost":"Piráti"}
  ]},
  "567451": {"name":"Bílina","okres":4206,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":10,"n":3,"name":"Budaj Antonín Mgr.","age":56,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":10,"n":3,"name":"Budaj Antonín Mgr.","prislusnost":"Piráti"}
  ]},
  "568414": {"name":"Havlíčkův Brod","okres":6101,"generated":"2026-10-08T16:40:33","mismatch":false, "rows": [
-  {"list":7,"n":1,"name":"Vozáb Petr Ing. arch.","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":2,"name":"Pošvář Jan Bc.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":4,"name":"Svoboda Jiří Bc.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":5,"name":"Mergl Vojtěch","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":8,"name":"Bačinová Irena Bc.","age":60,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":1,"name":"Vozáb Petr Ing. arch.","prislusnost":"Piráti"},
+  {"list":7,"n":2,"name":"Pošvář Jan Bc.","prislusnost":"Piráti"},
+  {"list":7,"n":4,"name":"Svoboda Jiří Bc.","prislusnost":"Piráti"},
+  {"list":7,"n":5,"name":"Mergl Vojtěch","prislusnost":"Piráti"},
+  {"list":7,"n":8,"name":"Bačinová Irena Bc.","prislusnost":"Piráti"}
  ]},
  "569810": {"name":"Hradec Králové","okres":5201,"generated":"2026-10-08T16:40:31","mismatch":false, "rows": [
-  {"list":4,"n":1,"name":"Kubica Kamil","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":6,"name":"Dohnal Aleš","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":7,"name":"Luštinec Vít Bc.","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":9,"name":"Zeman Jan Mgr.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":11,"name":"Merta Tomáš Mgr.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":15,"name":"Bartoš Václav MgA.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":17,"name":"Plchová Kateřina","age":54,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":19,"name":"Vejběra Marek","age":18,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":31,"name":"Janko Martin MUDr.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":33,"name":"Šafránek Vít","age":51,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":37,"name":"Patková Jana Mgr.","age":35,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":1,"name":"Kubica Kamil","prislusnost":"Piráti"},
+  {"list":4,"n":6,"name":"Dohnal Aleš","prislusnost":"Piráti"},
+  {"list":4,"n":7,"name":"Luštinec Vít Bc.","prislusnost":"Piráti"},
+  {"list":4,"n":9,"name":"Zeman Jan Mgr.","prislusnost":"Piráti"},
+  {"list":4,"n":11,"name":"Merta Tomáš Mgr.","prislusnost":"Piráti"},
+  {"list":4,"n":15,"name":"Bartoš Václav MgA.","prislusnost":"Piráti"},
+  {"list":4,"n":17,"name":"Plchová Kateřina","prislusnost":"Piráti"},
+  {"list":4,"n":19,"name":"Vejběra Marek","prislusnost":"Piráti"},
+  {"list":4,"n":31,"name":"Janko Martin MUDr.","prislusnost":"Piráti"},
+  {"list":4,"n":33,"name":"Šafránek Vít","prislusnost":"Piráti"},
+  {"list":4,"n":37,"name":"Patková Jana Mgr.","prislusnost":"Piráti"}
  ]},
  "571164": {"name":"Chrudim","okres":5301,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":7,"n":1,"name":"Lebduška Daniel Mgr. Bc.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":2,"name":"Diblík Ivo","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":3,"name":"Blažek Jiří MUDr.","age":45,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":5,"name":"Nunvář Aleš Mgr. Ing.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":8,"name":"Antoš David","age":26,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":9,"name":"Jansa Jiří Mgr.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":11,"name":"Rydl Jan  DiS.","age":47,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":1,"name":"Lebduška Daniel Mgr. Bc.","prislusnost":"Piráti"},
+  {"list":7,"n":2,"name":"Diblík Ivo","prislusnost":"Piráti"},
+  {"list":7,"n":3,"name":"Blažek Jiří MUDr.","prislusnost":"Piráti"},
+  {"list":7,"n":5,"name":"Nunvář Aleš Mgr. Ing.","prislusnost":"Piráti"},
+  {"list":7,"n":8,"name":"Antoš David","prislusnost":"Piráti"},
+  {"list":7,"n":9,"name":"Jansa Jiří Mgr.","prislusnost":"Piráti"},
+  {"list":7,"n":11,"name":"Rydl Jan  DiS.","prislusnost":"Piráti"}
  ]},
  "572659": {"name":"Jičín","okres":5202,"generated":"2026-10-08T16:40:24","mismatch":false, "rows": [
-  {"list":9,"n":1,"name":"Ent Jan","age":54,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":9,"n":1,"name":"Ent Jan","prislusnost":"Piráti"}
  ]},
  "573868": {"name":"Náchod","okres":5203,"generated":"2026-10-08T16:40:35","mismatch":false, "rows": []},
  "574121": {"name":"Jaroměř","okres":5203,"generated":"2026-10-08T16:40:30","mismatch":false, "rows": [
-  {"list":6,"n":4,"name":"Picek Marek Mgr.","age":30,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":6,"n":4,"name":"Picek Marek Mgr.","prislusnost":"Piráti"}
  ]},
  "576069": {"name":"Rychnov nad Kněžnou","okres":5204,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":3,"n":1,"name":"Králová Věra Bc.","age":39,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":3,"n":1,"name":"Králová Věra Bc.","prislusnost":"Piráti"}
  ]},
  "577626": {"name":"Turnov","okres":5104,"generated":"2026-10-08T16:40:19","mismatch":false, "rows": [
-  {"list":2,"n":1,"name":"Slavík Vratislav Mgr. et Mgr.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":2,"name":"Havlík Daniel","age":24,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":4,"name":"Poslušný František","age":19,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":1,"name":"Slavík Vratislav Mgr. et Mgr.","prislusnost":"Piráti"},
+  {"list":2,"n":2,"name":"Havlík Daniel","prislusnost":"Piráti"},
+  {"list":2,"n":4,"name":"Poslušný František","prislusnost":"Piráti"}
  ]},
  "579203": {"name":"Dvůr Králové nad Labem","okres":5205,"generated":"2026-10-08T16:40:38","mismatch":false, "rows": []},
  "580031": {"name":"Česká Třebová","okres":5304,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
-  {"list":2,"n":2,"name":"Ducháček Jiří","age":57,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":6,"name":"Saifrt Martin","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":10,"name":"Herman Martin","age":44,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":21,"name":"Záleský Pavel","age":43,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":2,"name":"Ducháček Jiří","prislusnost":"Piráti"},
+  {"list":2,"n":6,"name":"Saifrt Martin","prislusnost":"Piráti"},
+  {"list":2,"n":10,"name":"Herman Martin","prislusnost":"Piráti"},
+  {"list":2,"n":21,"name":"Záleský Pavel","prislusnost":"Piráti"}
  ]},
  "581283": {"name":"Blansko","okres":6201,"generated":"2026-10-08T16:40:28","mismatch":false, "rows": [
-  {"list":1,"n":1,"name":"Haváč Ondřej Mgr. Ph.D.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":2,"name":"Němcová Žaneta Mgr.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":3,"name":"Pokorný Zbyněk","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":4,"name":"Čuma Jan Ing.","age":45,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":6,"name":"Střítecký Jan Mgr. Ph.D.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":10,"name":"Sedlák Luboš Ing.","age":33,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":1,"n":1,"name":"Haváč Ondřej Mgr. Ph.D.","prislusnost":"Piráti"},
+  {"list":1,"n":2,"name":"Němcová Žaneta Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":3,"name":"Pokorný Zbyněk","prislusnost":"Piráti"},
+  {"list":1,"n":4,"name":"Čuma Jan Ing.","prislusnost":"Piráti"},
+  {"list":1,"n":6,"name":"Střítecký Jan Mgr. Ph.D.","prislusnost":"Piráti"},
+  {"list":1,"n":10,"name":"Sedlák Luboš Ing.","prislusnost":"Piráti"}
  ]},
  "582786": {"name":"Brno","okres":6202,"generated":"2026-10-08T16:40:33","mismatch":false, "rows": [
-  {"list":15,"n":1,"name":"Zemek Adam Mgr.","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":2,"name":"Bidlová Jitka Ing. arch. Ph.D.","age":48,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":4,"name":"Lahoda Marek Mgr.","age":34,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":5,"name":"Havlíček Filip PhDr.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":7,"name":"Javůrková Kristina Mgr. Bc.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":9,"name":"Trčálek Antonín Ing.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":11,"name":"Lukášová Spilková Monika Mgr. Ph.D.","age":39,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":15,"name":"Škerle Michal Mgr. et Mgr.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":19,"name":"Springinsfeld Petr Bc.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":23,"name":"Kapitančik Ondřej","age":32,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":25,"name":"Ray Ayudh","age":21,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":27,"name":"Doležal Lukáš Bc.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":29,"name":"Psota Tomáš Ing. MBA","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":31,"name":"Gabriel Victoria Marlene","age":19,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":33,"name":"Pazdírek Tereza Marti Mgr.","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":37,"name":"Cvanová Barbora","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":41,"name":"Konečná Barbora Bc.","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":43,"name":"Sládková Jitka Ing. Mgr. Ph.D.","age":44,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":49,"name":"Slaný Filip Mgr.","age":25,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":51,"name":"Ondruš Martin Mgr. Ph.D.","age":54,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":53,"name":"Matýšková Jitka","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":15,"n":55,"name":"Svobodová Vendula RNDr.","age":34,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":15,"n":1,"name":"Zemek Adam Mgr.","prislusnost":"Piráti"},
+  {"list":15,"n":2,"name":"Bidlová Jitka Ing. arch. Ph.D.","prislusnost":"Piráti"},
+  {"list":15,"n":4,"name":"Lahoda Marek Mgr.","prislusnost":"Piráti"},
+  {"list":15,"n":5,"name":"Havlíček Filip PhDr.","prislusnost":"Piráti"},
+  {"list":15,"n":7,"name":"Javůrková Kristina Mgr. Bc.","prislusnost":"Piráti"},
+  {"list":15,"n":9,"name":"Trčálek Antonín Ing.","prislusnost":"Piráti"},
+  {"list":15,"n":11,"name":"Lukášová Spilková Monika Mgr. Ph.D.","prislusnost":"Piráti"},
+  {"list":15,"n":15,"name":"Škerle Michal Mgr. et Mgr.","prislusnost":"Piráti"},
+  {"list":15,"n":19,"name":"Springinsfeld Petr Bc.","prislusnost":"Piráti"},
+  {"list":15,"n":23,"name":"Kapitančik Ondřej","prislusnost":"Piráti"},
+  {"list":15,"n":25,"name":"Ray Ayudh","prislusnost":"Piráti"},
+  {"list":15,"n":27,"name":"Doležal Lukáš Bc.","prislusnost":"Piráti"},
+  {"list":15,"n":29,"name":"Psota Tomáš Ing. MBA","prislusnost":"Piráti"},
+  {"list":15,"n":31,"name":"Gabriel Victoria Marlene","prislusnost":"Piráti"},
+  {"list":15,"n":33,"name":"Pazdírek Tereza Marti Mgr.","prislusnost":"Piráti"},
+  {"list":15,"n":37,"name":"Cvanová Barbora","prislusnost":"Piráti"},
+  {"list":15,"n":41,"name":"Konečná Barbora Bc.","prislusnost":"Piráti"},
+  {"list":15,"n":43,"name":"Sládková Jitka Ing. Mgr. Ph.D.","prislusnost":"Piráti"},
+  {"list":15,"n":49,"name":"Slaný Filip Mgr.","prislusnost":"Piráti"},
+  {"list":15,"n":51,"name":"Ondruš Martin Mgr. Ph.D.","prislusnost":"Piráti"},
+  {"list":15,"n":53,"name":"Matýšková Jitka","prislusnost":"Piráti"},
+  {"list":15,"n":55,"name":"Svobodová Vendula RNDr.","prislusnost":"Piráti"}
  ]},
  "584291": {"name":"Břeclav","okres":6204,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":1,"n":2,"name":"Vlasák Petr Mgr.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":5,"name":"Holobrádek Petr Bc.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":6,"name":"Marek Jan","age":25,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":15,"name":"Ondrejka Tomáš Mgr.","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":17,"name":"Němcová Romana","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":21,"name":"Rožník Pavlína Bc.","age":33,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":1,"n":2,"name":"Vlasák Petr Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":5,"name":"Holobrádek Petr Bc.","prislusnost":"Piráti"},
+  {"list":1,"n":6,"name":"Marek Jan","prislusnost":"Piráti"},
+  {"list":1,"n":15,"name":"Ondrejka Tomáš Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":17,"name":"Němcová Romana","prislusnost":"Piráti"},
+  {"list":1,"n":21,"name":"Rožník Pavlína Bc.","prislusnost":"Piráti"}
  ]},
  "584649": {"name":"Mikulov","okres":6204,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
-  {"list":2,"n":1,"name":"Hrdlička Ivo Ing. arch.","age":49,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":2,"name":"Bárta Josef Ing.","age":36,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":1,"name":"Hrdlička Ivo Ing. arch.","prislusnost":"Piráti"},
+  {"list":2,"n":2,"name":"Bárta Josef Ing.","prislusnost":"Piráti"}
  ]},
  "585068": {"name":"Zlín","okres":7204,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":5,"n":2,"name":"Jaroš Jiří Ing.","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":4,"name":"Křapáček Václav Ing.","age":44,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":5,"name":"Slobodian Sandra Ing. Mgr. Bc.","age":36,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":7,"name":"Langer Lukáš","age":22,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":10,"name":"Kostková Markéta","age":19,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":11,"name":"Slobodian Rostislav Ing. Ph.D.","age":34,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":24,"name":"Klajn Milan Mgr.","age":49,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":2,"name":"Jaroš Jiří Ing.","prislusnost":"Piráti"},
+  {"list":5,"n":4,"name":"Křapáček Václav Ing.","prislusnost":"Piráti"},
+  {"list":5,"n":5,"name":"Slobodian Sandra Ing. Mgr. Bc.","prislusnost":"Piráti"},
+  {"list":5,"n":7,"name":"Langer Lukáš","prislusnost":"Piráti"},
+  {"list":5,"n":10,"name":"Kostková Markéta","prislusnost":"Piráti"},
+  {"list":5,"n":11,"name":"Slobodian Rostislav Ing. Ph.D.","prislusnost":"Piráti"},
+  {"list":5,"n":24,"name":"Klajn Milan Mgr.","prislusnost":"Piráti"}
  ]},
  "585599": {"name":"Otrokovice","okres":7204,"generated":"2026-10-08T16:40:28","mismatch":false, "rows": [
-  {"list":1,"n":1,"name":"Ťopek Petr Ing.","age":60,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":2,"name":"Beznoska Pavel Ing.","age":48,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":5,"name":"Bartík Michal","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":11,"name":"Ševčík Karel Mgr.","age":43,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":1,"n":1,"name":"Ťopek Petr Ing.","prislusnost":"Piráti"},
+  {"list":1,"n":2,"name":"Beznoska Pavel Ing.","prislusnost":"Piráti"},
+  {"list":1,"n":5,"name":"Bartík Michal","prislusnost":"Piráti"},
+  {"list":1,"n":11,"name":"Ševčík Karel Mgr.","prislusnost":"Piráti"}
  ]},
  "586722": {"name":"Veselí nad Moravou","okres":6205,"generated":"2026-10-08T16:40:39","mismatch":false, "rows": [
-  {"list":2,"n":2,"name":"Habarta Lukáš","age":47,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":2,"name":"Habarta Lukáš","prislusnost":"Piráti"}
  ]},
  "586846": {"name":"Jihlava","okres":6102,"generated":"2026-10-08T16:40:25","mismatch":false, "rows": [
-  {"list":1,"n":2,"name":"Škarka Daniel Bc.","age":48,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":3,"name":"Kafková Tereza Ing. arch.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":4,"name":"Žáček Vít Mgr.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":5,"name":"Bouda Tomáš Ing.","age":31,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":7,"name":"Svobodová Kristýna Bc.","age":24,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":8,"name":"Palánová Hana Mgr.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":11,"name":"Vařejková Hana Mgr. MBA","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":21,"name":"Dvořák Viktor","age":47,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":1,"n":2,"name":"Škarka Daniel Bc.","prislusnost":"Piráti"},
+  {"list":1,"n":3,"name":"Kafková Tereza Ing. arch.","prislusnost":"Piráti"},
+  {"list":1,"n":4,"name":"Žáček Vít Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":5,"name":"Bouda Tomáš Ing.","prislusnost":"Piráti"},
+  {"list":1,"n":7,"name":"Svobodová Kristýna Bc.","prislusnost":"Piráti"},
+  {"list":1,"n":8,"name":"Palánová Hana Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":11,"name":"Vařejková Hana Mgr. MBA","prislusnost":"Piráti"},
+  {"list":1,"n":21,"name":"Dvořák Viktor","prislusnost":"Piráti"}
  ]},
  "588296": {"name":"Kroměříž","okres":7201,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":7,"n":4,"name":"Ančincová Hana Bc.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":17,"name":"Knapková Jana Ing.","age":68,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":23,"name":"Válková Marcela Mgr.","age":48,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":26,"name":"Skopalová Jana Ing.","age":45,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":4,"name":"Ančincová Hana Bc.","prislusnost":"Piráti"},
+  {"list":7,"n":17,"name":"Knapková Jana Ing.","prislusnost":"Piráti"},
+  {"list":7,"n":23,"name":"Válková Marcela Mgr.","prislusnost":"Piráti"},
+  {"list":7,"n":26,"name":"Skopalová Jana Ing.","prislusnost":"Piráti"}
  ]},
  "588458": {"name":"Holešov","okres":7201,"generated":"2026-10-08T16:40:39","mismatch":false, "rows": []},
  "589250": {"name":"Prostějov","okres":7103,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":1,"n":1,"name":"Mochťák Jan Ing. Mgr.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":2,"name":"Čečmanová Adéla Mgr.","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":3,"name":"Lysek Petr Ing.","age":60,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":4,"name":"Navrátilová Veronika Mgr. Bc.","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":5,"name":"Pecha Filip","age":38,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":6,"name":"Spíchal Vít","age":23,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":9,"name":"Moskal Ondřej","age":28,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":13,"name":"Navrátil Jakub","age":39,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":14,"name":"Roztomilá Kateřina","age":51,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":18,"name":"Chudožilov David Bc.","age":23,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":1,"n":28,"name":"Fládr Milan","age":61,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":1,"n":1,"name":"Mochťák Jan Ing. Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":2,"name":"Čečmanová Adéla Mgr.","prislusnost":"Piráti"},
+  {"list":1,"n":3,"name":"Lysek Petr Ing.","prislusnost":"Piráti"},
+  {"list":1,"n":4,"name":"Navrátilová Veronika Mgr. Bc.","prislusnost":"Piráti"},
+  {"list":1,"n":5,"name":"Pecha Filip","prislusnost":"Piráti"},
+  {"list":1,"n":6,"name":"Spíchal Vít","prislusnost":"Piráti"},
+  {"list":1,"n":9,"name":"Moskal Ondřej","prislusnost":"Piráti"},
+  {"list":1,"n":13,"name":"Navrátil Jakub","prislusnost":"Piráti"},
+  {"list":1,"n":14,"name":"Roztomilá Kateřina","prislusnost":"Piráti"},
+  {"list":1,"n":18,"name":"Chudožilov David Bc.","prislusnost":"Piráti"},
+  {"list":1,"n":28,"name":"Fládr Milan","prislusnost":"Piráti"}
  ]},
  "590266": {"name":"Třebíč","okres":6104,"generated":"2026-10-08T16:40:31","mismatch":false, "rows": [
-  {"list":7,"n":1,"name":"Novák Aleš Ing.","age":30,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":8,"name":"Urban Adam","age":25,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":9,"name":"Kohoutová Anna Ing.","age":45,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":14,"name":"Pokorná Barbora","age":35,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":1,"name":"Novák Aleš Ing.","prislusnost":"Piráti"},
+  {"list":7,"n":8,"name":"Urban Adam","prislusnost":"Piráti"},
+  {"list":7,"n":9,"name":"Kohoutová Anna Ing.","prislusnost":"Piráti"},
+  {"list":7,"n":14,"name":"Pokorná Barbora","prislusnost":"Piráti"}
  ]},
  "592005": {"name":"Uherské Hradiště","okres":7202,"generated":"2026-10-08T16:40:31","mismatch":false, "rows": [
-  {"list":2,"n":1,"name":"Elfmark František Bc. DiS.","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":3,"name":"Ševčík Jaroslav","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":14,"name":"Jurčík Dušan","age":44,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":1,"name":"Elfmark František Bc. DiS.","prislusnost":"Piráti"},
+  {"list":2,"n":3,"name":"Ševčík Jaroslav","prislusnost":"Piráti"},
+  {"list":2,"n":14,"name":"Jurčík Dušan","prislusnost":"Piráti"}
  ]},
  "592731": {"name":"Uherský Brod","okres":7202,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":3,"n":1,"name":"Vráblík Štěpán","age":26,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":3,"name":"Houser Marek Bc.","age":37,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":3,"n":4,"name":"Kroča Petr","age":21,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":3,"n":1,"name":"Vráblík Štěpán","prislusnost":"Piráti"},
+  {"list":3,"n":3,"name":"Houser Marek Bc.","prislusnost":"Piráti"},
+  {"list":3,"n":4,"name":"Kroča Petr","prislusnost":"Piráti"}
  ]},
  "593711": {"name":"Znojmo","okres":6207,"generated":"2026-10-08T16:40:20","mismatch":false, "rows": [
-  {"list":7,"n":1,"name":"Nevrkla Pavel Mgr.","age":40,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":2,"name":"Ilgner Petr Dipl.-Ing.","age":33,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":4,"name":"Trojanová Karolína Bc.","age":35,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":7,"n":6,"name":"Havlová Eva Ing.","age":34,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":7,"n":1,"name":"Nevrkla Pavel Mgr.","prislusnost":"Piráti"},
+  {"list":7,"n":2,"name":"Ilgner Petr Dipl.-Ing.","prislusnost":"Piráti"},
+  {"list":7,"n":4,"name":"Trojanová Karolína Bc.","prislusnost":"Piráti"},
+  {"list":7,"n":6,"name":"Havlová Eva Ing.","prislusnost":"Piráti"}
  ]},
  "596230": {"name":"Nové Město na Moravě","okres":6105,"generated":"2026-10-08T16:40:22","mismatch":false, "rows": [
-  {"list":5,"n":1,"name":"Blažek Tomáš Ing.","age":59,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":6,"name":"Mareček Šimon Bc.","age":24,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":7,"name":"Mayer René","age":57,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":1,"name":"Blažek Tomáš Ing.","prislusnost":"Piráti"},
+  {"list":5,"n":6,"name":"Mareček Šimon Bc.","prislusnost":"Piráti"},
+  {"list":5,"n":7,"name":"Mayer René","prislusnost":"Piráti"}
  ]},
  "598003": {"name":"Frýdek-Místek","okres":8102,"generated":"2026-10-08T16:40:33","mismatch":false, "rows": [
-  {"list":4,"n":1,"name":"Davidová Michaela Mgr.","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":2,"name":"Moricová Michaela Mgr.","age":32,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":5,"name":"Škapa Martin Ing.","age":44,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":6,"name":"Gebauer Tomáš","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":7,"name":"Mer Richard","age":44,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":1,"name":"Davidová Michaela Mgr.","prislusnost":"Piráti"},
+  {"list":4,"n":2,"name":"Moricová Michaela Mgr.","prislusnost":"Piráti"},
+  {"list":4,"n":5,"name":"Škapa Martin Ing.","prislusnost":"Piráti"},
+  {"list":4,"n":6,"name":"Gebauer Tomáš","prislusnost":"Piráti"},
+  {"list":4,"n":7,"name":"Mer Richard","prislusnost":"Piráti"}
  ]},
  "598917": {"name":"Karviná","okres":8103,"generated":"2026-10-08T16:40:19","mismatch":false, "rows": [
-  {"list":4,"n":3,"name":"Božoň Marek  BSc","age":26,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":11,"name":"Klus Michal","age":47,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":14,"name":"Adámek Emil Ing. Ph.D.","age":37,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":3,"name":"Božoň Marek  BSc","prislusnost":"Piráti"},
+  {"list":4,"n":11,"name":"Klus Michal","prislusnost":"Piráti"},
+  {"list":4,"n":14,"name":"Adámek Emil Ing. Ph.D.","prislusnost":"Piráti"}
  ]},
  "598933": {"name":"Český Těšín","okres":8103,"generated":"2026-10-08T16:40:30","mismatch":false, "rows": [
-  {"list":2,"n":5,"name":"Lukšík Lubomír Mgr.","age":41,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":2,"n":10,"name":"Petráš Vlastimil Mgr.","age":40,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":5,"name":"Lukšík Lubomír Mgr.","prislusnost":"Piráti"},
+  {"list":2,"n":10,"name":"Petráš Vlastimil Mgr.","prislusnost":"Piráti"}
  ]},
  "599069": {"name":"Orlová","okres":8103,"generated":"2026-10-08T16:40:22","mismatch":false, "rows": [
-  {"list":9,"n":4,"name":"Sedláček Miroslav Bc.","age":36,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":9,"n":8,"name":"Neri Lukáš Mgr.","age":33,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":9,"n":4,"name":"Sedláček Miroslav Bc.","prislusnost":"Piráti"},
+  {"list":9,"n":8,"name":"Neri Lukáš Mgr.","prislusnost":"Piráti"}
  ]},
  "599107": {"name":"Rychvald","okres":8103,"generated":"2026-10-08T16:40:36","mismatch":false, "rows": [
-  {"list":2,"n":4,"name":"Polochová Eliška","age":37,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":2,"n":4,"name":"Polochová Eliška","prislusnost":"Piráti"}
  ]},
  "599191": {"name":"Nový Jičín","okres":8104,"generated":"2026-10-08T16:40:30","mismatch":false, "rows": [
-  {"list":5,"n":2,"name":"Droščín Andrej","age":52,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":6,"name":"Himmerová Anna","age":34,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":10,"name":"Faluši Jan","age":42,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":5,"n":22,"name":"Bienek Petr Ing.","age":69,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":5,"n":2,"name":"Droščín Andrej","prislusnost":"Piráti"},
+  {"list":5,"n":6,"name":"Himmerová Anna","prislusnost":"Piráti"},
+  {"list":5,"n":10,"name":"Faluši Jan","prislusnost":"Piráti"},
+  {"list":5,"n":22,"name":"Bienek Petr Ing.","prislusnost":"Piráti"}
  ]},
  "599565": {"name":"Kopřivnice","okres":8104,"generated":"2026-10-08T16:40:28","mismatch":false, "rows": [
-  {"list":4,"n":2,"name":"Hof Tomáš Ing. Mgr. Bc.","age":43,"navrh":"Piráti","prislusnost":"Piráti"},
-  {"list":4,"n":3,"name":"Stehlík Ladislav Ing.","age":48,"navrh":"Piráti","prislusnost":"Piráti"}
+  {"list":4,"n":2,"name":"Hof Tomáš Ing. Mgr. Bc.","prislusnost":"Piráti"},
+  {"list":4,"n":3,"name":"Stehlík Ladislav Ing.","prislusnost":"Piráti"}
  ]}
  }
 }

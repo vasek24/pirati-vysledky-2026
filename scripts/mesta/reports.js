@@ -51,15 +51,11 @@ const cell = (v) => String(v ?? '').replace(/\|/g, '\\|').replace(/\s*\n\s*/g, '
 const table = (head, rows) => `| ${head.join(' | ')} |\n|${head.map(() => '---').join('|')}|\n${rows.map((r) => `| ${r.map(cell).join(' | ')} |`).join('\n')}\n`;
 const rowKey = (a, b) => a.kraj - b.kraj || czechCompare(a.name, b.name) || a.zastup - b.zastup;
 const when = (iso) => (iso ? String(iso) : 'neznámo');
-const INCLUSION_CZ = {
-    auto: 'auto (≥ 10 000, typ a/b)', 'borderline-included': 'hraniční, zařazeno', forced: 'vynuceno (override)',
-    excluded: 'vyřazeno', 'borderline-excluded': 'hraniční, nezařazeno',
-};
-
 // ---------------------------------------------------------------- řádky pro reporty
 
 /**
- * Z výsledku `compute` poskládá řádky reportů: zveřejněná města, města ze seznamu majitele, hraniční nezařazená a `extra`
+ * Z výsledku `compute` poskládá řádky reportů: zveřejněná města, města ze seznamu majitele, hraniční nezařazená,
+ * města těsně pod hranicí 7 000 (`offBand`: registr 2026 pod hranicí, tabulka ČSÚ 2025 nad ní, Piráti kandidují) a `extra`
  * ({ [KODZASTUP]: poznámka } – např. Litovel). Pořadí = pořadí `res.records`; řadí si až vykreslení.
  */
 export function reportRows(res, { overrides = { reviewedAt: null, towns: {} }, extra = {} } = {}) {
@@ -69,18 +65,21 @@ export function reportRows(res, { overrides = { reviewedAt: null, towns: {} }, e
     for (const r of res.records) {
         const z = r.council.zastup;
         const published = townBy.has(z);
-        if (!(published || r.onOwnerList || r.dec.inclusion === 'borderline-excluded' || z in extra)) continue;
+        const pop25 = res.pop2025?.get(z)?.population ?? null;
+        const offBand = !published && (r.cls.type === 'a' || r.cls.type === 'b') && pop25 !== null
+            && bandOf(r.council.population) === 'lt7k' && bandOf(pop25) !== 'lt7k';
+        if (!(published || r.onOwnerList || r.dec.inclusion === 'borderline-excluded' || offBand || z in extra)) continue;
         const sp = specBy.get(z);
         const inc = r.dec.inclusion;
         const list = sp ? sp.list : r.cls.list;
-        const borderline = published && inc === 'borderline-included' ? r.dec.reason : '';
+        const p2022 = res.pirates2022?.get(z) ?? null;
         out.push({
             kraj: r.council.kraj, krajName: r.council.krajName, name: r.council.name, zastup: z, okres: r.council.okres, druh: r.council.druh,
             population: r.council.population,
-            population2025: published ? townBy.get(z).populationCsu2025 ?? null : res.pop2025?.get(z)?.population ?? null,
-            onOwnerList: r.onOwnerList, published, inclusion: inc, reason: r.dec.reason,
-            borderlineReason: borderline,
-            reasonText: published ? '' : rejectedText(r, res.pirates2022?.get(z)),
+            population2025: published ? townBy.get(z).populationCsu2025 ?? null : pop25,
+            onOwnerList: r.onOwnerList, published, inclusion: inc, reason: r.dec.reason, offBand, p2022,
+            borderlineReason: published && inc === 'borderline-included' ? r.dec.reason.replace('na seznamu majitele', 'na vašem seznamu') : '',
+            reasonText: published ? '' : rejectedText(r, p2022),
             type: sp ? sp.type : r.cls.type, list, members: sp ? sp.members : r.cls.members, others: sp ? sp.others : r.cls.others,
             flags: sp ? sp.flags : r.flags, confidence: sp ? sp.confidence : null,
             hidden: published ? !isShown(sp, overrides.towns?.[String(z)], overrides.reviewedAt) : false,
@@ -91,20 +90,43 @@ export function reportRows(res, { overrides = { reviewedAt: null, towns: {} }, e
     return out;
 }
 
+const p2022Text = (p) => (p ? `Piráti 2022: ${commaDecimal(p.pct)} %, ${p.seats} mand.` : 'Piráti 2022: bez pirátské kandidátky');
+
 // Proč město není zveřejněno (česky, s číslem obyvatel)
 function rejectedText(r, p2022) {
     const n = r.council.population;
     const ex = excludedReason({ type: r.cls.type, population: n, inclusion: r.dec.inclusion, reason: r.dec.reason });
     if (ex.reason === 'override') return ex.text;
     if (r.cls.type === 'c' || r.cls.type === 'd') return `typ ${r.cls.type}: ${ex.text}; ${spaced(n)} obyvatel`;
-    if (r.dec.inclusion === 'borderline-excluded') {
-        const y = p2022 ? `Piráti 2022: ${commaDecimal(p2022.pct)} %, ${p2022.seats} mand.` : 'Piráti 2022: nekandidovali';
-        return `${spaced(n)} obyvatel, bez důvodu k zařazení; ${y}`;
-    }
+    if (r.dec.inclusion === 'borderline-excluded') return `${spaced(n)} obyvatel, bez důvodu k zařazení; ${p2022Text(p2022)}`;
     return `${spaced(n)} obyvatel (pod hranicí ${spaced(BAND_BORDERLINE)})`;
 }
 
 // ---------------------------------------------------------------- společné části tabulek
+
+const KIND_CZ = { party: 'strana', coalition: 'koalice', association: 'sdružení' };
+const FLAG_CZ = {
+    'disambiguated-by-druh': 'jméno má víc obcí, vybráno město',
+    'dash-normalized': 'název z vašeho seznamu upraven (pomlčka)',
+    'slug-disambiguated': 'adresa rozlišena okresem',
+    'kraj-differs-from-owner-list': 'kraj se liší od vašeho seznamu',
+    'named-cps-but-association': 'jmenuje se „Česká pirátská strana“, ale je to sdružení',
+    'no-members-on-pirate-list': 'na pirátské kandidátce není žádný člen Pirátů',
+    'population-band-differs': 'počet obyvatel 2025 spadá do jiného pásma',
+    'borderline-auto': 'hraniční, zařazeno jen automaticky',
+    'jmsez-mismatch': 'nesedí s jmenným seznamem ČSÚ',
+    'unknown-partner-code': 'neznámý koaliční partner',
+    'multiple-pirate-lists': 'víc pirátských kandidátek',
+    'also-on-other-lists': 'Piráti kandidují i na jiných kandidátkách',
+    'candidate-without-list': 'kandidát bez kandidátky v registru',
+};
+export const flagLabel = (f) => FLAG_CZ[f] ?? f;
+const flagsCell = (r) => r.flags.map(flagLabel).join('; ') || '–';
+const th = (cz, raw) => `${cz}<br><sub>${raw}</sub>`;
+const INCLUSION_CZ = {
+    auto: 'zařazeno automaticky', 'borderline-included': 'zařazeno podle úsudku', forced: 'ručně vynuceno',
+    excluded: 'vyřazeno', 'borderline-excluded': 'hraniční, nezařazeno',
+};
 
 const listCell = (r) => (r.list ? `${r.list.id}` : '–');
 const partnersOf = (r) => (r.list ? [...r.list.partners.map((p) => p.short), ...(r.list.independents ? ['NK'] : [])].join(', ') || '–' : '–');
@@ -124,12 +146,12 @@ const othersCell = (r) => {
 const popCell = (r) => `${spaced(r.population)} / ${r.population2025 === null || r.population2025 === undefined ? '–' : spaced(r.population2025)}`;
 const confidenceCell = (r) => {
     if (!r.published) return '–';
-    return r.confidence === 'low' ? `low (${r.hidden ? 'skryto' : 'odkryto'})` : 'high';
+    return r.confidence === 'low' ? `nízká (${r.hidden ? 'skryto' : 'odkryto'})` : 'vysoká';
 };
 const sourceCell = (r) => `${r.zastup} / ${r.okres}${r.vstrana ? ` / ${r.vstrana}` : ''}${r.slozeni ? ` / ${r.slozeni}` : ''}`;
 const inclusionCell = (r) => {
     const base = INCLUSION_CZ[r.inclusion] ?? r.inclusion;
-    return r.onOwnerList ? base : `${base}; vypočteno, není na seznamu majitele`;
+    return r.onOwnerList ? base : `${base}; spočteno, není na vašem seznamu`;
 };
 const countBy = (rows, fn) => {
     const m = new Map();
@@ -138,11 +160,11 @@ const countBy = (rows, fn) => {
 };
 
 function sourcesBlock(meta) {
-    const lines = [`- Čas stažení zdrojů: ${when(meta.fetchedAt)} (UTC). Generátor: \`node scripts/mesta-registry.js\` (výstup je deterministický, ručně se neupravuje).`];
-    for (const s of meta.sources || []) lines.push(`- ${s.label}: ${s.url} (stažení ${when(s.fetchedAt)}, sha256 \`${String(s.sha256).slice(0, 16)}…\`)`);
-    lines.push(`- Počty obyvatel 2025 (kontrola pásma): ${meta.pop2025?.ok ? 'načteno z tabulky ČSÚ' : `NEPROBĚHLO${meta.pop2025?.reason ? ` (${meta.pop2025.reason})` : ''}`}`);
+    const lines = [`- Stav dat: soubory v cache k ${when(meta.fetchedAt)} (UTC). Vše vzniká automaticky příkazem \`node scripts/mesta-registry.js\`, ručně se neupravuje.`];
+    for (const s of meta.sources || []) lines.push(`- ${s.label}: ${s.url} (čas souboru v cache ${when(s.fetchedAt)}, sha256 \`${String(s.sha256).slice(0, 16)}…\`)`);
+    lines.push(`- Počty obyvatel k 1. 1. 2025 (kontrola pásma): ${meta.pop2025?.ok ? 'načteno z tabulky ČSÚ' : `NEPROBĚHLO${meta.pop2025?.reason ? ` (${meta.pop2025.reason})` : ''}`}`);
     const j = meta.jmsez;
-    lines.push(`- Kontrola jmenným seznamem (jmsez): ${!j || j.status === 'not-run' ? `NEPROBĚHLA${j?.reason ? ` (${j.reason})` : ''}` : `${j.fetched} měst${j.failed?.length ? `, nenačteno ${j.failed.length}` : ''}`}`);
+    lines.push(`- Kontrola jmenným seznamem kandidátů (jmsez): ${!j || j.status === 'not-run' ? `NEPROBĚHLA${j?.reason ? ` (${j.reason})` : ''}` : `${j.fetched} měst${j.failed?.length ? `, nenačteno ${j.failed.length}` : ''}`}`);
     return lines.join('\n');
 }
 
@@ -150,105 +172,126 @@ function sourcesBlock(meta) {
 
 const INTRO = `## Co to je
 
-Tato tabulka ukazuje, **která města se na webu „města“ zveřejní** a **jak v nich Piráti kandidují**. Vznikla automaticky z otevřených dat ČSÚ (registr kandidátů pro komunální volby 2026), ne z ruky. Cílem je, abyste ji za pár minut prošel(a) a rozhodl(a) u sporných měst. Co v tabulce nesedí, opravíte v souboru \`src/mesta/overrides.js\` (návod níže), nikoli v tomto dokumentu.
+Tato tabulka ukazuje, **která města se na webu „města“ zveřejní** a **jak v nich Piráti kandidují**. Vznikla automaticky z otevřených dat ČSÚ (registr kandidátů pro komunální volby 2026), ne z ruky. Cílem je, abyste ji za pár minut prošel(a) a u sporných měst rozhodl(a). Co v tabulce nesedí, opravíte v souboru \`src/mesta/overrides.js\` (návod níže), ne v tomto dokumentu.
 
 ## Jak číst sloupce
 
-- **kraj, město** – kraj a název; **KODZASTUP / OKRES / VSTRANA / SLOZENI** (sloupec „zdroj“) jsou kódy z registru ČSÚ, podle kterých lze vše dohledat.
-- **inclusion** – proč je město zařazeno: \`auto\` = má ≥ 10 000 obyvatel a Piráti kandidují (typ a/b); \`hraniční, zařazeno\` = 7 000–9 999 obyvatel a máme důvod (viz **borderline_reason**); \`vyřazeno\` = nezveřejněno.
-- **borderline_reason** – u malých (hraničních) měst důvod, proč je přesto zařazeno (např. „na seznamu majitele“, „Piráti 2022: 11,7 %, 2 mand.“, „sídlo okresu“).
-- **obyvatel (2026 / 2025)** – počet obyvatel z registru voleb 2026 (rozhoduje o zařazení) a z tabulky ČSÚ k 1. 1. 2025 (jen kontrola pásma).
-- **typ** – **a** = Piráti mají vlastní kandidátku; **b** = Piráti jsou ve společné kandidátce (koalice nebo sdružení); **c** = Piráti jsou jen jednotlivci na cizích kandidátkách; **d** = Piráti tu vůbec nekandidují. Zveřejňují se typy a a b.
+Pod českým názvem sloupce je malým písmem původní technický název (hodí se jen pro vývojáře).
+
+- **kraj, město** – kraj a název obce.
+- **zařazení** – proč je město na webu: *zařazeno automaticky* = má aspoň 10 000 obyvatel a Piráti kandidují (typ a nebo b); *zařazeno podle úsudku* = 7 000–9 999 obyvatel a máme důvod (viz **důvod zařazení**); *ručně vynuceno* = zařazeno vaším zásahem v \`overrides.js\`; *vyřazeno* = na webu nebude.
+- **důvod zařazení** – u malých (hraničních) měst důvod, proč je přesto zařazeno (např. „na vašem seznamu“, „Piráti 2022: 11,7 %, 2 mand.“, „sídlo okresu“).
+- **obyvatel (2026 / 2025)** – počet obyvatel z registru voleb 2026 (podle něj se rozhoduje) a z tabulky ČSÚ k 1. 1. 2025 (jen kontrola).
+- **typ** – **a** = Piráti mají vlastní kandidátku; **b** = Piráti jsou ve společné kandidátce (koalice nebo sdružení); **c** = Piráti jsou jen jednotlivci na cizích kandidátkách; **d** = Piráti tu vůbec nekandidují. Na web se dávají typy a a b.
 - **č., název, druh, partneři** – číslo a název kandidátky, druh (strana / koalice / sdružení) a koaliční partneři (NK = nezávislí kandidáti).
-- **členové Pirátů na kandidátce** – počet kandidátů, kteří jsou členy Pirátů, a první tři jména. „Nominovaní nečlenové“ jsou lidé, které navrhli Piráti, ale členy nejsou.
+- **členové Pirátů na kandidátce** – počet kandidátů, kteří jsou členy Pirátů, a první tři jména. „Nominovaní nečlenové“ jsou lidé, které Piráti navrhli, ale členy nejsou.
 - **Piráti na jiných kandidátkách** – členové Pirátů, kteří kandidují za jinou kandidátku.
-- **příznaky** – technické poznámky generátoru (např. \`borderline-auto\`, \`no-members-on-pirate-list\`, \`jmsez-mismatch\`).
-- **confidence** – jistota generátoru: \`high\` = zveřejněno hned.
+- **kódy v registru ČSÚ** – čísla, podle kterých lze každý řádek dohledat v datech (kód obce, okres, kandidátka, složení).
+- **poznámky generátoru** – upozornění, např. že na pirátské kandidátce není žádný člen Pirátů.
+- **jistota** – *vysoká* = město se zveřejní hned; *nízká (skryto)* = viz níže.
 
-## Co znamená „confidence low / skryto“
+## Co znamená „jistota nízká / skryto“
 
-Když si generátor není jistý (hraniční město zařazené jen automatickým důvodem, rozdíl proti druhému zdroji, nejasné složení kandidátky), dá městu **confidence low**. Takové město je **skryto**: na webu nemá vlastní stránku a není v seznamu měst, dokud ho nepotvrdíte. Je to pojistka proti omylu, ne verdikt. Řádky označené „low (skryto)“ jsou ty, které je třeba schválit.
+Když si generátor není jistý (hraniční město zařazené jen automatickým důvodem, rozdíl proti druhému zdroji, nejasná kandidátka), dá městu **nízkou jistotu**. Takové město je **skryto**: na webu nemá vlastní stránku a není v seznamu měst, dokud ho nepotvrdíte. Je to pojistka proti omylu, ne verdikt. Řádky „nízká (skryto)“ jsou ty, které je třeba schválit.
 
 ## Jak změnit město (\`src/mesta/overrides.js\`)
 
-V souboru je objekt \`towns\` (klíč = KODZASTUP v uvozovkách, vždy s \`name\` přesně jako v registru). Zkopírujte vhodný příklad do \`towns: { … }\`:
+V souboru je objekt \`towns\`. Klíč je kód obce v uvozovkách (najdete ho ve sloupci „kódy v registru ČSÚ“, první číslo) a \`name\` musí být přesně název z registru. Zkopírujte vhodný příklad do \`towns: { … }\` (jsou to skutečná města; místo „důvod doplňte“ napište svůj důvod):
 
 \`\`\`js
 export default {
-    reviewedAt: null,            // až budete mít vše projité: '2026-10-11' odkryje VŠECHNA skrytá (low) města najednou
+    reviewedAt: null,            // až budete mít vše projité: '2026-10-11' odkryje VŠECHNA skrytá města najednou
     towns: {
-        // 1) Schválit skryté město (např. Mikulov): město se zobrazí
+        // 1) Schválit skryté město (Mikulov): město se zobrazí
         '584649': { name: 'Mikulov', reviewed: true },
 
-        // 2) Město úplně vyřadit (důvod je povinný)
-        '503444': { name: 'Litovel', include: false, reason: 'Piráti tu kandidují jen do Senátu' },
+        // 2) Zveřejněné město vyřadit (důvod je povinný)
+        '598933': { name: 'Český Těšín', include: false, reason: 'důvod doplňte' },
 
         // 3) Město zařadit i přes pravidla (důvod je povinný; u typu c/d se zobrazí vysvětlující text)
-        '511111': { name: 'Příklad', include: true, reason: 'majitel: chceme ho mít' },
+        '560286': { name: 'Sokolov', include: true, reason: 'důvod doplňte' },
 
-        // 4) Hraniční město zařadit ručním důvodem
-        '999999': { name: 'Příklad', borderlineReason: 'Domov kandidáta na senátora' },
+        // 4) Hraniční město (7 000–9 999 obyvatel) zařadit ručním důvodem
+        '584002': { name: 'Tišnov', borderlineReason: 'důvod doplňte' },
     },
 };
 \`\`\`
 
-Pozor: KODZASTUP a \`name\` musí sedět s registrem (viz sloupec „zdroj“), jinak generátor skončí chybou. Po úpravě pusťte \`npm test\`; generované soubory se obnoví příkazem \`node scripts/mesta-registry.js\`.`;
+Pozor: kód obce a \`name\` musí sedět s registrem, jinak generátor skončí chybou. Po úpravě pusťte \`npm test\`; generované soubory se obnoví příkazem \`node scripts/mesta-registry.js\`.`;
 
-function decisionRows(rows) {
+const REASON_KIND = [[/^Piráti 2022/, 'výsledek Pirátů v roce 2022'], [/sídlo okresu/, 'sídlo okresu'], [/senátního obvodu/, 'sídlo senátního obvodu']];
+
+function decisionRows(rows, meta = {}) {
     const nameOf = (r) => `**${r.name}**`;
     const sections = [];
     const sorted = [...rows].sort(rowKey);
+    const codeH = 'Kód obce';
 
     const autoBorderline = sorted.filter((r) => r.published && r.inclusion === 'borderline-included' && r.flags.includes('borderline-auto'));
-    sections.push(`### 1. Hraniční města zveřejněná jen kvůli výsledku 2022 (skryta, dokud je nepotvrdíte)
+    const kinds = [...new Set(autoBorderline.map((r) => REASON_KIND.find(([re]) => re.test(r.borderlineReason))?.[1] ?? 'jiný automatický důvod'))];
+    sections.push(`### 1. Hraniční města zařazená automaticky (skrytá)${kinds.length ? `: důvodem je ${kinds.join(', ')}` : ''}
 
-Tato města mají pod 10 000 obyvatel; do výběru se dostala jen kvůli automatickému důvodu (výsledek Pirátů v roce 2022, sídlo okresu apod.), ne kvůli vašemu seznamu. Proto jsou **skryta**. **Otázka: zveřejnit?** Ano = do \`overrides.js\` přidat \`reviewed: true\` (příklad 1 výše), ne = \`include: false\`.
+Tato města mají pod 10 000 obyvatel; do výběru se dostala jen z automatického důvodu uvedeného v tabulce, ne kvůli vašemu seznamu. Proto jsou **skrytá**. **Otázka: zveřejnit?** Ano = do \`overrides.js\` přidat \`reviewed: true\` (příklad 1 výše), ne = \`include: false\` (příklad 2).
 
-${autoBorderline.length ? table(['Město', 'KODZASTUP', 'Obyvatel', 'Typ', 'Důvod (borderline_reason)', 'Stav'], autoBorderline.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.type, r.borderlineReason, confidenceCell(r)])) : '_Žádné._\n'}`);
+${autoBorderline.length ? table(['Město', codeH, 'Obyvatel', 'Typ', 'Důvod zařazení', 'Jistota'], autoBorderline.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.type, r.borderlineReason, confidenceCell(r)])) : '_Žádné._\n'}`);
 
     const ownerBorderline = sorted.filter((r) => r.published && r.inclusion === 'borderline-included' && !r.flags.includes('borderline-auto'));
-    sections.push(`### 2. Hraniční města zveřejněná kvůli seznamu majitele / ručnímu důvodu
+    sections.push(`### 2. Hraniční města zařazená kvůli vašemu seznamu nebo ručnímu důvodu
 
-${ownerBorderline.length ? table(['Město', 'KODZASTUP', 'Obyvatel', 'Typ', 'Důvod (borderline_reason)', 'Stav'], ownerBorderline.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.type, r.borderlineReason, confidenceCell(r)])) : '_Žádné._\n'}
+${ownerBorderline.length ? table(['Město', codeH, 'Obyvatel', 'Typ', 'Důvod zařazení', 'Jistota'], ownerBorderline.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.type, r.borderlineReason, confidenceCell(r)])) : '_Žádné._\n'}
 Zde stačí potvrdit, že je chcete mít zveřejněná.`);
 
     const be = sorted.filter((r) => r.inclusion === 'borderline-excluded');
     sections.push(`### 3. Hraniční města bez důvodu (nezveřejněna)
 
-Piráti tu kandidují (typ a/b), ale město má 7 000–9 999 obyvatel a nic z pravidel ho nezařadilo. **Otázka: přidat některé?** Ano = \`include: true\` s důvodem (příklad 3).
+Piráti tu kandidují (typ a nebo b), ale město má 7 000–9 999 obyvatel a nic z pravidel ho nezařadilo. **Otázka: přidat některé?** Ano = přidat \`borderlineReason\` (příklad 4 výše).
 
-${be.length ? table(['Město', 'KODZASTUP', 'Obyvatel', 'Typ', 'Pozn.'], be.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.type, r.reasonText])) : '_Žádné._\n'}`);
+${be.length ? table(['Město', codeH, 'Obyvatel', 'Typ', 'Poznámka'], be.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.type, r.reasonText])) : '_Žádné._\n'}`);
+
+    const off = sorted.filter((r) => r.offBand);
+    const offSnippets = off.map((r) => `    '${r.zastup}': { name: '${r.name.replace(/'/g, "\\'")}', include: true, reason: '${p2022Text(r.p2022)}; ${spaced(r.population2025)} obyvatel k 1. 1. 2025' },`);
+    sections.push(`### 4. Těsně pod hranicí 7 000 podle registru 2026, ale nad ní podle ČSÚ 2025
+
+U těchto měst Piráti kandidují (typ a nebo b). Registr voleb 2026 uvádí méně než 7 000 obyvatel, tabulka ČSÚ k 1. 1. 2025 už 7 000 a víc. Zařazení rozhoduje registr 2026, proto tato města **nejsou zveřejněna**. **Otázka: zařadit některé?** U města pod 7 000 obyvatel to jde jen přes \`include: true\` (samotný \`borderlineReason\` by nestačil). Hotový zápis do \`towns: { … }\`:
+
+${off.length ? `${table(['Město', codeH, 'Obyvatel (2026 / 2025)', 'Typ', 'Kandidátka', 'Výsledek 2022'], off.map((r) => [nameOf(r), r.zastup, popCell(r), r.type, r.list ? `č. ${r.list.id} ${r.list.name}` : '–', p2022Text(r.p2022)]))}
+\`\`\`js
+${offSnippets.join('\n')}
+\`\`\`
+` : '_Žádné._\n'}`);
 
     const added = sorted.filter((r) => r.published && !r.onOwnerList && r.inclusion !== 'borderline-included');
-    sections.push(`### 4. Spočítáno, ale není na seznamu majitele (už zveřejněno)
+    sections.push(`### 5. Spočítáno, ale není na vašem seznamu (už zveřejněno)
 
-Město splňuje pravidla (≥ 10 000 obyvatel, Piráti na kandidátce), i když ho seznam nemá. **Otázka: ponechat?** Ne = \`include: false\` s důvodem (příklad 2).
+Město splňuje pravidla (aspoň 10 000 obyvatel, Piráti na kandidátce), i když ho váš seznam nemá. **Otázka: ponechat?** Ne = \`include: false\` s důvodem (příklad 2).
 
-${added.length ? table(['Město', 'KODZASTUP', 'Obyvatel', 'Typ', 'Kandidátka'], added.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.type, r.list ? `č. ${r.list.id} ${r.list.name}` : '–'])) : '_Žádné._\n'}`);
+${added.length ? table(['Město', codeH, 'Obyvatel', 'Typ', 'Kandidátka'], added.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.type, r.list ? `č. ${r.list.id} ${r.list.name}` : '–'])) : '_Žádné._\n'}`);
 
     const rej = sorted.filter((r) => !r.published && r.onOwnerList);
     const mentioned = sorted.filter((r) => !r.published && !r.onOwnerList && r.note);
-    sections.push(`### 5. Města ze seznamu majitele, která jsme zamítli (${rej.length})
+    sections.push(`### 6. Města z vašeho seznamu, která jsme zamítli (${rej.length})
 
 **Otázka: souhlasíte?** Pokud některé chcete mít přesto, použijte \`include: true\` (příklad 3). Typ c/d se pak zobrazí s vysvětlením „Piráti tu nekandidují“ / „jen na cizích kandidátkách“.
 
-${rej.length ? table(['Město', 'KODZASTUP', 'Obyvatel', 'Důvod zamítnutí'], rej.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.reasonText])) : '_Žádná._\n'}${mentioned.length ? `\nMimo soubor seznamu, zmíněno majitelem: ${mentioned.map((r) => `**${r.name}** – ${r.reasonText}; ${r.note}`).join('; ')}.\n` : ''}`);
+${rej.length ? table(['Město', codeH, 'Obyvatel', 'Důvod zamítnutí'], rej.map((r) => [nameOf(r), r.zastup, spaced(r.population), r.reasonText])) : '_Žádná._\n'}${mentioned.length ? `\nMimo soubor vašeho seznamu, zmíněno vámi: ${mentioned.map((r) => `**${r.name}** – ${r.reasonText}; ${r.note}`).join('; ')}.\n` : ''}`);
 
     const nn = sorted.filter((r) => r.published && r.members.length === 0 && nominated(r) > 0);
     const allNominated = rows.filter((r) => r.published).reduce((s, r) => s + nominated(r), 0);
     const townsWithNominated = rows.filter((r) => r.published && nominated(r) > 0).length;
-    sections.push(`### 6. Zobrazit nominované nečleny?
+    sections.push(`### 7. Zobrazit nominované nečleny?
 
-V těchto městech je kandidátka označená jako Pirátská (koalice/sdružení s Piráty), ale **žádný z kandidátů není člen Pirátů** – na ní jsou jen lidé, které Piráti navrhli (nominovali). Dnes se na webu jako „kandidáti Pirátů“ zobrazují jen **členové**, takže tu nebude nikdo. **Otázka: Zobrazit nominované nečleny?** (Platí obecně: v celém výběru je ${allNominated} nominovaných nečlenů v ${townsWithNominated} městech.)
+V těchto městech je kandidátka označená jako pirátská (koalice nebo sdružení s Piráty), ale **z Pirátů jsou na ní jen lidé, které Piráti navrhli, ale nejsou členy**. Sama kandidátka je přesto stále označená jako pirátská. Dnes se na webu jako „kandidáti Pirátů“ zobrazují jen **členové**, takže u těchto měst nebude uveden nikdo. **Otázka: Zobrazit nominované nečleny?** (Obecně: ve všech zveřejněných městech je ${allNominated} nominovaných nečlenů v ${townsWithNominated} městech.)
 
-${nn.length ? table(['Město', 'KODZASTUP', 'Kandidátka', 'Nominovaných nečlenů', 'Členů Pirátů'], nn.map((r) => [nameOf(r), r.zastup, r.list ? `č. ${r.list.id} ${r.list.name}` : '–', nominated(r), 0])) : '_Žádné město._\n'}`);
+${nn.length ? table(['Město', codeH, 'Kandidátka', 'Nominovaných nečlenů', 'Členů Pirátů'], nn.map((r) => [nameOf(r), r.zastup, r.list ? `č. ${r.list.id} ${r.list.name}` : '–', nominated(r), 0])) : '_Žádné město._\n'}`);
 
     const odd = sorted.filter((r) => r.published && r.flags.some((f) => ['jmsez-mismatch', 'population-band-differs', 'multiple-pirate-lists', 'unknown-partner-code'].includes(f)));
-    sections.push(`### 7. Města označená kontrolou (low, skryta)
+    const unchecked = [meta.pop2025?.ok ? null : 'počet obyvatel 2025', !meta.jmsez || meta.jmsez.status === 'not-run' ? 'jmenný seznam ČSÚ' : null].filter(Boolean);
+    sections.push(`### 8. Zveřejněná města, u kterých se zdroje rozcházejí (skrytá)
 
-Zde se zdroje rozcházejí (jmenný seznam, počet obyvatel 2025, více pirátských kandidátek, neznámý partner).
+Kontrola jmenným seznamem ČSÚ, počtem obyvatel 2025, více pirátskými kandidátkami a neznámým partnerem.
 
-${odd.length ? table(['Město', 'KODZASTUP', 'Příznaky', 'Obyvatel (2026 / 2025)', 'Stav'], odd.map((r) => [nameOf(r), r.zastup, r.flags.join(', '), popCell(r), confidenceCell(r)])) : '_Žádná – kontroly sedí._\n'}`);
+${odd.length ? table(['Město', codeH, 'Poznámky generátoru', 'Obyvatel (2026 / 2025)', 'Jistota'], odd.map((r) => [nameOf(r), r.zastup, flagsCell(r), popCell(r), confidenceCell(r)]))
+        : `_U žádného zveřejněného města se zdroje nerozcházejí._${off.length ? ' Otevřená zůstává skupina 4 výše (města těsně pod hranicí 7 000).' : ''}${unchecked.length ? ` Pozor: neproběhla kontrola: ${unchecked.join(', ')}.` : ''}\n`}`);
     return `${sections.map((x) => x.trimEnd()).join('\n\n')}\n`;
 }
 
@@ -263,21 +306,22 @@ export function renderSpecificsTable(rows, meta = {}) {
     const counts = `## Souhrn
 
 ${table(['Zařazení', 'Počet'], [
-        ['auto', incCount.get('auto') || 0],
-        ['borderline-included', incCount.get('borderline-included') || 0],
-        ['forced', incCount.get('forced') || 0],
+        [INCLUSION_CZ.auto, incCount.get('auto') || 0],
+        [INCLUSION_CZ['borderline-included'], incCount.get('borderline-included') || 0],
+        [INCLUSION_CZ.forced, incCount.get('forced') || 0],
         ['**zveřejněno celkem**', `**${published.length}**`],
-        ['z toho skryto (low, čeká na potvrzení)', hidden],
-        ['borderline-excluded (nezveřejněno)', be.length],
-        ['zamítnuto ze seznamu majitele', rejected.length],
+        ['z toho skryto (nízká jistota, čeká na vaše potvrzení)', hidden],
+        ['hraniční, nezařazeno (nezveřejněno)', be.length],
+        ['zamítnuto z vašeho seznamu', rejected.length],
     ])}
 ${table(['Typ kandidatury (zveřejněná města)', 'Počet'], ['a', 'b', 'c', 'd'].map((t) => [`typ ${t}`, typeCount.get(t) || 0]))}`;
 
     const main = [...published].sort(rowKey).concat([...rejected].sort(rowKey));
-    const head = ['kraj', 'město', 'inclusion', 'borderline_reason', 'obyvatel (2026 / 2025)', 'typ', 'č.', 'název', 'druh', 'partneři', 'členové Pirátů na kandidátce', 'Piráti na jiných kandidátkách', 'zdroj (KODZASTUP / OKRES / VSTRANA / SLOZENI)', 'příznaky', 'confidence'];
+    const head = ['kraj', 'město', th('zařazení', 'inclusion'), th('důvod zařazení', 'borderline_reason'), 'obyvatel (2026 / 2025)', 'typ', 'č.', 'název kandidátky', 'druh', 'partneři',
+        'členové Pirátů na kandidátce', 'Piráti na jiných kandidátkách', th('kódy v registru ČSÚ', 'KODZASTUP / OKRES / VSTRANA / SLOZENI'), th('poznámky generátoru', 'flags'), th('jistota', 'confidence')];
     const body = main.map((r) => [
         r.krajName, r.name, r.published ? inclusionCell(r) : `vyřazeno: ${r.reasonText}`, r.borderlineReason || '–', popCell(r), r.type, listCell(r), r.list?.name ?? '–',
-        r.list?.kind ?? '–', partnersOf(r), membersCell(r), othersCell(r), sourceCell(r), r.flags.join(', ') || '–', confidenceCell(r),
+        r.list ? KIND_CZ[r.list.kind] ?? r.list.kind : '–', partnersOf(r), membersCell(r), othersCell(r), sourceCell(r), flagsCell(r), confidenceCell(r),
     ]);
 
     return `# Přehled měst a kandidatur Pirátů (review tabulka „města“)
@@ -289,14 +333,14 @@ ${counts}
 
 Níže je vše, co generátor nemůže rozhodnout sám. U každé skupiny je otázka a návod, jak odpovědět.
 
-${decisionRows(rows)}
+${decisionRows(rows, meta)}
 ## Zdroje a kontroly
 
 ${sourcesBlock(meta)}
 
 ## Tabulka všech měst
 
-Nejdřív zveřejněná města (podle kraje a abecedy), na konci města ze seznamu majitele, která jsme vyřadili. Členy Pirátů registr ČSÚ vede u kandidáta (PSTRANA 720); **příznivci bez členství se z dat poznat nedají** – ty by majitel doplnil v \`overrides.js\` (\`pirateCandidates\`).
+Nejdřív zveřejněná města (podle kraje a abecedy), na konci města z vašeho seznamu, která jsme vyřadili. Členy Pirátů registr ČSÚ vede u kandidáta; **příznivci bez členství se z dat poznat nedají** – ty byste doplnili v \`overrides.js\` (\`pirateCandidates\`).
 
 ${table(head, body)}`;
 }
@@ -304,10 +348,10 @@ ${table(head, body)}`;
 // ---------------------------------------------------------------- mesta-list-verification.md
 
 function verifyTable(rows, { reason = false } = {}) {
-    const head = ['Kraj', 'Město', 'KODZASTUP', 'Obyvatel (2026 / 2025)', 'Typ', 'Zařazení', 'borderline_reason', 'Příznaky', reason ? 'Důvod zamítnutí' : 'Na seznamu majitele'];
+    const head = ['Kraj', 'Město', 'Kód obce', 'Obyvatel (2026 / 2025)', 'Typ', 'Zařazení', th('Důvod zařazení', 'borderline_reason'), 'Poznámky generátoru', reason ? 'Důvod zamítnutí' : 'Na vašem seznamu'];
     return table(head, [...rows].sort(rowKey).map((r) => [
         r.krajName, `**${r.name}**`, r.zastup, popCell(r), r.type, INCLUSION_CZ[r.inclusion] ?? r.inclusion,
-        r.borderlineReason || '–', r.flags.join(', ') || '–',
+        r.borderlineReason || '–', flagsCell(r),
         reason ? [r.reasonText, r.note].filter(Boolean).join('; ') + (r.onOwnerList ? '' : ' (ne – mimo soubor seznamu)') : r.onOwnerList ? 'ano' : 'ne',
     ]));
 }
@@ -319,35 +363,35 @@ export function renderVerification({ confirmed, rejected, added, borderlineExclu
     const ownerCheck = meta.ownerCount === undefined ? '' : ` (soubor \`docs/analysis/mesta-towns.txt\` má ${meta.ownerCount} jmen: ${total === meta.ownerCount ? 'součet sedí' : 'SOUČET NESEDÍ'})`;
     const borderMarked = [...confirmed, ...added].filter((r) => r.inclusion === 'borderline-included');
 
-    return `# Ověření seznamu měst majitele
+    return `# Ověření vašeho seznamu měst
 
-Seznam majitele (\`docs/analysis/mesta-towns.txt\`) se **nepovažuje za ověřený**: každé jméno se spáruje s radnicí v registru ČSÚ podle KODZASTUP a pak se pravidly (spec §4.1) rozhodne, zda město zveřejnit. Tři tabulky níže dohromady dávají všechna jména ze seznamu a všechna města navíc. Sloupec **borderline_reason** vyplněný = hraniční město (7 000–9 999 obyvatel), zařazené z uvedeného důvodu.
+Váš seznam (\`docs/analysis/mesta-towns.txt\`) jsme nebrali jako hotový: každé jméno jsme spárovali s obcí v registru ČSÚ podle kódu obce a pak podle pravidel rozhodli, zda město zveřejnit. Tři tabulky níže dohromady obsahují všechna jména z vašeho seznamu a všechna města navíc. Vyplněný sloupec **důvod zařazení** (technicky \`borderline_reason\`) znamená hraniční město (7 000–9 999 obyvatel), zařazené z uvedeného důvodu.
 
 ${sourcesBlock(meta)}
 
 ## Počty
 
 - potvrzeno: ${confirmed.length}
-- zamítnuto ze seznamu majitele: ${fromList.length}
-- na seznamu majitele celkem: ${total}${ownerCheck}
-- splňují pravidla, ale není na seznamu majitele: ${added.length}
-- hraniční města zařazená (borderline_reason): ${borderMarked.length}${borderMarked.length ? ` (${borderMarked.map((r) => r.name).join(', ')})` : ''}
+- zamítnuto z vašeho seznamu: ${fromList.length}
+- na vašem seznamu celkem: ${total}${ownerCheck}
+- splňují pravidla, ale nejsou na vašem seznamu: ${added.length}
+- hraniční města zařazená (důvod zařazení vyplněn): ${borderMarked.length}${borderMarked.length ? ` (${borderMarked.map((r) => r.name).join(', ')})` : ''}
 - hraniční města bez důvodu, nezařazená: ${borderlineExcluded.length}
-${outside.length ? `- mimo soubor seznamu, zmíněno majitelem: ${outside.map((r) => r.name).join(', ')} – viz tabulka 2 (nepočítá se do ${total})\n` : ''}
-## 1. Potvrzená města ze seznamu majitele (${confirmed.length})
+${outside.length ? `- mimo soubor seznamu, zmíněno vámi: ${outside.map((r) => r.name).join(', ')} – viz tabulka 2 (nepočítá se do ${total})\n` : ''}
+## 1. Potvrzená města z vašeho seznamu (${confirmed.length})
 
 ${verifyTable(confirmed)}
-## 2. Zamítnutá města ze seznamu majitele (${fromList.length}${outside.length ? ` + ${outside.length} mimo soubor seznamu` : ''})
+## 2. Zamítnutá města z vašeho seznamu (${fromList.length}${outside.length ? ` + ${outside.length} mimo soubor seznamu` : ''})
 
 ${verifyTable(rejected, { reason: true })}
-## 3. Splňují pravidla, ale není na seznamu majitele (${added.length})
+## 3. Splňují pravidla, ale nejsou na vašem seznamu (${added.length})
 
-Spočteno z registru; v generovaných datech jsou zařazena (po kontrole majitelem je lze odebrat přes \`include: false\`).
+Spočteno z registru; v generovaných datech jsou zařazena (po vašem posouzení je lze odebrat přes \`include: false\`).
 
 ${verifyTable(added)}
 ## 4. Hraniční města bez důvodu, nezařazená (${borderlineExcluded.length})
 
-${borderlineExcluded.length ? table(['Kraj', 'Město', 'KODZASTUP', 'Obyvatel (2026 / 2025)', 'Typ', 'borderline_reason', 'Poznámka'], [...borderlineExcluded].sort(rowKey).map((r) => [r.krajName, `**${r.name}**`, r.zastup, popCell(r), r.type, '– (žádný důvod)', r.reasonText])) : '_Žádná._\n'}
+${borderlineExcluded.length ? table(['Kraj', 'Město', 'Kód obce', 'Obyvatel (2026 / 2025)', 'Typ', th('Důvod zařazení', 'borderline_reason'), 'Poznámka'], [...borderlineExcluded].sort(rowKey).map((r) => [r.krajName, `**${r.name}**`, r.zastup, popCell(r), r.type, '– (žádný důvod)', r.reasonText])) : '_Žádná._\n'}
 ## Poznámky
 
 ${notes.length ? notes.map((n) => `- ${n}`).join('\n') : '_Žádné._'}
@@ -472,7 +516,7 @@ export function extractFiles({ src, res, meta = {} }) {
             const j = src.jmsez.get(t.zastup);
             if (!j) continue;
             towns[t.zastup] = {
-                name: t.name, okres: t.okres, generated: j.generovano ?? null, mismatch: jmsezMismatch(j, specBy.get(t.zastup)), rows: jmsezPirates(j),
+                name: t.name, okres: t.okres, generated: j.generovano ?? null, mismatch: jmsezMismatch(j, specBy.get(t.zastup)), rows: jmsezPirates(j).map(({ list, n, name, prislusnost }) => ({ list, n, name, prislusnost })),
             };
         }
         jmsezJson = {

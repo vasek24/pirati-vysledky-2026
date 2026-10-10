@@ -261,6 +261,9 @@ describe('buildDocs: notes', () => {
         const res = compute(src, OWNER, { reviewedAt: null, towns: {} });
         const md = buildDocs(res, src, { reviewedAt: null, towns: {} }, res.owner.length)['docs/analysis/mesta-list-verification.md'];
         expect(md).toMatch(/Zeta \(6 990 \/ 7 010\)/);
+        expect(md).toMatch(/skupina 4/);
+        const spec = buildDocs(res, src, { reviewedAt: null, towns: {} }, res.owner.length)['docs/analysis/mesta-specifics.md'];
+        expect(spec).toContain("'1008': { name: 'Zeta', include: true,");
         expect(res.towns.map((t) => t.name)).not.toContain('Zeta');
     });
 });
@@ -275,10 +278,11 @@ describe('buildDocs: Litovel note and the three tables', () => {
         const files = buildDocs(res, src, { reviewedAt: null, towns: {} }, res.owner.length);
         const md = files['docs/analysis/mesta-list-verification.md'];
         const line = md.split('\n').find((l) => l.startsWith('|') && l.includes('Litovel'));
-        expect(line).toMatch(/senátní obvod 66/);
+        expect(line).toMatch(/Litovel je senátní obvod 66 \(volby 2026\); případná pirátská vazba patří do Senátu, ne do tohoto produktu/);
+        expect(line).not.toMatch(/podle majitele/);
         expect(line).toMatch(/typ d/);
         expect(md).toMatch(/potvrzeno: 2/);
-        expect(md).toMatch(/zamítnuto ze seznamu majitele: 1\n/); // Gama; Litovel je mimo soubor seznamu
+        expect(md).toMatch(/zamítnuto z vašeho seznamu: 1\n/); // Gama; Litovel je mimo soubor seznamu
         expect(files['docs/analysis/mesta-extract/lists.csv']).toContain('503444');
     });
 });

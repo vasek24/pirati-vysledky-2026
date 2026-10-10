@@ -17,7 +17,7 @@ import {
 } from './mesta/registryCore.js';
 import { xlsxFromZip, csuPopulation } from './mesta/xlsxRows.js';
 import {
-    bandOf, jmsezMismatch, reportRows, renderSpecificsTable, renderVerification, extractFiles,
+    bandOf, jmsezMismatch, flagLabel, reportRows, renderSpecificsTable, renderVerification, extractFiles,
 } from './mesta/reports.js';
 import overrides from '../src/mesta/overrides.js';
 
@@ -327,8 +327,8 @@ function mentionedNotes(res, src) {
         const hasPirate = rec.cls.type === 'a' || rec.cls.type === 'b' || rec.cls.members.length || rec.cls.others.length;
         extra[m.zastup] = [
             hasPirate ? 'v registru tu pirátská kandidatura je (zkontrolujte)' : null,
-            ob ? `${ob.nazevObvodu} je senátní obvod ${ob.obvod} (volby 2026); pirátská vazba je podle majitele senátní kandidát (Senát, ne tento produkt)` : 'senátní obvod tohoto jména v roce 2026 nehlasuje',
-            'není v souboru seznamu, majitel ho uvedl jako příklad',
+            ob ? `${ob.nazevObvodu} je senátní obvod ${ob.obvod} (volby 2026); případná pirátská vazba patří do Senátu, ne do tohoto produktu` : 'senátní obvod tohoto jména v roce 2026 nehlasuje',
+            'není na vašem seznamu, uvedli jste ho jako příklad',
         ].filter(Boolean).join('; ');
     }
     return extra;
@@ -344,14 +344,13 @@ export function buildDocs(res, src, ovr, ownerCount) {
     const borderlineExcluded = rows.filter((r) => r.inclusion === 'borderline-excluded');
     const notes = [];
     const hidden = rows.filter((r) => r.hidden);
-    if (hidden.length) notes.push(`Skryto do ověření majitelem (confidence low): ${hidden.map((r) => `${r.name} [${r.flags.join(', ')}]`).join('; ')}.`);
-    if (!meta.pop2025?.ok) notes.push(`Kontrola počtu obyvatel 2025 NEPROBĚHLA (${meta.pop2025?.reason ?? 'bez dat'}): populationCsu2025 je null a příznak population-band-differs se nepočítal.`);
-    if (!meta.jmsez || meta.jmsez.status === 'not-run') notes.push(`Kontrola jmenným seznamem (jmsez) NEPROBĚHLA${meta.jmsez?.reason ? ` (${meta.jmsez.reason})` : ''}: příznak jmsez-mismatch se nepočítal.`);
-    // Nezveřejněná města, kde by tabulka 2025 změnila pásmo: příznak se tu nepoužije (pásmo rozhoduje POCOBYV, spec §4.1), ale majitel to má vidět
-    const offBand = res.pop2025 ? res.records.filter((r) => !PUBLISHED.includes(r.dec.inclusion) && (r.cls.type === 'a' || r.cls.type === 'b')
-        && res.pop2025.get(r.council.zastup) && bandOf(res.pop2025.get(r.council.zastup).population) !== bandOf(r.council.population)) : [];
+    if (hidden.length) notes.push(`Skryto, dokud je nepotvrdíte (nízká jistota): ${hidden.map((r) => `${r.name} [${r.flags.map(flagLabel).join(', ')}]`).join('; ')}.`);
+    if (!meta.pop2025?.ok) notes.push(`Kontrola počtu obyvatel 2025 NEPROBĚHLA (${meta.pop2025?.reason ?? 'bez dat'}): u měst chybí počet z tabulky 2025 a nezjišťovalo se, zda spadají do jiného pásma.`);
+    if (!meta.jmsez || meta.jmsez.status === 'not-run') notes.push(`Kontrola jmenným seznamem kandidátů (jmsez) NEPROBĚHLA${meta.jmsez?.reason ? ` (${meta.jmsez.reason})` : ''}: nezjišťovalo se, zda pirátské štítky sedí s registrem.`);
+    // Nezveřejněná města těsně pod hranicí 7 000 (registr 2026) a nad ní (ČSÚ 2025): zařazení rozhoduje registr 2026, rozhodnutí je ve skupině 4 přehledu
+    const offBand = rows.filter((r) => r.offBand);
     if (offBand.length) {
-        notes.push(`Nezveřejněná města, kde Piráti kandidují a tabulka ČSÚ 2025 dává jiné pásmo než registr 2026 (zařazení rozhoduje registr 2026, příznak population-band-differs se tu nepoužívá): ${offBand.map((r) => `${r.council.name} (${spaced(r.council.population)} / ${spaced(res.pop2025.get(r.council.zastup).population)})`).join(', ')}.`);
+        notes.push(`Města, kde Piráti kandidují a registr 2026 uvádí méně než 7 000 obyvatel, ale tabulka ČSÚ 2025 už 7 000 a víc, nejsou zveřejněna (zařazení rozhoduje registr 2026): ${offBand.map((r) => `${r.name} (${spaced(r.population)} / ${spaced(r.population2025)})`).join(', ')}. K rozhodnutí je skupina 4 v \`docs/analysis/mesta-specifics.md\` (kapitola „K rozhodnutí vlastníka“).`);
     }
     for (const w of res.warnings) notes.push(`Varování generátoru: ${w}`);
     const files = {

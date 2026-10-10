@@ -52,11 +52,13 @@ export function xlsxRows(buffer) {
 // -> Map<kód obce, { name, population }>
 export function csuPopulation(rows) {
     const out = new Map();
+    // texty uložené jako řetězec: mezery/NBSP jako oddělovač tisíců, desetinná čárka
+    const clean = (v) => String(v ?? '').replace(/[\s\u00a0\u202f]/g, '').replace(',', '.');
     for (const row of rows.slice(6)) {
-        const code = Number(row[1]);
-        const population = Number(row[3]);
-        if (!/^\d+$/.test(row[1] ?? '') || !(code > 0) || row[3] === '' || row[3] === undefined || !Number.isFinite(population)) continue;
-        out.set(code, { name: row[2] ?? '', population });
+        const codeText = clean(row[1]);
+        const popText = clean(row[3]);
+        if (!/^\d+$/.test(codeText) || !/^\d+(\.\d+)?$/.test(popText) || !(Number(codeText) > 0)) continue;
+        out.set(Number(codeText), { name: row[2] ?? '', population: Number(popText) });
     }
     return out;
 }

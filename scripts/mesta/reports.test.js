@@ -69,14 +69,14 @@ describe('renderVerification', () => {
     it('has the three headed tables and the borderline_reason column', () => {
         expect(md).toMatch(/^## 1\. .*potvrzen/im);
         expect(md).toMatch(/^## 2\. .*zamítnut/im);
-        expect(md).toMatch(/^## 3\. .*není na seznamu/im);
+        expect(md).toMatch(/^## 3\. .*nejsou na vašem seznamu/im);
         expect(md.match(/borderline_reason/g).length).toBeGreaterThanOrEqual(3);
         expect(md).toContain('na seznamu majitele');
     });
     it('counts: owner names = confirmed + rejected from the list; Litovel is outside the 88', () => {
         expect(md).toMatch(/potvrzeno: 2/);
-        expect(md).toMatch(/zamítnuto ze seznamu majitele: 1/);
-        expect(md).toMatch(/na seznamu majitele celkem: 3/);
+        expect(md).toMatch(/zamítnuto z vašeho seznamu: 1/);
+        expect(md).toMatch(/na vašem seznamu celkem: 3/);
         expect(md).toMatch(/Litovel[^\n]*mimo soubor seznamu/);
     });
     it('Litovel row carries the reason and the Senate note', () => {
@@ -106,15 +106,18 @@ describe('renderSpecificsTable', () => {
         const head = md.slice(0, md.indexOf('## K rozhodnutí vlastníka'));
         expect(head).toMatch(/^# /);
         expect(head).toMatch(/Jak číst sloupce/);
-        expect(head).toMatch(/confidence/);
+        expect(head).toMatch(/jistota/);
         expect(head).toMatch(/skryt/);
         expect(head).toContain('src/mesta/overrides.js');
         expect(head).toMatch(/```js[\s\S]*name: 'Mikulov'[\s\S]*```/);
+        expect(head).toContain("'598933': { name: 'Český Těšín', include: false");
+        expect(head).not.toMatch(/Litovel/);
+        expect(head).not.toMatch(/spec §|KODZASTUP|confidence/);
         expect(head).toMatch(/reviewed: true/);
     });
     it('has counts per inclusion and type', () => {
-        expect(md).toMatch(/\| auto \| 3 \|/);
-        expect(md).toMatch(/\| borderline-included \| 1 \|/);
+        expect(md).toMatch(/\| zařazeno automaticky \| 3 \|/);
+        expect(md).toMatch(/\| zařazeno podle úsudku \| 1 \|/);
         expect(md).toMatch(/\| typ b \| 4 \|/);
     });
     it('K rozhodnutí vlastníka lists the decision groups', () => {
@@ -132,12 +135,50 @@ describe('renderSpecificsTable', () => {
         expect(table.indexOf('Alfa')).toBeLessThan(table.indexOf('Sokolov'));
         expect(table).toMatch(/Alfa[^\n]*4 \(A, B, C, \+1\)/);
         expect(table).toMatch(/20 000 \/ 19 900/);
-        expect(table).toMatch(/low \(skryto\)/);
+        expect(table).toMatch(/nízká \(skryto\)/);
+        expect(table).toMatch(/\| sdružení \|/);
+        expect(table).toMatch(/hraniční, zařazeno jen automaticky/);
         expect(table).not.toMatch(/\| Tišnov/);
     });
     it('escapes pipes in cell text', () => {
         const out = renderSpecificsTable([row({ name: 'A|B' })], meta);
         expect(out).toContain('A\\|B');
+    });
+});
+
+describe('renderSpecificsTable: new groups and wording', () => {
+    const off = row({
+        name: 'Broumov', zastup: 573922, published: false, inclusion: 'excluded', population: 6998, population2025: 7108, onOwnerList: false, offBand: true,
+        p2022: { pct: 8.35, seats: 2 }, reasonText: '6 998 obyvatel (pod hranicí 7 000)',
+    });
+    const rows = [row({ name: 'Alfa' }), off, row({ name: 'Náchod', zastup: 3, members: [], list: { ...LIST, nominatedNonMembers: 2 } })];
+
+    it('group 4 lists off-band towns generically with 2026/2025, 2022 result, list name and a ready snippet', () => {
+        const md = renderSpecificsTable(rows, meta);
+        const g = md.slice(md.indexOf('### 4. Těsně pod hranicí 7 000'), md.indexOf('### 5.'));
+        expect(g).toMatch(/Broumov[^\n]*6 998 \/ 7 108[^\n]*Piráti a Nezávislí[^\n]*Piráti 2022: 8,4 %, 2 mand\./);
+        expect(g).toContain("'573922': { name: 'Broumov', include: true, reason: 'Piráti 2022: 8,4 %, 2 mand.; 7 108 obyvatel k 1. 1. 2025' },");
+        expect(g).toMatch(/include: true/);
+    });
+    it('group 4 empty -> "Žádné"; group 8 does not claim all is fine while group 4 is open', () => {
+        const none = renderSpecificsTable([row({ name: 'Alfa' })], meta);
+        expect(none.slice(none.indexOf('### 4.'), none.indexOf('### 5.'))).toMatch(/_Žádné\._/);
+        expect(none.slice(none.indexOf('### 8.'))).not.toMatch(/Otevřená zůstává/);
+        const open = renderSpecificsTable(rows, meta);
+        expect(open.slice(open.indexOf('### 8.'), open.indexOf('## Zdroje'))).toMatch(/Otevřená zůstává skupina 4/);
+    });
+    it('nominated non-members wording and the auto-borderline heading with the real reason', () => {
+        const md = renderSpecificsTable([...rows, row({ name: 'Mikulov', zastup: 9, inclusion: 'borderline-included', borderlineReason: 'Piráti 2022: 8,4 %, 2 mand.', flags: ['borderline-auto'], confidence: 'low', hidden: true })], meta);
+        expect(md).toContain('z Pirátů jsou na ní jen lidé, které Piráti navrhli, ale nejsou členy');
+        expect(md).toMatch(/Sama kandidátka je přesto stále označená jako pirátská/);
+        expect(md).toMatch(/### 1\. Hraniční města zařazená automaticky \(skrytá\): důvodem je výsledek Pirátů v roce 2022/);
+    });
+    it('borderline-excluded points to borderlineReason; no 2022 list reads "bez pirátské kandidátky"', () => {
+        const md = renderSpecificsTable([row({ name: 'Tišnov', zastup: 8, published: false, inclusion: 'borderline-excluded', onOwnerList: false, reasonText: '9 270 obyvatel, bez důvodu k zařazení; Piráti 2022: bez pirátské kandidátky' })], meta);
+        const g = md.slice(md.indexOf('### 3.'), md.indexOf('### 4.'));
+        expect(g).toMatch(/borderlineReason/);
+        expect(g).not.toMatch(/include: true/);
+        expect(g).toMatch(/Piráti 2022: bez pirátské kandidátky/);
     });
 });
 
@@ -174,6 +215,19 @@ describe('reportRows', () => {
         expect(gama.reasonText).toMatch(/21 908/);
         expect(delta.reasonText).toMatch(/Piráti 2022: 4,1 %, 0 mand\./);
         expect(eta.note).toBe('poznámka');
+    });
+    it('flags an unpublished a/b town below 7 000 in 2026 and at/above 7 000 in 2025 (offBand), generically', () => {
+        const more = {
+            ...res,
+            records: [...res.records, { council: council(6, 'Zeta', 6990), cls: cls('b', LIST), reasons: [], dec: { inclusion: 'excluded', reason: 'population 6990' }, flags: [], onOwnerList: false, listRow: null },
+                { council: council(7, 'Eta2', 6990), cls: cls('d'), reasons: [], dec: { inclusion: 'excluded', reason: 'population 6990' }, flags: [], onOwnerList: false, listRow: null },
+                { council: council(8, 'Theta', 6900), cls: cls('b', LIST), reasons: [], dec: { inclusion: 'excluded', reason: 'population 6900' }, flags: [], onOwnerList: false, listRow: null }],
+            pop2025: new Map([[6, { name: 'Zeta', population: 7001 }], [7, { name: 'Eta2', population: 7100 }], [8, { name: 'Theta', population: 6950 }]]),
+            pirates2022: new Map([[6, { pct: 9.1, seats: 1 }]]),
+        };
+        const out = reportRows(more, { overrides: { reviewedAt: null, towns: {} } }).filter((r) => r.offBand);
+        expect(out.map((r) => r.name)).toEqual(['Zeta']);
+        expect(out[0]).toMatchObject({ population: 6990, population2025: 7001, p2022: { pct: 9.1, seats: 1 } });
     });
     it('a reviewedAt in overrides un-hides a generator-low town', () => {
         const un = reportRows(res, { overrides: { reviewedAt: '2026-10-10', towns: {} } });
@@ -261,7 +315,7 @@ describe('extractFiles', () => {
         const j = JSON.parse(files['jmsez-pirati.json']);
         expect(j.status).toBe('ok');
         expect(j.towns['1001']).toMatchObject({ name: 'Alfa', okres: 2101, mismatch: false });
-        expect(j.towns['1001'].rows).toEqual([{ list: 3, n: 1, name: 'Novák Jan', age: 40, navrh: 'Piráti', prislusnost: 'Piráti' }]);
+        expect(j.towns['1001'].rows).toEqual([{ list: 3, n: 1, name: 'Novák Jan', prislusnost: 'Piráti' }]); // bez věku a navrhovatele (data minimisation)
     });
     it('jmsez-pirati.json says not-run when the fetch was skipped', () => {
         const j = JSON.parse(extractFiles({ src: { ...src, jmsez: null }, res, meta: { ...mt, jmsez: { status: 'not-run', reason: 'síť nedostupná' } } })['jmsez-pirati.json']);
