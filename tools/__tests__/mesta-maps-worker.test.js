@@ -55,7 +55,7 @@ function startDo(storage, fetchImpl) {
 const parse = (res) => JSON.parse(res.body);
 const withVotes = (s) => Object.values(s.okrsky).filter((o) => o.votes).length;
 
-describe('Brno-size cold start mid-count (210 counted precincts, 6 concurrent, 0.4 s each)', () => {
+describe('Brno-size cold start mid-count (212 counted precincts, 3 concurrent, 0.4 s each)', () => {
     beforeEach(() => {
         vi.useFakeTimers();
         vi.setSystemTime(T0);
@@ -79,7 +79,7 @@ describe('Brno-size cold start mid-count (210 counted precincts, 6 concurrent, 0
         expect(s.precincts).toMatchObject({ total: 353, counted: stats.counted });
         expect(Object.keys(s.okrsky)).toHaveLength(stats.counted); // všechny sečtené okrsky jsou v odpovědi
         const n = withVotes(s);
-        expect(n).toBeGreaterThan(20);
+        expect(n).toBeGreaterThan(10); // 3 souběžné × 3 s / 0,4 s ≈ 22
         expect(n).toBeLessThan(stats.counted); // ← neúplné hlasy po okrscích …
         for (const o of Object.values(s.okrsky)) {
             // … ale nikdy vymyšlené nuly: buď skutečné hlasy (součet = platné hlasy okrsku), nebo null
@@ -90,7 +90,7 @@ describe('Brno-size cold start mid-count (210 counted precincts, 6 concurrent, 0
         expect(s.parties.reduce((a, b) => a + b.votes, 0)).toBeGreaterThan(0);
     });
 
-    it('stale-while-refresh: later requests are answered at once with the last good snapshot while a refresh runs in the background; the background top-up (~14 s) completes before the next refresh, so all precincts have votes after one more cycle', async () => {
+    it('stale-while-refresh: later requests are answered at once with the last good snapshot while a refresh runs in the background; the background top-up (~28 s) completes within two refresh cycles', async () => {
         const { files, stats } = fixture();
         const { fetchImpl, calls } = csuFetch(files);
         const { refresher } = startDo(memStorage(), fetchImpl);
@@ -115,7 +115,7 @@ describe('Brno-size cold start mid-count (210 counted precincts, 6 concurrent, 0
         expect(seen[seen.length - 1]).toBe(stats.counted);
         for (let i = 1; i < seen.length; i++) expect(seen[i]).toBeGreaterThanOrEqual(seen[i - 1]);
         expect(seen[0]).toBeLessThan(stats.counted); // první publikace je neúplná …
-        expect(seen.length).toBeLessThanOrEqual(3); // … a do dvou dalších obnov (≤ 2 × 20 s) je úplná
+        expect(seen.length).toBeLessThanOrEqual(4); // … a do tří dalších obnov je úplná
         // každý okrskový soubor se stáhl jednou (žádné opakování pro okrsky, které už mají hlasy)
         expect(calls.precinct).toBe(stats.counted);
     });
@@ -150,7 +150,56 @@ describe('Brno-size cold start mid-count (210 counted precincts, 6 concurrent, 0
         // cena vyhození z paměti: feed si hlasy z úložiště nepřebírá, nová instance stahuje okrskové
         // soubory VŠECH sečtených okrsků znovu (zázemí jen do výše, kterou stihne za obnovu) — viz docs/analysis/mesta-maps-load.md
         console.log(`eviction: first instance fetched ${a.calls.precinct} precinct files, the new one ${b.calls.precinct} (counted ${stats.counted})`);
-        expect(b.calls.precinct).toBe(stats.counted);
+        expect(b.calls.precinct).toBeLessThanOrEqual(stats.counted); // nejvýš všechny sečtené okrsky (zbytek do konce testu nestihl)
+    });
+
+    it('I3: after a restart one precinct row changes while its file is still the old version → the refresher keeps the last good snapshot (incomplete), logs incomplete-persistent after 5 min, and publishes again when the file catches up', async () => {
+        const { files, stats } = fixture();
+        const storage = memStorage();
+        // 1. první instance dotáhne všechno a publikuje úplný snapshot
+        const first = startDo(storage, csuFetch(files, { latency: 0 }).fetchImpl);
+        let p = first.refresher.get();
+        await vi.advanceTimersByTimeAsync(3100);
+        const full = parse(await p);
+        expect(withVotes(full)).toBe(stats.counted);
+        // 2. ČSÚ pošle okrsek znovu s jiným řádkem (přepočet), okrskový soubor je ale ještě starý (součet ≠ řádek)
+        const victim = Object.keys(full.okrsky)[0];
+        const ucastPath = `ucast/obec/${brno.okres}/${brno.zastup}.json`;
+        const changed = JSON.parse(JSON.stringify(files));
+        const row = changed[ucastPath].okrsky.find((r) => String(r[0]) === victim);
+        row[8] += 7; // platné hlasy +7 (soubor okrsku zůstává ve staré verzi)
+        const t1 = Date.now();
+        const later = new Date(t1 + 120_000 + 2 * 3600_000).toISOString().slice(0, 19); // zone-less pražský čas o 2 min později
+        changed[`vysled/${brno.okres}/${brno.zastup}.json`].generovano = later;
+        changed[ucastPath].generovano = later;
+        // 3. restart (nová instance, stejné úložiště) → starý soubor okrsku se nepřijme, kandidát je nekompletní
+        await vi.advanceTimersByTimeAsync(130_000);
+        const second = startDo(storage, csuFetch(changed, { latency: 0 }).fetchImpl);
+        const served = [];
+        for (let i = 0; i < 16; i++) {
+            const res = await second.refresher.get();
+            served.push(parse(res));
+            await vi.advanceTimersByTimeAsync(REFRESH.FLOOR_MS + 1000);
+        }
+        // snapshot zůstal poslední dobrý: okrsek má pořád své staré hlasy a nově přepočtený řádek se nepublikoval
+        expect(served.every((s) => s.okrsky[victim].votes && s.okrsky[victim].validVotes === full.okrsky[victim].validVotes)).toBe(true);
+        expect(served[served.length - 1].generated).toBe(full.generated);
+        const events = second.log.mock.calls.map(([event]) => event);
+        expect(events).toContain('incomplete');
+        expect(events).toContain('incomplete-persistent'); // po 5 minutách → v `wrangler tail` jako error
+        // 4. soubor okrsku se aktualizuje → nová verze se publikuje
+        const fixed = JSON.parse(JSON.stringify(changed));
+        const pf = fixed[`vysled/okrsek/${brno.okres}/${brno.zastup}_${victim}.json`];
+        pf.vysledky[0][2] += 7;
+        const third = startDo(storage, csuFetch(fixed, { latency: 0 }).fetchImpl);
+        let after;
+        for (let i = 0; i < 6; i++) {
+            after = parse(await third.refresher.get());
+            await vi.advanceTimersByTimeAsync(REFRESH.FLOOR_MS + 1000);
+        }
+        expect(after.generated).toBe(later);
+        expect(after.okrsky[victim].validVotes).toBe(full.okrsky[victim].validVotes + 7);
+        expect(after.okrsky[victim].votes).toBeTruthy();
     });
 
     it('ČSÚ precinct files down (500): summary and counted precincts are still published (votes null), no zero votes, and the page recovers when they return', async () => {

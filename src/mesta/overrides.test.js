@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
 import overrides from './overrides.js';
+import { buildCouncils } from './buildCouncils.js';
 import { validateOverrides } from '../../scripts/mesta/registryCore.js';
 
 const ok = (towns, reviewedAt = null) => validateOverrides({ reviewedAt, towns });
@@ -62,5 +64,35 @@ describe('mesta overrides', () => {
         expect(ok({ 1: { name: 'X', include: 'ano', reason: 'r' } })[0]).toMatch(/include/);
         expect(ok({ 1: { name: 'X', type: 'z', reason: 'r' } })[0]).toMatch(/type/);
         expect(validateOverrides({ reviewedAt: null })[0]).toMatch(/towns/);
+    });
+});
+
+describe('committed tiny labels of the map towns', () => {
+    const json = (rel) => JSON.parse(readFileSync(new URL(`../../${rel}`, import.meta.url), 'utf8'));
+    const towns = json('src/mesta/towns.generated.json');
+    const specifics = json('src/mesta/specifics.generated.json');
+    const councils = buildCouncils(towns, specifics, overrides);
+
+    it('every override names the registry town and an existing list of that town; Pirate list gets a short label', () => {
+        for (const [zastup, o] of Object.entries(overrides.towns)) {
+            const t = towns.find((x) => String(x.zastup) === zastup);
+            expect(t, zastup).toBeTruthy();
+            expect(o.name).toBe(t.name);
+            const lists = json(`public-mesta/data/${t.slug}/lists.json`).lists;
+            for (const [id, l] of Object.entries(o.lists)) {
+                expect(lists.some((x) => String(x.id) === id), `${t.slug} list ${id}`).toBe(true);
+                expect(l.tiny.length).toBeLessThanOrEqual(15);
+            }
+            // je to kandidátka Pirátů města
+            expect(Object.keys(o.lists)).toEqual([String(specifics.find((s) => String(s.zastup) === zastup).list.id)]);
+        }
+        expect(Object.keys(overrides.towns)).toHaveLength(10);
+    });
+
+    it('overrides do not touch reviewed/confidence (towns stay shown as before)', () => {
+        for (const o of Object.values(overrides.towns)) {
+            expect(Object.keys(o).sort()).toEqual(['lists', 'name']);
+        }
+        expect(councils.filter((c) => c.map && c.shown)).toHaveLength(12);
     });
 });

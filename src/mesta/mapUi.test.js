@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
-import { PENDING_FILL, isPending, oursButtonLabel, oursLongLabel } from './mapUi.js';
+import { PENDING_FILL, STRIP_MAX_CELLS, hasPending, isPending, mapNoteText, oursButtonLabel, oursLongLabel } from './mapUi.js';
 import { setActiveCouncil, partyMeta } from '../volby/council.js';
 import { getMapMode } from '../volby/mapModes.js';
 import { precinctShare } from '../volby/compute.js';
@@ -21,8 +21,31 @@ describe('isPending (sečteno, hlasy se dotahují)', () => {
     it('v režimu účasti se nic nedotahuje (účast už je)', () => {
         expect(isPending({ turnout: 50, votes: null }, 'turnout')).toBe(false);
     });
-    it('barva čekajících okrsků se liší od šedé nesečtených', () => {
-        expect(PENDING_FILL).not.toBe(UNCOUNTED_FILL);
+    it('barva čekajících okrsků je jasně odlišná od šedé nesečtených i od každé barvy pirátské škály', () => {
+        const rgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+        const dist = (a, b) => Math.hypot(...rgb(a).map((v, i) => v - rgb(b)[i]));
+        expect(dist(PENDING_FILL, UNCOUNTED_FILL)).toBeGreaterThan(50);
+        for (const c of PIRATE_RAMP) expect(dist(PENDING_FILL, c), c).toBeGreaterThan(60);
+    });
+    it('legenda „hlasy se dotahují“ jen když takový okrsek je a jen mimo režim účasti', () => {
+        const snap = (okrsky) => ({ okrsky });
+        expect(hasPending(null, 'ours')).toBe(false);
+        expect(hasPending(snap({ 1: { votes: { 1: 5 } } }), 'ours')).toBe(false);
+        expect(hasPending(snap({ 1: { votes: { 1: 5 } }, 2: { votes: null } }), 'ours')).toBe(true);
+        expect(hasPending(snap({ 2: { votes: null } }), 'turnout')).toBe(false);
+    });
+    it('pruh okrsků v hlavičce jen do 120 okrsků', () => {
+        expect(STRIP_MAX_CELLS).toBe(120);
+    });
+});
+
+describe('mapNoteText (vynechané městské části)', () => {
+    it('prázdné = žádná věta; jedna i více částí', () => {
+        expect(mapNoteText(undefined)).toBe('');
+        expect(mapNoteText([])).toBe('');
+        expect(mapNoteText([{ name: 'Ostrava-Jih' }])).toBe('Okrsky v části Ostrava-Jih se letos změnily — na mapě nejsou, ve výsledcích ano.');
+        expect(mapNoteText([{ name: 'A' }, { name: 'B' }])).toBe('Okrsky v částech A, B se letos změnily — na mapě nejsou, ve výsledcích ano.');
+        expect(mapNoteText([{ name: 'A' }, { name: 'B' }, { name: 'C' }, { name: 'D' }, { name: 'E' }])).toContain('A, B, C a 2 další');
     });
 });
 

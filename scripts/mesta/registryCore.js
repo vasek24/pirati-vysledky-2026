@@ -94,6 +94,21 @@ export function precinctIdsOf(rows, zastup) {
     return ids;
 }
 
+// kvrzcoco -> Map<číslo okrsku, OBEC (= kod_mco ve vrstvě hranic)> jednoho zastupitelství: do které městské části okrsek 2026 patří
+export function precinctDistrictsOf(rows, zastup) {
+    const out = new Map();
+    for (const r of rows) {
+        if (r.TYPZASTUP !== '1' || Number(r.KODZASTUP) !== Number(zastup)) continue;
+        for (let i = 1; i <= 10; i++) {
+            const suffix = i < 10 ? `EK${i}` : 'E10';
+            const min = Number(r[`MINOKRS${suffix}`]);
+            const max = Number(r[`MAXOKRS${suffix}`]);
+            if (max > 0) for (let k = min; k <= max; k++) out.set(k, String(r.OBEC));
+        }
+    }
+    return out;
+}
+
 export function matchOwnerTowns(owner, councils) {
     const byName = new Map();
     for (const c of councils.values()) {

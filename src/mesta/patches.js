@@ -21,7 +21,7 @@ export const PATCHES = [
     {
         file: COUNCIL_APP,
         from: "import { POLLS_CLOSE } from '../councils';",
-        to: "import { POLLS_CLOSE } from '../councils';\nimport MestaArrangement from '../mesta/MestaArrangement.jsx';",
+        to: "import { POLLS_CLOSE } from '../councils';\nimport MestaArrangement from '../mesta/MestaArrangement.jsx';\nimport MestaMapNote from '../mesta/MestaMapNote.jsx';\nimport { hasPending } from '../mesta/mapUi.js';",
     },
     {
         file: COUNCIL_APP,
@@ -74,6 +74,12 @@ export const PATCHES = [
         from: 'const mapData = !!council.map && !!statics?.geoJson;',
         to: 'const mapData = !!council.map && !!statics?.geoJson?.features?.length;',
     },
+    // ovládání mapy: legenda „hlasy se dotahují“ jen když takový okrsek je; pod ním věta o vynechaných částech
+    {
+        file: COUNCIL_APP,
+        from: '                <MapControls\n                    modeId={mapMode}\n                    onMode={setMapMode}\n                    partyId={mapParty ?? model.parties[0]?.id}\n                    onParty={setMapParty}\n                    parties={model.parties}\n                    compact={isMobile}\n                />\n',
+        to: '                <MapControls\n                    showPending={hasPending(mapSnapshot, mapMode)}\n                    modeId={mapMode}\n                    onMode={setMapMode}\n                    partyId={mapParty ?? model.parties[0]?.id}\n                    onParty={setMapParty}\n                    parties={model.parties}\n                    compact={isMobile}\n                />\n                <MestaMapNote geoJson={statics.geoJson} />\n',
+    },
     // --- ResultsMap
     {
         file: RESULTS_MAP,
@@ -112,7 +118,18 @@ export const PATCHES = [
     {
         file: PRECINCTS,
         from: "import { scrollBehavior } from '../utils/motion';",
-        to: "import { scrollBehavior } from '../utils/motion';\nimport { PENDING_FILL, oursButtonLabel, oursLongLabel } from '../mesta/mapUi.js';",
+        to: "import { scrollBehavior } from '../utils/motion';\nimport { PENDING_FILL, STRIP_MAX_CELLS, oursButtonLabel, oursLongLabel } from '../mesta/mapUi.js';",
+    },
+    // velké město (Brno 353 okrsků): místo pruhu buněk jeden ukazatel postupu podle součtů ČSÚ
+    {
+        file: PRECINCTS,
+        from: '    const fresh = new Set(freshIds || []);\n    const cells = ids.map((id) => {',
+        to: "    const fresh = new Set(freshIds || []);\n    if (ids.length > STRIP_MAX_CELLS) {\n        const done = snapshot?.precincts?.counted || 0;\n        const all = snapshot?.precincts?.total || ids.length;\n        const bar = (\n            <div className=\"h-2.5 rounded-[2px] bg-white/[0.18] overflow-hidden\" role=\"progressbar\" aria-label={`Sečteno ${done} z ${all} okrsků`} aria-valuenow={done} aria-valuemin={0} aria-valuemax={all}>\n                <div className=\"h-full bg-[#FEC900] transition-all duration-700\" style={{ width: `${Math.min(100, (done / all) * 100)}%` }} />\n            </div>\n        );\n        return onOpen ? <button type=\"button\" onClick={onOpen} aria-label={`Sečteno ${done} z ${all} okrsků — otevřít seznam`} className=\"block w-full py-3 -my-3\">{bar}</button> : bar;\n    }\n    const cells = ids.map((id) => {",
+    },
+    {
+        file: PRECINCTS,
+        from: 'export function MapControls({ modeId, onMode, partyId, onParty, parties, compact = false }) {',
+        to: 'export function MapControls({ modeId, onMode, partyId, onParty, parties, compact = false, showPending = false }) {',
     },
     {
         file: PRECINCTS,
@@ -152,12 +169,12 @@ export const PATCHES = [
     {
         file: PRECINCTS,
         from: '<span className="w-3 h-3 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} /> čeká na sečtení',
-        to: '<span className="w-3 h-3 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} /> čeká na sečtení\n                    <span className="ml-1 w-3 h-3 rounded-sm border border-dashed border-amber-700" style={{ backgroundColor: PENDING_FILL }} /> sečteno, hlasy se dotahují',
+        to: '<span className="w-3 h-3 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} /> čeká na sečtení\n                    {showPending && <><span className="ml-1 w-3 h-3 rounded-sm border border-dashed border-amber-700" style={{ backgroundColor: PENDING_FILL }} /> sečteno, hlasy se dotahují</>}',
     },
     {
         file: PRECINCTS,
         from: '<span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} title="čeká na sečtení" />',
-        to: '<span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} title="čeká na sečtení" />\n                    <span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-amber-700" style={{ backgroundColor: PENDING_FILL }} title="sečteno, hlasy se dotahují" />',
+        to: '<span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-neutral-500" style={{ backgroundColor: UNCOUNTED_FILL }} title="čeká na sečtení" />\n                    {showPending && <span className="shrink-0 w-2.5 h-2.5 rounded-sm border border-dashed border-amber-700" style={{ backgroundColor: PENDING_FILL }} title="sečteno, hlasy se dotahují" />}',
     },
     // --- ElectionHeader: „Mezitím se můžeš podívat na původní web“ by u měst vedlo na pražský tracker
     {

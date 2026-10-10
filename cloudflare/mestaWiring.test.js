@@ -193,6 +193,30 @@ describe('buildFeed: town', () => {
         expect(snap.okrsky[1].votes).toEqual({ 1: 600, 2: 400 });
         expect(snap.okrsky[3].votes).toEqual({ 1: 500, 2: 300 });
     });
+    it('precinct files go through a limiter of 3 (12 durable objects x 3 = at most 36 concurrent requests to ČSÚ)', async () => {
+        let active = 0;
+        let peak = 0;
+        const many = {};
+        const rows = [];
+        for (let i = 1; i <= 30; i++) {
+            rows.push([i, 500, 300, 60, 0, 300, 295, 98, 1000, '1']);
+            many[`vysled/okrsek/3203/554791_${i}.json`] = precinctFile(600, 400);
+        }
+        const files = { 'vysled/3203/554791.json': withParties(), 'ucast/obec/3203/554791.json': { generovano: '2026-10-10T15:01:00', okrsky: rows }, ...many };
+        const inner = fakeCsu(files).fetchImpl;
+        const fetchImpl = async (url, init) => {
+            active++;
+            peak = Math.max(peak, active);
+            await new Promise((r) => setTimeout(r, 10));
+            active--;
+            return inner(url, init);
+        };
+        const w = createMestaWiring({ councils: [{ ...plzen, map: true, precinctFiles: true }], shards: [] });
+        const p = w.buildFeed('554791', {}, { fetchImpl }).build();
+        await vi.advanceTimersByTimeAsync(2000);
+        await p;
+        expect(peak).toBe(3);
+    });
     it('a town without precinctFiles (no map) still fetches only the two summary files', async () => {
         const { fetchImpl, calls } = fakeCsu(MAP_FILES);
         await wiring().buildFeed('554791', {}, { fetchImpl }).build(); // plzen: map false, precinctFiles false

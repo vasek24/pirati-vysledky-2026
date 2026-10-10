@@ -2,7 +2,9 @@ import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { checkData } from './mesta-data-check.mjs';
+import { buildCouncils } from '../src/mesta/buildCouncils.js';
 
 // FeatureCollection s polygony s danými čísly okrsků (tvar nevadí, kontroluje se jen cislo)
 const geo = (...ids) => ({
@@ -84,16 +86,41 @@ describe('checkData: okrsky.geojson (mapa okrsků)', () => {
         expect(problems).toHaveLength(1);
         expect(problems[0]).toMatch(/brno.*okrsky\.geojson.*(prázdn|alespoň)/);
     });
-    it('město bez mapy s polygony je chyba (zůstat prázdné)', async () => {
+    it('město s map:false a neprázdným okrsky.geojson: varování, ne chyba (vypínač)', async () => {
         await put('plzen', 'okrsky.geojson', geo(1));
-        const problems = await checkData({ dir, towns: mapTowns });
-        expect(problems).toHaveLength(1);
-        expect(problems[0]).toMatch(/plzen.*okrsky\.geojson.*prázdn/);
+        const warnings = [];
+        const problems = await checkData({ dir, towns: mapTowns, onWarning: (w) => warnings.push(w) });
+        expect(problems).toEqual([]);
+        expect(warnings).toHaveLength(1);
+        expect(warnings[0]).toMatch(/plzen.*map: false.*--maps-only/);
+    });
+    it('vypínač přes buildCouncils: overrides map:false u města s polygony projde s varováním', async () => {
+        const json = (rel) => JSON.parse(readFileSync(new URL(`../${rel}`, import.meta.url), 'utf8'));
+        const councils = buildCouncils(json('src/mesta/towns.generated.json'), json('src/mesta/specifics.generated.json'), { reviewedAt: null, towns: { 554791: { name: 'Plzeň', map: false } } });
+        const plzen = councils.find((c) => c.slug === 'plzen');
+        expect(plzen.map).toBe(false);
+        const warnings = [];
+        const problems = await checkData({
+            dir: 'x',
+            towns: [plzen],
+            readJson: async (f) => (f.endsWith('lists.json') ? { slug: 'plzen', zastup: plzen.zastup } : f.endsWith('okrsky.geojson') ? geo(1, 2) : {}),
+            onWarning: (w) => warnings.push(w),
+        });
+        expect(problems).toEqual([]);
+        expect(warnings).toHaveLength(1);
+    });
+    it('droppedDistricts v okrsky.geojson: platný tvar projde, nesmyslný je chyba', async () => {
+        await put('brno', 'okrsky.geojson', { ...geo(1, 2), droppedDistricts: [{ kod: '1', name: 'Brno-Medlánky', reason: 'missing', polygons: 4, precincts: 5 }] });
+        expect(await checkData({ dir, towns: mapTowns })).toEqual([]);
+        await put('brno', 'okrsky.geojson', { ...geo(1, 2), droppedDistricts: 'x' });
+        expect((await checkData({ dir, towns: mapTowns }))[0]).toMatch(/droppedDistricts/);
     });
     it('město bez příznaku map se bere jako město bez mapy', async () => {
         await put('plzen', 'okrsky.geojson', geo(1));
-        const problems = await checkData({ dir, towns: [towns[1]] });
-        expect(problems).toHaveLength(1);
+        const warnings = [];
+        const problems = await checkData({ dir, towns: [towns[1]], onWarning: (w) => warnings.push(w) });
+        expect(problems).toEqual([]);
+        expect(warnings).toHaveLength(1);
     });
     it('duplicitní cislo je chyba', async () => {
         await put('brno', 'okrsky.geojson', geo(1, 2, 2));

@@ -1,7 +1,7 @@
 // Kontrola dat produktu „mesta“: každé publikované město musí mít v public-mesta/data/<slug>/
 // čitelné lists.json, kandidati.json a results2022.json se shodným slugem a zastupem a okrsky.geojson:
 // město s mapou (`map`) neprázdnou FeatureCollection s jedinečnými celými čísly `cislo`,
-// ostatní města prázdnou.
+// ostatní města prázdnou (neprázdná u města s `map: false` je jen varování — vypínač).
 //   node scripts/mesta-data-check.mjs     (exit 1 při jakémkoli problému)
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -13,11 +13,19 @@ import { buildCouncils } from '../src/mesta/buildCouncils.js';
 const FILES = ['lists.json', 'kandidati.json', 'results2022.json', 'okrsky.geojson'];
 const diskRead = async (file) => JSON.parse(await fs.readFile(file, 'utf8'));
 
-function geoProblems(slug, geo, map) {
+function geoProblems(slug, geo, map, warn) {
     if (geo?.type !== 'FeatureCollection' || !Array.isArray(geo.features)) return [`${slug}: okrsky.geojson není FeatureCollection`];
-    if (!map) return geo.features.length ? [`${slug}: okrsky.geojson má ${geo.features.length} polygonů, město nemá mapu — má být prázdný`] : [];
+    // vypínač `map: false` (overrides.js): neprázdný soubor je jen varování (neaktivní, `--maps-only` ho vyprázdní)
+    if (!map) {
+        if (geo.features.length) warn(`${slug}: okrsky.geojson má ${geo.features.length} polygonů, ale město nemá mapu (map: false) — spusť node scripts/build-data.js --product=mesta --maps-only`);
+        return [];
+    }
     if (!geo.features.length) return [`${slug}: okrsky.geojson je prázdný, město s mapou potřebuje alespoň 1 polygon okrsku`];
     const problems = [];
+    const dd = geo.droppedDistricts;
+    if (dd !== undefined && (!Array.isArray(dd) || !dd.length || dd.some((d) => !d || typeof d.name !== 'string' || !Number.isInteger(d.polygons) || !Number.isInteger(d.precincts)))) {
+        problems.push(`${slug}: okrsky.geojson má neplatné droppedDistricts`);
+    }
     const seen = new Set();
     for (const [i, f] of geo.features.entries()) {
         const id = f?.properties?.cislo;
@@ -31,7 +39,7 @@ function geoProblems(slug, geo, map) {
 }
 
 /** @returns {Promise<string[]>} seznam problémů (prázdný = v pořádku) */
-export async function checkData({ dir, towns, readJson = diskRead }) {
+export async function checkData({ dir, towns, readJson = diskRead, onWarning = () => {} }) {
     const problems = [];
     for (const t of towns) {
         const parsed = {};
@@ -43,7 +51,7 @@ export async function checkData({ dir, towns, readJson = diskRead }) {
                 problems.push(`${t.slug}: ${f} chybí nebo je nečitelný (${err.code || err.message})`);
             }
         }
-        if (parsed['okrsky.geojson'] !== undefined) problems.push(...geoProblems(t.slug, parsed['okrsky.geojson'], t.map === true));
+        if (parsed['okrsky.geojson'] !== undefined) problems.push(...geoProblems(t.slug, parsed['okrsky.geojson'], t.map === true, onWarning));
         const lists = parsed['lists.json'];
         if (lists) {
             if (lists.slug !== t.slug) problems.push(`${t.slug}: lists.json má slug ${JSON.stringify(lists.slug)}`);
@@ -59,7 +67,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.ar
     const [generated, specifics] = await Promise.all([read('towns.generated.json'), read('specifics.generated.json')]);
     const overrides = (await import('../src/mesta/overrides.js')).default;
     const towns = buildCouncils(generated, specifics, overrides);
-    const problems = await checkData({ dir: path.join(ROOT, 'public-mesta'), towns });
+    const problems = await checkData({ dir: path.join(ROOT, 'public-mesta'), towns, onWarning: (w) => console.warn(`  ! ${w}`) });
     if (problems.length) {
         for (const p of problems) console.error(`  ✗ ${p}`);
         console.error(`mesta data check: ${problems.length} problémů`);

@@ -15,16 +15,16 @@ const PRECINCTS = 'src/components/Precincts.jsx';
 const MAP_MODES = 'src/volby/mapModes.js';
 
 describe('patch list (spec §5)', () => {
-    it('has CouncilApp x10, ResultsMap x5, Precincts x10, mapModes x1, WelcomeGuide x2, ElectionHeader x2, Councilors x1', () => {
+    it('has CouncilApp x11, ResultsMap x5, Precincts x12, mapModes x1, WelcomeGuide x2, ElectionHeader x2, Councilors x1', () => {
         const per = (file) => PATCHES.filter((p) => p.file === file).length;
-        expect(per(COUNCIL_APP)).toBe(10);
+        expect(per(COUNCIL_APP)).toBe(11);
         expect(per(RESULTS_MAP)).toBe(5);
-        expect(per(PRECINCTS)).toBe(10);
+        expect(per(PRECINCTS)).toBe(12);
         expect(per(MAP_MODES)).toBe(1);
         expect(per(WELCOME)).toBe(2);
         expect(per(HEADER)).toBe(2);
         expect(per(COUNCILORS)).toBe(1);
-        expect(PATCHES).toHaveLength(31);
+        expect(PATCHES).toHaveLength(34);
     });
 
     it('every anchor occurs exactly once in the real Prague file', () => {
@@ -95,6 +95,24 @@ describe('applyPatches on the real files', () => {
         // původní texty o 2022 zůstávají pro Prahu, jen podmíněně
         expect(out).toContain('Změna = proti předchůdci kandidátky v KV 2022 v tomto okrsku.');
         expect(out).toContain("{!(activeCouncil().precinctHistory === false) && <div");
+    });
+
+    it('CouncilApp/Precincts: pending legend only when needed, map note under the controls, progress bar for big towns', () => {
+        const app = applyPatches(COUNCIL_APP, read(COUNCIL_APP));
+        expect(app).toContain('showPending={hasPending(mapSnapshot, mapMode)}');
+        expect(app).toContain('<MestaMapNote geoJson={statics.geoJson} />');
+        expect(app).toContain("import MestaMapNote from '../mesta/MestaMapNote.jsx';");
+        // věta je uvnitř bloku ovládání (změřená výška zahrne i ji)
+        expect(app.indexOf('<MestaMapNote')).toBeGreaterThan(app.indexOf('<MapControls'));
+        expect(app.indexOf('<MestaMapNote')).toBeLessThan(app.indexOf('{counted === 0 && !selectedId && ('));
+        const pr = applyPatches(PRECINCTS, read(PRECINCTS));
+        expect(pr).toContain('showPending = false }) {');
+        expect(pr).toContain('{showPending && <><span');
+        expect(pr).toContain('{showPending && <span className="shrink-0');
+        expect(pr).toContain('if (ids.length > STRIP_MAX_CELLS) {');
+        expect(pr).toContain('role="progressbar"');
+        // pruh buněk pro malá města zůstává
+        expect(pr.indexOf('const cells = ids.map')).toBeGreaterThan(pr.indexOf('if (ids.length > STRIP_MAX_CELLS)'));
     });
 
     it('Councilors: coalition-neutral heading', () => {

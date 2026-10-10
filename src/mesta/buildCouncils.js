@@ -71,7 +71,7 @@ export function buildCouncils(towns, specifics, overrides) {
 
         // Mapa okrsků: největší města (`featured`, tedy 12 měst top-1/top-2), pokud jsou zobrazená;
         // `map: false|true` v overrides rozhodne ručně. Okrskové soubory ČSÚ (hlasy po okrscích) jdou s mapou.
-        const map = o.map ?? (t.featured != null && shown)
+        const map = o.map ?? (t.featured != null && shown);
 
         return {
             slug: t.slug,

@@ -3,7 +3,7 @@ import { parse } from 'csv-parse/sync';
 import {
     normName, parseOwnerList, wholeCouncils, matchOwnerTowns, classifyTown, borderlineReasons,
     decideInclusion, assignShards, assignFeatured, disambiguateSlugs, confidenceOf, buildExcluded,
-    excludedReason, validateOverrides, cleanName, precinctIdsOf,
+    excludedReason, validateOverrides, cleanName, precinctIdsOf, precinctDistrictsOf,
 } from './registryCore.js';
 
 const csv = (header, lines) => parse([header, ...lines].join('\n'), { columns: true, skip_empty_lines: true });
@@ -68,6 +68,20 @@ describe('precinctIdsOf (2026 precinct numbers of one council, from the kvrzcoco
 
     it('size equals wholeCouncils precincts for every council', () => {
         for (const c of wholeCouncils(RZC).values()) expect(precinctIdsOf(RZC, c.zastup).size, c.name).toBe(c.precincts);
+    });
+});
+
+describe('precinctDistrictsOf (precinct number -> OBEC of its row = kod_mco of the district)', () => {
+    it('maps each precinct to the OBEC of the row that holds its range', () => {
+        const d = precinctDistrictsOf(RZC, 554791);
+        expect(d.size).toBe(80);
+        expect(d.get(1001)).toBe('545970'); // Plzeň 1
+        expect(d.get(2034)).toBe('545988'); // Plzeň 2-Slovany
+        expect(d.has(1047)).toBe(false);
+        expect(precinctDistrictsOf(RZC, 1).size).toBe(0);
+    });
+    it('keys are exactly precinctIdsOf', () => {
+        expect([...precinctDistrictsOf(RZC, 582786).keys()].sort((a, b) => a - b)).toEqual([...precinctIdsOf(RZC, 582786)].sort((a, b) => a - b));
     });
 });
 

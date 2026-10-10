@@ -10,11 +10,11 @@ const brno = councils.find((c) => c.slug === 'brno');
 const input = { council: brno, lists: json('public-mesta/data/brno/lists.json'), geo: json('public-mesta/data/brno/okrsky.geojson') };
 
 describe('fake ČSÚ for the Brno map (real polygon ids, real list ids)', () => {
-    it('counts ~30 % of the 353 precincts, deterministic by seed, 1 precinct without polygon', () => {
+    it('counts ~30 % of the 353 precincts, deterministic by seed, 5 precincts without polygon (Medlánky dropped)', () => {
         const a = buildFakeCsu(input, { counted: 0.3, seed: 7 });
         const b = buildFakeCsu(input, { counted: 0.3, seed: 7 });
         expect(a.stats).toEqual(b.stats);
-        expect(a.stats).toMatchObject({ precincts: 353, polygons: 352, counted: 106, withoutPolygon: 1 });
+        expect(a.stats).toMatchObject({ precincts: 353, polygons: 348, counted: 106, withoutPolygon: 5 });
         expect(Object.keys(buildFakeCsu(input, { counted: 0.3, seed: 8 }).files)).not.toEqual(Object.keys(a.files));
     });
 
