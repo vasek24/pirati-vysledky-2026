@@ -208,3 +208,35 @@
 - Spec coverage: S1 → Tasks 2, 10 + CI grep; S2 → Task 8 test 10; S3 → Tasks 6, 8; S4 → Task 8 test 8; S5 → Tasks 8–10; S6 → Task 2; S7 → Task 10; S8 → Task 3 + Task 5 curl; S9 → Tasks 4, 8 (test 11), 9; last-resort/edge/`x-server-now` → Task 9; guards/wrangler swap → Task 1; domain → Task 5.
 - Phase 2 intentionally absent: row flash, arrows, latency display, harness extras, README.
 - Soft spots resolved by the implementer reading code (not placeholders): exact Magistrát/Praha 9 API paths and the DO naming helper in `worker.js:121-149`; the original site's live URL for the fallback links (read upstream README).
+
+---
+
+# PHASE 2 (client-only items; may ship in the quiet 14:00–15:00 window or later)
+
+### Task P2-A: Change detection, row flash, arrows and live summary (branch `p2/flash`)
+
+**Goal (owner request):** an immediately noticeable but not over-the-top cue when new data arrives and numbers move.
+
+**Files:** Create `src/lib/changes.js`, `src/lib/changes.test.js`, `src/hooks/useChanges.js`; modify `src/components/PartyResults.jsx`, `src/components/Councilors.jsx`, `src/components/Coalition.jsx` (only if it shows per-party numbers), `src/components/Hemicycle.jsx` (seat count changes → existing aria-live at ~:153 must stay polite), `src/components/ElectionHeader.jsx` (a tiny "nová data" ping on the status pill/precinct counter), `src/index.css` (keyframes + reduced-motion), `src/pages/CouncilApp.jsx` (wire `useChanges`), `src/pages/Landing.jsx` (council cards already have a 4 s ring; reuse the same helper if trivial, otherwise leave).
+
+**Interfaces:**
+- `diffSnapshots(prev, next) -> { changed: boolean, precincts: { delta: number }, parties: Map<partyId, { votesDelta: number, seatsDelta: number, rankDelta: number }>, councilors: Set<candidateKey> }` — pure; `prev == null` (first load) or a change in election/council identity → `{ changed: false }` (NEVER flash on first load or on page reload from sessionStorage). Ignore `generated`/`fetchedAt`/meta-only changes (no flash when nothing numeric moved).
+- `useChanges(snapshot) -> { changes, tick }`: keeps the previous snapshot in a ref, computes `diffSnapshots` when the snapshot's `generated`+counted signature changes, exposes `changes` for 4 s then clears (no per-second re-render of the tree; only set state at change and clear).
+- Row marker: rows whose votes/seats/rank changed get the class `row-flash` for ~2.5 s (soft background pulse, one cycle, not looping) and show a compact arrow cue next to the number (`▲ +123` / `▼ −45` for votes; `▲ +1 místo` seats; rank up/down arrow) that stays for the 4 s window; the pill/precinct counter gets one gentle pulse. Colour is never the only cue (arrow + text). `prefers-reduced-motion: reduce` → no animation, static highlight + arrow only. No layout shift: reserve the arrow slot width (e.g. `min-w`) or use `position:absolute` within the cell.
+- A visually hidden `aria-live="polite" aria-atomic="true"` region announces ONE summary per update, only when something changed: e.g. "Aktualizace: sečteno 31 z 43 okrsků (+2); Piráti 14,2 % (+0,3)". No announcements per tick/countdown.
+
+**Steps (TDD):**
+- [ ] Failing tests for `diffSnapshots`: first load → unchanged; identical → unchanged; only `fetchedAt` changed → unchanged; counted +2 and one party's votes up → `changed`, correct deltas; rank swap; seat gain; different council → unchanged; garbage input does not throw.
+- [ ] Implement `changes.js` + `useChanges.js`; wire into CouncilApp and the components; add CSS in `index.css` (check the existing global reduced-motion rule at ~:155-169 and the `okrsek` highlight keyframes at ~:137-151 for conventions).
+- [ ] `npm test`, `npm run lint`, `npm run build`, `! grep -rl "appdata/kv2026" dist/assets`; manual check in `npm run dev` with a mocked fetch that returns two successive snapshots (document how) and note observations.
+- [ ] Commit.
+
+### Task P2-B: Latency chain display (branch `p2/latency`)
+
+**Goal (owner request):** show how long it takes from ČSÚ publishing to the table updating, clearly but unobtrusively.
+
+**Files:** Create `src/lib/latency.js`, `src/lib/latency.test.js`; modify `src/components/ElectionHeader.jsx` (a small "Jak čerstvá jsou data?" disclosure) and `src/hooks/useLiveResults.js` (record `receivedAt` = skew-corrected client time when the response body arrived and `renderedAt` after state commit).
+
+**Interfaces:** `latencyChain({ generated, refreshedAt, servedAt, receivedAt, renderedAt }) -> { csuToServer: sec|null, serverToClient: sec|null, receiveToRender: sec|null, total: sec|null }`; `generated` via `parseCsuTime`; all values clamp ≥ 0 and are null when an input is missing/invalid (old server without the new fields). UI: one line in a collapsed details element — "ČSÚ vygenerovalo 14:03:07 → náš server načetl 14:03:19 (+12 s) → váš prohlížeč zobrazil 14:03:31 (+12 s) · celkem 24 s" and the cadence tier "kontrola každou minutu / 20 s při opoždění".
+
+**Steps (TDD):** failing tests for `latencyChain` (normal chain, missing fields, negative skew clamp, generated in the future) → implement → wire (read `servedAt`/`refreshedAt` from the response; `receivedAt`/`renderedAt` from the hook) → tests/lint/build/dist grep → commit.
