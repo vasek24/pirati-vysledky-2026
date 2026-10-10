@@ -22,6 +22,7 @@ const COLLATOR = new Intl.Collator('cs');
 
 export const townsText = (n) => `${n} ${plural(n, 'město', 'města', 'měst')}`;
 export const seatsText = (n) => `${n} ${plural(n, 'mandát', 'mandáty', 'mandátů')}`;
+export const moreText = (n) => `+ ${n} ${n >= 5 ? 'dalších' : 'další'} — upřesněte hledání`;
 export const newlyCountedText = (n) => `Ukázat ${n} ${plural(n, 'nově sečtené město', 'nově sečtená města', 'nově sečtených měst')}`;
 
 const timeFmt = new Intl.DateTimeFormat('cs-CZ', { hour: 'numeric', minute: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Prague' });
@@ -102,6 +103,21 @@ export function initialMounted({ width = 0 } = {}) {
     return ['top-1', 'top-2'];
 }
 
+// Kraje rozbalené při prvním vykreslení na širokém displeji: od prvního, dokud
+// jejich shardy dohromady nepřesáhnou `maxShards` — na vysokém monitoru (1440 px
+// a víc) by jinak rozbalené kraje spustily víc dotazů, než je cíl (2 největší
+// města + nejvýš 2 shardy kraje = 4). Ostatní zůstanou sbalené (skok z levého seznamu).
+export function initialOpenRegions(regions, maxShards = 2) {
+    const open = [];
+    let used = 0;
+    for (const r of regions) {
+        if (used + r.shardIds.length > maxShards) break;
+        used += r.shardIds.length;
+        open.push(r.kraj);
+    }
+    return open;
+}
+
 // ---------------------------------------------------------------------------
 // Řádek města
 
@@ -147,7 +163,7 @@ export function rowView(council, summary, now, { status = 'idle', stale = false 
     const all = total > 0 && counted >= total;
     return finish({
         ...view, state: all ? 'counted' : 'counting', time, timeLabel: stamp, stale, bar: total ? Math.min(1, counted / total) : 0,
-        txt: all ? 'sečteno vše, čeká na vyhlášení' : `sečteno ${Math.floor((counted / total) * 100)} % okrsků`,
+        txt: all ? 'sečteno vše, čeká na vyhlášení' : `sečteno ${Math.max(1, Math.floor((counted / total) * 100))} % okrsků`,
         ...pirateValue(council, summary), seats: council.pirates && summary.pirates ? 'průběžně' : '',
     });
 }
@@ -182,14 +198,16 @@ export function buildRegions(councils, shards, regions) {
 // Druhý řádek hlavičky kraje (pevná výška): „N měst" → „· načítám…" →
 // „Sečteno k z N měst" (jen když jsou načtené všechny shardy kraje) →
 // „⚠ Data kraje jsou zastaralá — zkouším znovu". `loaded` = { shown:Set,
-// summaries:{z:summary}, shards:{id:{status,hasData,stale}}, now }.
+// summaries:{z:summary}, shards:{id:{status,hasData,stale}}, now, active:Set }.
 export function regionHeader(region, loaded) {
-    const { shown, summaries = {}, shards = {}, now = Date.now() } = loaded;
+    const { shown, summaries = {}, shards = {}, now = Date.now(), active = null } = loaded;
     const towns = region.zastups.filter((z) => shown.has(z));
     const count = townsText(towns.length);
     const states = region.shardIds.map((id) => shards[id] ?? { status: 'idle', hasData: false });
     if (states.some((s) => s.status === 'error' || s.stale)) {
-        const text = states.some((s) => s.hasData) ? '⚠ Data kraje jsou zastaralá — zkouším znovu' : '⚠ Data se nepodařilo načíst — zkouším znovu';
+        // „zkouším znovu" jen, když se shard opravdu obnovuje (odpojený shard se nezkouší)
+        const retrying = !active || region.shardIds.some((id, i) => (states[i].status === 'error' || states[i].stale) && active.has(id));
+        const text = `${states.some((s) => s.hasData) ? '⚠ Data kraje jsou zastaralá' : '⚠ Data se nepodařilo načíst'}${retrying ? ' — zkouším znovu' : ''}`;
         return { text, doneText: null, error: true };
     }
     if (states.length && states.every((s) => s.status === 'ok' && s.hasData)) {
@@ -199,6 +217,18 @@ export function regionHeader(region, loaded) {
     }
     if (states.some((s) => s.status === 'loading')) return { text: `${count} · načítám…`, doneText: null, error: false };
     return { text: count, doneText: null, error: false };
+}
+
+const krajPlural = (n) => plural(n, 'kraj se', 'kraje se', 'krajů se');
+// Stav načítání všech krajů pro „Jen sečtené": chyba má přednost před průběhem;
+// text null = vše načteno (volající ukáže nově sečtená města)
+export function allProgress(regions, shards) {
+    const ids = regions.flatMap((r) => r.shardIds);
+    const loaded = ids.filter((id) => shards[id]?.hasData).length;
+    const failed = regions.filter((r) => r.shardIds.some((id) => shards[id]?.status === 'error')).length;
+    if (failed) return { loaded, total: ids.length, failed, text: `⚠ ${failed} ${krajPlural(failed)} nepodařilo načíst — zkouším znovu` };
+    if (loaded < ids.length) return { loaded, total: ids.length, failed, text: `Načítám stav všech krajů: ${loaded} z ${ids.length}…` };
+    return { loaded, total: ids.length, failed, text: null };
 }
 
 // Sečtená města (counted ≥ total > 0) z daných (zobrazených) měst
@@ -223,8 +253,9 @@ export function flatOrder(councils, mode) {
 // ---------------------------------------------------------------------------
 // Plánovač shardů
 
-// Po n-té chybě za sebou: 15 → 30 → 60 s (strop), ±15 % ať se klienti nesešikují
-export const errorDelay = (n, random) => Math.min(60_000, 15_000 * 2 ** Math.max(0, n - 1)) * (0.85 + random * 0.3);
+// Po n-té chybě za sebou: 15 → 30 → 60 s (střed, strop), ×0,5–1,5 ať se klienti po
+// výpadku nesešikují do jedné vlny
+export const errorDelay = (n, random) => Math.min(60_000, 15_000 * 2 ** Math.max(0, n - 1)) * (0.5 + random);
 
 // Jeden objekt pro všechny shardy: kdo je připojený určují piny (největší
 // města, Moje obec), viditelné řádky (po 400 ms, odpojení po 3 s) a „Jen
@@ -305,7 +336,7 @@ export function createShardPoller({
             const body = await res.json();
             if (!res.ok || body?.v !== version || !body.councils || typeof body.councils !== 'object') throw new Error(body?.error || `proxy-${res.status}`);
             summaries = { ...summaries, [id]: filterShardSummaries(body, byId.get(id)) };
-            Object.assign(s, { status: 'ok', hasData: true, stale: !!body.stale, okAt: Date.now(), errors: 0 });
+            Object.assign(s, { status: 'ok', hasData: true, stale: !!body.stale, okAt: serverNow(), errors: 0 }); // stejné hodiny jako dueAt a porovnání níže
             const normal = nextPollDelay({ nextRefreshAt: Number.isFinite(body.nextRefreshAt) ? body.nextRefreshAt : undefined, now: serverNow(), offset, random: random() });
             delay = isFast(id) ? normal : Math.max(normal, allIntervalMs * (0.85 + random() * 0.3));
         } catch {

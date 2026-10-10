@@ -4,8 +4,8 @@
 // Město → /<slug>, kraj → rozbalí sekci, obec mimo přehled / Praha / neověřené
 // město → jen informační řádek. V režimu `mine` se vybírá Moje obec.
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { search } from '../search.js';
-import { townsText } from '../indexModel.js';
+import { MAX_QUERY, search } from '../search.js';
+import { moreText, townsText } from '../indexModel.js';
 
 const OPEN_URL = 'https://volby.gov.cz/app/kv2026/cs/20261009/home';
 const plural = (n) => (n === 1 ? 'návrh' : n >= 2 && n <= 4 ? 'návrhy' : 'návrhů');
@@ -95,6 +95,10 @@ export default function TownSearch({ index, townCount, limit, mode, councilByZas
     }
 
     const activeId = shown && options.length ? `${uid}-o${Math.min(active, options.length - 1)}` : undefined;
+    // šipkami vybraný návrh musí zůstat vidět i v rolujícím popupu
+    useEffect(() => {
+        if (activeId) document.getElementById(activeId)?.scrollIntoView({ block: 'nearest' });
+    }, [activeId]);
 
     return (
         <div className="mi-sbar">
@@ -120,6 +124,7 @@ export default function TownSearch({ index, townCount, limit, mode, councilByZas
                     autoCapitalize="off"
                     spellCheck="false"
                     enterKeyHint="search"
+                    maxLength={MAX_QUERY}
                     value={value}
                     onChange={(ev) => { setValue(ev.target.value); setActive(0); setOpen(true); }}
                     onFocus={() => { if (value.trim()) setOpen(true); }}
@@ -181,6 +186,6 @@ function PopNote({ value, options, result, townCount }) {
         );
     }
     if (result.fuzzy) return <div className="mi-pop-note">Přesnou shodu nemáme — myslíte některé z těchto?</div>;
-    if (result.total > options.length) return <div className="mi-pop-note">{`+ ${result.total - options.length} další — upřesněte hledání`}</div>;
+    if (result.total > options.length) return <div className="mi-pop-note">{moreText(result.total - options.length)}</div>;
     return null;
 }

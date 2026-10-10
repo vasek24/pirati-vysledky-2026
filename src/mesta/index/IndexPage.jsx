@@ -1,12 +1,11 @@
 // Stránka indexu mesta.dg12.cz podle docs/analysis/mesta-index-ux-proposal.md.
 // Dostává data jako props (COUNCILS = jen zobrazená města, skrytá zvlášť, SHARDS,
-// REGIONS, excluded.generated.json), takže ji jde pustit i s vývojovými daty
-// (devHarness.jsx). Žádné součty za kraj ani republiku; mandáty jen vyhlášené.
+// REGIONS, excluded.generated.json), takže ji jde pustit i s jinými daty. Žádné součty za kraj ani republiku; mandáty jen vyhlášené.
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNow } from '../../hooks/useNow.js';
 import { useOnline } from '../../hooks/useOnline.js';
 import {
-    bestSource, buildRegions, doneSet, featuredShardIds, flatOrder, newlyCounted, regionHeader, rowView, townsText,
+    allProgress, bestSource, buildRegions, doneSet, featuredShardIds, flatOrder, initialOpenRegions, newlyCounted, regionHeader, rowView, townsText,
 } from '../indexModel.js';
 import { buildIndex } from '../search.js';
 import FeaturedTowns from './FeaturedTowns.jsx';
@@ -34,21 +33,22 @@ export default function IndexPage({ councils, hidden = NO_IDS, shards, regions, 
     return (
         <ShardSubscriber shards={shards} version={version} fetchImpl={fetchImpl} featured={featuredIds} mineShard={mineShard} allIds={allIds}>
             <IndexBody
-                councils={councils} hidden={hidden} excluded={excluded} aliases={aliases} model={model} allIds={allIds}
+                councils={councils} hidden={hidden} excluded={excluded} aliases={aliases} model={model}
                 myTown={myTown} onlyDone={onlyDone} setOnlyDone={setOnlyDone}
             />
         </ShardSubscriber>
     );
 }
 
-function IndexBody({ councils, hidden, excluded, aliases, model, allIds, myTown, onlyDone, setOnlyDone }) {
+function IndexBody({ councils, hidden, excluded, aliases, model, myTown, onlyDone, setOnlyDone }) {
     const snapshot = useShardSnapshot();
     const online = useOnline();
     const now = useNow(30_000) + (snapshot.skew || 0);
+    const active = useMemo(() => new Set(snapshot.active), [snapshot.active]);
     const wide = useMediaQuery('(min-width: 1024px)');
 
     const [view, setView] = useState('kraje');
-    const [open, setOpen] = useState(() => new Set(wideNow() ? model.map((r) => r.kraj) : []));
+    const [open, setOpen] = useState(() => new Set(wideNow() ? initialOpenRegions(model) : []));
     const [doneSnap, setDoneSnap] = useState(() => new Set());
     const [searchMode, setSearchMode] = useState('search');
     const [status, setStatus] = useState('');
@@ -120,7 +120,7 @@ function IndexBody({ councils, hidden, excluded, aliases, model, allIds, myTown,
             return n;
         });
         const r = model.find((x) => x.kraj === kraj);
-        if (r) say(expanding ? `${r.name}: ${townsText(r.zastups.length)}, načítám výsledky.` : `${r.name} sbaleno.`);
+        if (r) say(expanding ? `${r.name}: ${townsText(r.zastups.length)}, načítám výsledky.` : `${r.name}: sbaleno.`);
         if (expanding && document.getElementById(`kraj-${kraj}`).getBoundingClientRect().top < 0) pendingFocus.current = kraj;
     }, [model, open, say]);
 
@@ -129,14 +129,14 @@ function IndexBody({ councils, hidden, excluded, aliases, model, allIds, myTown,
     const onOpenTown = useCallback((c) => { rememberIfEmpty(c); }, [rememberIfEmpty]);
     const openFromSearch = useCallback((c) => {
         const remembered = rememberIfEmpty(c);
-        say(`Otevírám ${c.name}.${remembered ? ' Uloženo jako Moje obec.' : ''}`);
+        say(`Otevírám ${c.name}.${remembered ? ` Uloženo jako Moje obec: ${c.name}.` : ''}`);
         window.location.assign(`/${c.slug}`);
     }, [rememberIfEmpty, say]);
     const chooseMine = useCallback((c) => {
         setMine(c);
         setSearchMode('search');
         showToast(`${c.name} je teď vaše obec (jen v tomto prohlížeči).`);
-        say(`${c.name} uloženo jako Moje obec.`);
+        say(`Uloženo jako Moje obec: ${c.name}.`);
     }, [setMine, say, showToast]);
 
     const toggleDone = () => {
@@ -156,11 +156,9 @@ function IndexBody({ councils, hidden, excluded, aliases, model, allIds, myTown,
         setDoneSnap(snap);
         say(`Přidáno: ${townsText(newlyCounted(summaries, councils, doneSnap).length)}.`);
     };
-    const loadedAll = allIds.filter((id) => snapshot.shards[id]?.hasData).length;
     const fresh = onlyDone ? newlyCounted(summaries, councils, doneSnap) : NO_IDS;
-    const bar = loadedAll < allIds.length
-        ? { fresh: 0, text: `Načítám stav všech krajů: ${loadedAll} z ${allIds.length}…` }
-        : { fresh: fresh.length, text: 'Seznam sečtených měst je aktuální.' };
+    const progress = onlyDone ? allProgress(model, snapshot.shards) : { text: null };
+    const bar = progress.text ? { fresh: 0, text: progress.text } : { fresh: fresh.length, text: 'Seznam sečtených měst je aktuální.' };
     const pass = (c) => !onlyDone || doneSnap.has(c.zastup);
     const emptyText = 'Zatím žádné sečtené město.';
 
@@ -181,7 +179,7 @@ function IndexBody({ councils, hidden, excluded, aliases, model, allIds, myTown,
                         <MyTown
                             council={myTown.mine} view={views.get(myTown.mine.zastup)}
                             onChange={() => setSearchMode('mine')}
-                            onForget={() => { const n = myTown.mine.name; myTown.forget(); say(`${n} zapomenuta.`); }}
+                            onForget={() => { const n = myTown.mine.name; myTown.forget(); say(`Moje obec zapomenuta (${n}).`); }}
                         />
                     )}
                     <nav className="mi-regnav" aria-label="Skok na kraj">
@@ -214,7 +212,7 @@ function IndexBody({ councils, hidden, excluded, aliases, model, allIds, myTown,
                                     return (
                                         <RegionSection
                                             key={r.kraj} region={r} expanded={open.has(r.kraj)} onToggle={toggleRegion}
-                                            header={regionHeader(r, { shown, summaries, shards: snapshot.shards, now })}
+                                            header={regionHeader(r, { shown, summaries, shards: snapshot.shards, now, active })}
                                         >
                                             {rows.map(rowFor)}
                                             {onlyDone && !rows.length && <div className="mi-empty">{emptyText}</div>}
@@ -232,7 +230,7 @@ function IndexBody({ councils, hidden, excluded, aliases, model, allIds, myTown,
 
                     <footer className="mi-foot">
                         <p>
-                            Data ČSÚ (volby.gov.cz), u každého města s jeho vlastním časem. Žádné součty ani odhady za kraje nebo republiku. Mandáty ukazujeme, až je ČSÚ vyhlásí.
+                            Zdroj: ČSÚ (volby.gov.cz), u každého města s jeho vlastním časem. Žádné součty ani odhady za kraje nebo republiku. Mandáty ukazujeme, až je ČSÚ vyhlásí.
                             {' '}Praha je na <a href="https://praha.dg12.cz">praha.dg12.cz</a>.
                         </p>
                         <p>Správce: Václav Vislous · <a href="tel:+420777954389">777 954 389</a></p>

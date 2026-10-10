@@ -5,13 +5,11 @@
 import { OVERVIEW_VERSION } from '../volby/overview.js';
 import aliases from './aliases.js';
 import { ALL_COUNCILS, COUNCILS, REGIONS, SHARDS } from './councils.js';
+import EXCLUDED from './excluded.generated.json';
 import IndexPage from './index/IndexPage.jsx';
 
-// Obce mimo přehled pro hledání („Havířov", „Litovel" místo prázdného seznamu).
-// Soubor vzniká v T1a; bez něj (nebo bez obsahu) hledání jen odpoví „nenašli jsme".
-const found = Object.values(import.meta.glob('./excluded.generated.json', { eager: true, import: 'default' }))[0];
-const EXCLUDED = Array.isArray(found) ? found : [];
-// skrytá města (nízká jistota): v hledání jen jako neklikací „ověřujeme"
+// EXCLUDED = obce mimo přehled pro hledání („Havířov", „Litovel" místo prázdného seznamu).
+// HIDDEN = skrytá města (nízká jistota): v hledání jen jako neklikací „ověřujeme"
 const HIDDEN = ALL_COUNCILS.filter((c) => !c.shown);
 
 export default function MestaIndex() {
