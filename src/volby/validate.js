@@ -77,7 +77,7 @@ function mergeOverview(candidate, good) {
 }
 
 // Monotónní (relativní) kontroly a doplňování z good platí jen když good
-// vznikl po uzavření místností a se stejným CSU_BASE; jinak (testovací data
+// vznikl po uzavření místností (stažen i vygenerován) a se stejným CSU_BASE; jinak (testovací data
 // před 14:00, jiná základna) nahradí good první platný kandidát po 14:00.
 function assertCtx(ctx) {
     if (!ctx || typeof ctx !== 'object'
@@ -89,7 +89,11 @@ function assertCtx(ctx) {
 
 export function baselineApplies(good, ctx) {
     assertCtx(ctx);
-    return !!good && ctx.goodRefreshedAt >= ctx.pollsClose && ctx.base === ctx.goodBase;
+    if (!good || ctx.base !== ctx.goodBase || ctx.goodRefreshedAt < ctx.pollsClose) return false;
+    // i vlastní čas generování good musí být po 14:00: webcache ČSÚ může po
+    // 14:00 ještě chvíli vracet testovací data, která se nesmí stát baseline
+    const generated = genMs(good.generated);
+    return generated !== null && generated >= ctx.pollsClose;
 }
 
 /**

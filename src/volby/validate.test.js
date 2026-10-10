@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { COUNCILS, POLLS_CLOSE } from '../councils.js';
 import { createKvFeed } from './feed.js';
 import { createOverviewFeed } from './overview.js';
-import { mergeCandidate, validateCandidate, snapshotHash } from './validate.js';
+import { baselineApplies, mergeCandidate, validateCandidate, snapshotHash } from './validate.js';
 
 // Kandidáty vznikají během testů přes skutečné createKvFeed / createOverviewFeed
 // s falešným fetchImpl nad ručně psanými fixturami (__fixtures__/), protože
@@ -379,12 +379,12 @@ describe('feed failures never reach the validator', () => {
 });
 
 describe('validateCandidate — baseline (C4)', () => {
-    const testData = () => fxJson('results.json', (j) => {
-        j.generovano = '2026-10-10T12:00:00';
+    const testData = (generated = '2026-10-10T12:00:00') => fxJson('results.json', (j) => {
+        j.generovano = generated;
         j.prehled[2] = 60;
         j.prehled[3] = 50;
     });
-    const testTurnout = () => fxJson('turnout.json', (j) => { j.generovano = '2026-10-10T12:00:00'; });
+    const testTurnout = (generated = '2026-10-10T12:00:00') => fxJson('turnout.json', (j) => { j.generovano = generated; });
     const realReset = () => routes({
         results: fxJson('results.json', (j) => {
             j.generovano = '2026-10-10T14:05:00';
@@ -404,11 +404,28 @@ describe('validateCandidate — baseline (C4)', () => {
         expect(out).toEqual({ outcome: 'ok', complete: true });
     });
 
-    it('same pair with good refreshed after 14:00 is rejected (monotonic checks on)', async () => {
-        const good = await build(routes({ results: testData(), turnout: testTurnout() }));
+    it('same pair with good refreshed AND generated after 14:00 is rejected (monotonic checks on)', async () => {
+        const good = await build(routes({ results: testData('2026-10-10T14:01:00'), turnout: testTurnout('2026-10-10T14:01:00') }));
         const cand = await build(realReset());
         expect(validate(cand, good, { goodRefreshedAt: POLLS_CLOSE + 1 }))
             .toEqual({ outcome: 'rejected', reason: 'precincts-fewer', complete: true });
+    });
+
+    it('good fetched at 14:05 but generated 13:50 (webcache still serves test data) → baseline off, reset ok', async () => {
+        const good = await build(routes({ results: testData('2026-10-10T13:50:00'), turnout: testTurnout('2026-10-10T13:50:00') }));
+        expect(good.precincts.counted).toBe(50);
+        const cand = await build(realReset());
+        const c = ctx({ goodRefreshedAt: POLLS_CLOSE + 5 * 60e3 });
+        expect(baselineApplies(good, c)).toBe(false);
+        expect(validate(cand, good, { goodRefreshedAt: POLLS_CLOSE + 5 * 60e3 })).toEqual({ outcome: 'ok', complete: true });
+    });
+
+    it('good generated at/after 14:00 → baseline applies; null generated → it does not', async () => {
+        const at1400 = await build(routes({ results: testData('2026-10-10T14:00:00'), turnout: testTurnout('2026-10-10T14:00:00') }));
+        expect(baselineApplies(at1400, ctx())).toBe(true);
+        const before = await build(routes({ results: testData('2026-10-10T13:59:59'), turnout: testTurnout('2026-10-10T13:59:59') }));
+        expect(baselineApplies(before, ctx())).toBe(false);
+        expect(baselineApplies({ ...at1400, generated: null }, ctx())).toBe(false);
     });
 
     it('monotonic checks are off when the base differs (ČSÚ test data), even after 14:00', async () => {
