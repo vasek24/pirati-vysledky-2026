@@ -10,6 +10,7 @@
 //  - bez `nextRefreshAt` (starší Worker) interval podle fáze: před 14:00 jednou
 //    za 10 min (probuzení přesně na uzavření místností), při sčítání 60 s,
 //    po vyhlášení mandátů 15 min; ±15 % jitter, ať se klienti nesešikují,
+//  - konečné výsledky (pollingDone) = další dotazy se neplánují, hotovo;
 //  - skrytý panel/tab = žádné dotazy; po návratu dotaz, když už je na čase,
 //  - chyby = backoff s full jitter, strop 5 min (backoffDelay),
 //  - obnovit dřív, než vyprší odpočet do další kontroly, nejde — ani
@@ -23,7 +24,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { phaseOf, SNAPSHOT_VERSION } from '../volby/feed.js';
 import { OVERVIEW_VERSION } from '../volby/overview.js';
 import { POLLS_CLOSE } from '../councils.js';
-import { MIN_GAP_MS, backoffDelay, clampTimeout, computeSkew, nextPollDelay, nextSkew, pickOffset, visibilityDelay } from './schedule.js';
+import { MIN_GAP_MS, backoffDelay, clampTimeout, computeSkew, nextPollDelay, nextSkew, pickOffset, pollingDone, visibilityDelay } from './schedule.js';
 import { nextLatency } from '../lib/latency.js';
 
 const INTERVAL = { pre: 10 * 60e3, waiting: 60e3, counting: 60e3, final: 15 * 60e3 };
@@ -170,6 +171,8 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     const idle = demo && !demoFeed;
     // Reload před vypršením odpočtu: ukázat poslední data a počkat
     const [cached] = useState(() => (demo ? null : readCached(target)));
+    // reload konečných výsledků: nic dalšího se nestahuje
+    const cachedDone = !!cached && !demo && pollingDone({ ...cached.snapshot, stale: cached.stale });
     const [snapshot, setSnapshot] = useState(() => cached?.snapshot ?? null);
     const [state, setState] = useState(() => ({
         status: cached ? 'ok' : 'loading', // loading | ok | error
@@ -177,9 +180,10 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
         stale: cached?.stale ?? false,
         error: cached?.error ?? null,
         lastSuccess: cached?.lastSuccess ?? null,
-        nextAt: cached?.nextAt ?? null, // čas serveru (Date.now() + skew)
+        nextAt: cachedDone ? null : cached?.nextAt ?? null, // čas serveru (Date.now() + skew)
         skew: cached?.skew ?? 0, // čas serveru − čas klienta (ms)
         fetching: false,
+        done: cachedDone, // konečné výsledky načtené, další dotazy se neplánují
     }));
     // okrsek → čas, kdy ho tenhle prohlížeč poprvé viděl sečtený (null = už při otevření)
     const [arrivals, setArrivals] = useState(() => (demo ? {} : readArrivals(target)));
@@ -211,8 +215,11 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     // čas serveru (hodiny klienta opravené o skew)
     const serverNow = useCallback(() => Date.now() + skewRef.current, []);
 
+    const doneRef = useRef(cachedDone);
+
     const schedule = useCallback((ms) => {
         clearTimeout(timerRef.current);
+        if (doneRef.current) return;
         // mezi dotazy aspoň 5 s (ne v demu)
         const gap = demoFeed ? 0 : MIN_GAP_MS - (Date.now() - lastAttemptRef.current);
         const wait = clampTimeout(Math.max(ms, gap, 0));
@@ -301,6 +308,8 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
                 lastAttempt: lastAttemptRef.current,
             };
             setSnapshot(stored.snapshot);
+            // demo simuluje průběh a konec — tam se dotazuje dál
+            doneRef.current = !demoFeed && pollingDone({ ...stored.snapshot, stale: result.stale });
             if (!demoFeed) {
                 // jen první odpověď s novým `generated` (viz nextLatency)
                 const chain = { generated: snap.generated, refreshedAt: result.refreshedAt, firstSeenAt: result.firstSeenAt, servedAt: result.servedAt, receivedAt: serverNow(), skewValid };
@@ -314,6 +323,8 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
                 error: stored.error,
                 lastSuccess: stored.lastSuccess,
                 fetching: false,
+                done: doneRef.current,
+                ...(doneRef.current ? { nextAt: null } : null),
             }));
         } else {
             errorsRef.current += 1;

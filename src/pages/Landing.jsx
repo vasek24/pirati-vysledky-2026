@@ -340,7 +340,7 @@ function Hero({ snapshot, live, lists }) {
                                 : nextLabel
                                     ? <>další kontrola za <b className="font-semibold text-white">{nextLabel}</b></>
                                     // bez termínu: skrytá záložka = pauza; při prvním vykreslení zatím nic
-                                    : document.hidden ? 'kontrola pozastavena' : null}
+                                    : live.done ? 'výsledky jsou konečné, další kontroly nebudou' : document.hidden ? 'kontrola pozastavena' : null}
                         </span>
                     </div>
                 )}
