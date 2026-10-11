@@ -93,7 +93,7 @@ export function RefreshButton({ live, now, demo = false, showLabel = 'hidden sm:
             <svg className={`w-4 h-4 ${live.fetching ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            <span className={`${showLabel} tabular-nums`}>{nextIn === null ? (live.done ? 'konečné' : 'pauza') : fmtWait(nextIn)}</span>
+            <span className={`${showLabel} tabular-nums`}>{nextIn === null ? (live.done ? 'hotovo' : 'pauza') : fmtWait(nextIn)}</span>
             {hint && (
                 <span className="absolute top-full right-0 mt-1 z-10 w-60 rounded bg-white text-neutral-700 text-[11px] text-left font-normal leading-snug px-2 py-1.5 shadow">
                     {nextIn
@@ -374,11 +374,11 @@ export default function ElectionHeader({ live, snapshot, demo, geoJson, selected
                             : nextLabel
                                 ? <>další kontrola za <b className="font-semibold text-white">{nextLabel}</b></>
                                 // bez termínu: skrytá záložka = pauza; při prvním vykreslení zatím nic
-                                : live.done ? 'výsledky jsou konečné, další kontroly nebudou' : document.hidden ? 'kontrola pozastavena' : null}
+                                : live.done ? 'všechny okrsky sečteny, další kontroly nebudou' : document.hidden ? 'kontrola pozastavena' : null}
                         </span>
                     </div>
                 )}
-                {!demo && pillState === 'live' && (
+                {!demo && pillState === 'live' && !live.done && (
                     <div className="mt-0.5 short:hidden text-[11px] leading-snug text-white/65">
                         ČSÚ zveřejňuje data zhruba jednou za minutu; stránka se obnovuje sama.
                     </div>

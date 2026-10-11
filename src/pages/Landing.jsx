@@ -340,11 +340,11 @@ function Hero({ snapshot, live, lists }) {
                                 : nextLabel
                                     ? <>další kontrola za <b className="font-semibold text-white">{nextLabel}</b></>
                                     // bez termínu: skrytá záložka = pauza; při prvním vykreslení zatím nic
-                                    : live.done ? 'výsledky jsou konečné, další kontroly nebudou' : document.hidden ? 'kontrola pozastavena' : null}
+                                    : live.done ? 'všechny okrsky sečteny, další kontroly nebudou' : document.hidden ? 'kontrola pozastavena' : null}
                         </span>
                     </div>
                 )}
-                {!DEMO && pillState === 'live' && (
+                {!DEMO && pillState === 'live' && !live.done && (
                     <div className="mt-0.5 text-xs leading-snug text-white/70">
                         ČSÚ zveřejňuje data zhruba jednou za minutu; stránka se obnovuje sama.
                     </div>
