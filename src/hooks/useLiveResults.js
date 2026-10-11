@@ -10,7 +10,7 @@
 //  - bez `nextRefreshAt` (starší Worker) interval podle fáze: před 14:00 jednou
 //    za 10 min (probuzení přesně na uzavření místností), při sčítání 60 s,
 //    po vyhlášení mandátů 15 min; ±15 % jitter, ať se klienti nesešikují,
-//  - konečné výsledky (pollingDone) = další dotazy se neplánují, hotovo;
+//  - všechny okrsky sečtené (pollingDone) = další dotazy se neplánují, hotovo;
 //  - skrytý panel/tab = žádné dotazy; po návratu dotaz, když už je na čase,
 //  - chyby = backoff s full jitter, strop 5 min (backoffDelay),
 //  - obnovit dřív, než vyprší odpočet do další kontroly, nejde — ani
@@ -171,7 +171,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
     const idle = demo && !demoFeed;
     // Reload před vypršením odpočtu: ukázat poslední data a počkat
     const [cached] = useState(() => (demo ? null : readCached(target)));
-    // reload konečných výsledků: nic dalšího se nestahuje
+    // reload plně sečtených výsledků: nic dalšího se nestahuje
     const cachedDone = !!cached && !demo && pollingDone({ ...cached.snapshot, stale: cached.stale });
     const [snapshot, setSnapshot] = useState(() => cached?.snapshot ?? null);
     const [state, setState] = useState(() => ({
@@ -183,7 +183,7 @@ export function useLiveResults({ source: target, demo = false, demoFeed = null }
         nextAt: cachedDone ? null : cached?.nextAt ?? null, // čas serveru (Date.now() + skew)
         skew: cached?.skew ?? 0, // čas serveru − čas klienta (ms)
         fetching: false,
-        done: cachedDone, // konečné výsledky načtené, další dotazy se neplánují
+        done: cachedDone, // všechny okrsky sečtené, další dotazy se neplánují
     }));
     // okrsek → čas, kdy ho tenhle prohlížeč poprvé viděl sečtený (null = už při otevření)
     const [arrivals, setArrivals] = useState(() => (demo ? {} : readArrivals(target)));

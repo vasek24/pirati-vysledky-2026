@@ -160,21 +160,23 @@ describe('delays stay sane for garbage input (no tight loop, no timer overflow)'
 });
 
 describe('pollingDone', () => {
-    const final = { phase: 'final', official: true, precincts: { counted: 100, total: 100 } };
+    const full = { phase: 'counting', official: false, precincts: { counted: 100, total: 100 } };
 
-    it('official snapshot with every precinct counted: stop polling', () => {
-        expect(pollingDone(final)).toBe(true);
+    it('every precinct counted: stop polling, official flag or not', () => {
+        expect(pollingDone(full)).toBe(true);
+        expect(pollingDone({ ...full, phase: 'final', official: true })).toBe(true);
     });
-    it('keeps polling while counting, waiting or before the vote', () => {
-        expect(pollingDone({ ...final, phase: 'counting', official: false })).toBe(false);
-        expect(pollingDone({ ...final, phase: 'waiting', official: false, precincts: { counted: 0, total: 100 } })).toBe(false);
-        expect(pollingDone({ ...final, phase: 'pre', official: false })).toBe(false);
+    it('keeps polling while precincts are missing, even when official', () => {
+        expect(pollingDone({ ...full, precincts: { counted: 99, total: 100 } })).toBe(false);
+        expect(pollingDone({ ...full, phase: 'final', official: true, precincts: { counted: 99, total: 100 } })).toBe(false);
     });
-    it('keeps polling when official but some precincts are missing', () => {
-        expect(pollingDone({ ...final, precincts: { counted: 99, total: 100 } })).toBe(false);
+    it('keeps polling before the vote and while waiting for the first precinct', () => {
+        expect(pollingDone({ ...full, phase: 'pre', precincts: { counted: 0, total: 100 } })).toBe(false);
+        expect(pollingDone({ ...full, phase: 'waiting', precincts: { counted: 0, total: 100 } })).toBe(false);
+        expect(pollingDone({ ...full, precincts: { counted: 0, total: 0 } })).toBe(false);
     });
     it('keeps polling when the snapshot is stale or absent', () => {
-        expect(pollingDone({ ...final, stale: true })).toBe(false);
+        expect(pollingDone({ ...full, stale: true })).toBe(false);
         expect(pollingDone(null)).toBe(false);
         expect(pollingDone(undefined)).toBe(false);
     });
