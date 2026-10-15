@@ -23,7 +23,9 @@
   "routes": [{ "pattern": "mesta.dg12.cz", "custom_domain": true }],
   "observability": { "enabled": true },
   // Warm-up první třídy feedů (mestaWiring.firstClassKeys) — jen produkce, ne staging
-  "triggers": { "crons": ["* * * * *"] },
+  // Warm-up cron (`"* * * * *"`) vypnutý 2026-10-15: volby skončily, ČSÚ se volá jen na požadavek diváka.
+  // Znovu zapnout = vrátit "* * * * *" a nasadit (staging první).
+  "triggers": { "crons": [] },
 
   // Staging: samostatný skript (vlastní Durable Object storage), jen workers.dev,
   // bez routes a cronů. Wrangler nededí assets, DO ani migrace — proto jsou níže.
