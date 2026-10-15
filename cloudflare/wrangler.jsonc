@@ -26,8 +26,10 @@
   "routes": [{ "pattern": "praha.dg12.cz", "custom_domain": true }],
   "workers_dev": true,
   "observability": { "enabled": true },
-  // Warm-up první třídy feedů (feedClasses.js) — jen produkce, ne staging
-  "triggers": { "crons": ["* * * * *"] },
+  // Warm-up první třídy feedů (feedClasses.js) byl `"crons": ["* * * * *"]`; od 2026-10-15
+  // vypnutý (volby skončily, všech 11 radnic i přehled je konečných) — ČSÚ se volá jen na
+  // požadavek diváka. Znovu zapnout = vrátit "* * * * *" a nasadit (staging první).
+  "triggers": { "crons": [] },
 
   // Staging: samostatný skript (vlastní Durable Object storage a KV), jen
   // workers.dev, bez routes a cronů. Každé nasazení jde nejdřív sem
