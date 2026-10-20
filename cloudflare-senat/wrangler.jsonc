@@ -30,8 +30,10 @@
   // Povoleno jen YYYY-MM-DDTHH:mm[:ss]+HH:mm, po 1. kole a nejdéle o 30 dní; jinak DO při startu vyhodí chybu.
   "vars": {},
   "observability": { "enabled": true },
-  // Warm-up feedu (volá DO jako divák) — jen produkce, ne staging
-  "triggers": { "crons": ["* * * * *"] },
+  // Warm-up feedu byl `"crons": ["* * * * *"]`; od 2026-10-20 vypnutý (volby skončily, všech 27 obvodů
+  // rozhodnuto, ČSÚ se už nevolá). Znovu zapnout = vrátit "* * * * *" a nasadit (staging první).
+  // POZOR: `wrangler deploy` prázdné pole schedule nesmaže — po nasazení spustit i `wrangler triggers deploy --env=""`.
+  "triggers": { "crons": [] },
 
   // Staging: samostatný skript (vlastní Durable Object storage), jen workers.dev,
   // bez routes a cronů. Každé nasazení jde nejdřív sem (`wrangler deploy --env staging`).

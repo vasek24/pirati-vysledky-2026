@@ -56,6 +56,13 @@ export function createPoller({
       if (!res.ok || !isSnapshot(body)) throw new Error('bad-snapshot')
       errors = 0
       onSnapshot(body, skew)
+      // final results (and not stale): nothing more will change — stop polling for good
+      if (body.phase === 'final' && !body.stale) {
+        inFlight = false
+        stopped = true
+        onSchedule(null)
+        return
+      }
       delay = nextPollDelay({ nextRefreshAt: body.nextRefreshAt, now: serverNow(), offset, random: random() })
     } catch {
       errors += 1
