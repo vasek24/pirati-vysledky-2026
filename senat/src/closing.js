@@ -17,7 +17,7 @@ export function closeDate(ms) {
 export const CLOSE_DATE = { 1: closeDate(POLLS_CLOSE[1]), 2: closeDate(POLLS_CLOSE[2]) }
 
 // Časy zavření ze serveru, jen když dávají smysl (konečná čísla, 2. kolo po 1.), jinak výchozí konstanty
-function closesOf(snapshot) {
+export function closesOf(snapshot) {
   const c = snapshot?.closes
   const ok = c && Number.isFinite(c[1]) && Number.isFinite(c[2]) && c[2] > c[1]
   return ok ? { 1: c[1], 2: c[2] } : POLLS_CLOSE
@@ -37,7 +37,7 @@ export function remaining(ms) {
 // Čeká se ještě na 2. kolo? Server do zavření místností 2. kola žádná data 2. kola neposílá
 // (snapshot.round zůstává 1 celý týden), takže se soudí podle stavu 1. kola: je obvod, který míří
 // do 2. kola (nebo shoda hlasů) podle oficiálních příznaků ČSÚ — dokud nic takového není, neodpočítáváme.
-function runoffExpected(snapshot) {
+export function runoffExpected(snapshot) {
   if (!snapshot) return false
   const sum = snapshot.summary
   if (sum && (sum.runoff ?? 0) + (sum.ties ?? 0) > 0) return true

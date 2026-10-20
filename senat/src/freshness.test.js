@@ -77,6 +77,19 @@ describe('freshness', () => {
     expect(pill(runoff(null))).toBe(T.pillWaitingR2)
   })
 
+  test('between rounds (server still says round 1): waiting-for-round-2 only after the round-2 close', () => {
+    const r1 = [{ state: 'runoff', rounds: { 1: { okrskyZprac: 5 } } }, { state: 'elected', rounds: { 1: { okrskyZprac: 5 } } }]
+    const model = (serverNow) => headerModel({ snapshot: snap({ phase: 'idle', round: 1, obvody: r1 }), serverNow, nextAt: null })
+    expect(model(Date.parse('2026-10-17T13:59:00+02:00')).pill).toBe(T.pillDone(1))
+    const m = model(Date.parse('2026-10-17T14:10:00+02:00'))
+    expect(m.pill).toBe(T.pillWaitingR2)
+    expect(m.fresh).toContain(T.agoWaitingR2)
+    expect(m.fresh).not.toContain('před')
+    // nothing headed to round 2: never claims to wait for it
+    const done = [{ state: 'elected', rounds: { 1: { okrskyZprac: 5 } } }]
+    expect(headerModel({ snapshot: snap({ phase: 'idle', round: 1, obvody: done }), serverNow: Date.parse('2026-10-17T14:10:00+02:00'), nextAt: null }).pill).toBe(T.pillDone(1))
+  })
+
   test('junk generatedMs drops the time and age but keeps the countdown', () => {
     const m = headerModel({ snapshot: snap({ generatedMs: null }), serverNow: G, nextAt: G + 5000 })
     expect(m.fresh).toBe('další kontrola za 0:05')
