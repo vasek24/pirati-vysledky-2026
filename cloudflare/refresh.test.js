@@ -288,6 +288,47 @@ describe('request path', () => {
 
 // ---- 5: failures ---------------------------------------------------------------
 
+describe('final results sleep', () => {
+    const finalSnap = (extra = {}) => council({ counted: 100, total: 100, official: true, ...extra });
+
+    it('final snapshot: no further build, however late the next get() is', async () => {
+        const { r, feed } = setup({ build: async () => finalSnap() });
+        await r.get();
+        await advance(3 * 3600 * S);
+        await poll(r);
+        await advance(24 * 3600 * S);
+        await poll(r);
+        expect(feed.build).toHaveBeenCalledTimes(1);
+    });
+
+    it('final snapshot: nextRefreshAt keeps moving ahead by FINAL_MS so clients and the edge poll slowly', async () => {
+        const { r } = setup({ build: async () => finalSnap() });
+        await r.get();
+        await advance(2 * 3600 * S);
+        const res = await r.get();
+        expect(parse(res).nextRefreshAt).toBe(Date.now() + REFRESH.FINAL_MS);
+        expect(res.meta.nextRefreshAt).toBe(Date.now() + REFRESH.FINAL_MS);
+    });
+
+    it('rehydrated final snapshot is served without any build', async () => {
+        const first = setup({ build: async () => finalSnap() });
+        await first.r.get();
+        const second = setup({ storage: first.st, build: async () => finalSnap({ fetchId: 'f2' }) });
+        await advance(3600 * S);
+        const res = await second.r.get();
+        expect(res.status).toBe(200);
+        expect(second.feed.build).not.toHaveBeenCalled();
+    });
+
+    it('non-final snapshot still refreshes when due', async () => {
+        const { r, feed } = setup();
+        await r.get();
+        await advance(2 * MIN);
+        await poll(r);
+        expect(feed.build).toHaveBeenCalledTimes(2);
+    });
+});
+
 describe('failures', () => {
     // seed + build, který od druhého volání dělá `fail`
     function failing(fail, opts = {}) {

@@ -333,6 +333,10 @@ export function createRefresher({
         return refreshPromise;
     }
 
+    // Konečné výsledky (fáze final): ČSÚ se už nevolá. Odpověď nese posunuté
+    // `nextRefreshAt`, ať klienti i okraj ptají jen zřídka (a nikdy do ČSÚ).
+    const isSettled = (t) => !!good && phaseOf(good.snapshot, t) === 'final';
+
     // ---- odpověď ----------------------------------------------------------------
     function respond() {
         if (!good) {
@@ -342,11 +346,13 @@ export function createRefresher({
                 meta: { refreshedAt: null, nextRefreshAt, servedAt: now(), stale: true, complete: false, refreshing: !!refreshPromise, phase: phaseOf(null, now()) },
             };
         }
+        const servedAt = now();
+        const next = isSettled(servedAt) ? Math.max(nextRefreshAt, servedAt + REFRESH.FINAL_MS) : nextRefreshAt;
         const meta = {
             refreshedAt: good.meta.refreshedAt,
             firstSeenAt: good.meta.firstSeenAt,
-            nextRefreshAt,
-            servedAt: now(),
+            nextRefreshAt: next,
+            servedAt,
             stale,
             complete: true,
             refreshing: !!refreshPromise,
@@ -370,7 +376,7 @@ export function createRefresher({
             if (refreshPromise || t >= nextRefreshAt) await startRefresh();
             return respond();
         }
-        if (!refreshPromise && t >= nextRefreshAt) startRefresh();
+        if (!refreshPromise && t >= nextRefreshAt && !isSettled(t)) startRefresh();
         if (!firstClass && refreshPromise && t - good.meta.refreshedAt > REFRESH.SECOND_CLASS_OLD_MS) {
             const wait = sleep(REFRESH.SECOND_CLASS_WAIT_MS);
             await Promise.race([refreshPromise, wait.promise]);
