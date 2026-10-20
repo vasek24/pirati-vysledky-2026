@@ -345,6 +345,10 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
 
   // ---- response ----------------------------------------------------------------
   // meta (spliced first, so `"stale":` is within the first 300 chars) + the persisted snapshot string
+  // Final results (every obvod decided): ČSÚ is never called again. Responses carry a pushed-out
+  // `nextRefreshAt` so clients and the edge poll rarely, and never reach ČSÚ.
+  const isSettled = () => !!good && phaseOfSnapshot(good.snapshot) === 'final'
+
   function respond() {
     if (!good) {
       return {
@@ -353,10 +357,11 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
         meta: { refreshedAt: null, nextRefreshAt, servedAt: now(), stale: true, phase: null },
       }
     }
+    const servedAt = now()
     const meta = {
       refreshedAt: good.meta.refreshedAt,
-      nextRefreshAt,
-      servedAt: now(),
+      nextRefreshAt: isSettled() ? Math.max(nextRefreshAt, servedAt + REFRESH.FINAL_MS) : nextRefreshAt,
+      servedAt,
       stale,
       phase: phaseOfSnapshot(good.snapshot),
     }
@@ -379,7 +384,7 @@ export function createRefresher({ now, random, storage, feed, base, log, pollsCl
       if (refreshPromise || t >= nextRefreshAt) await startRefresh()
       return respond()
     }
-    if (!refreshPromise && t >= nextRefreshAt) startRefresh()
+    if (!refreshPromise && t >= nextRefreshAt && !isSettled()) startRefresh()
     return respond()
   }
 

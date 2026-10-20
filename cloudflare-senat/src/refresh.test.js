@@ -392,6 +392,48 @@ describe('request path', () => {
 
 // ---- 304 and validator ownership ---------------------------------------------------
 
+describe('final results sleep', () => {
+  const finalSnap = () => snap({ obvody: [{ n: 3, z: 10, st1: ['ZVOLEN', 'NEZVOLEN'] }, { n: 6, z: 10, votes: [70, 80], st1: ['NEZVOLEN', 'ZVOLEN'] }] })
+
+  it('final snapshot: no further build, however late the next get() is', async () => {
+    const { r, feed } = setup({ build: async () => ok(finalSnap(), 1) })
+    await r.get()
+    expect(phaseOfSnapshot(finalSnap())).toBe('final')
+    await advance(3 * 3600 * S)
+    await poll(r)
+    await advance(24 * 3600 * S)
+    await poll(r)
+    expect(feed.build).toHaveBeenCalledTimes(1)
+  })
+
+  it('final snapshot: nextRefreshAt keeps moving ahead by FINAL_MS', async () => {
+    const { r } = setup({ build: async () => ok(finalSnap(), 1) })
+    await r.get()
+    await advance(2 * 3600 * S)
+    const res = await r.get()
+    expect(parse(res).nextRefreshAt).toBe(Date.now() + REFRESH.FINAL_MS)
+    expect(res.meta.nextRefreshAt).toBe(Date.now() + REFRESH.FINAL_MS)
+  })
+
+  it('rehydrated final snapshot is served without any build', async () => {
+    const first = setup({ build: async () => ok(finalSnap(), 1) })
+    await first.r.get()
+    const second = setup({ storage: first.st, build: async () => ok(finalSnap(), 2) })
+    await advance(3600 * S)
+    const res = await second.r.get()
+    expect(res.status).toBe(200)
+    expect(second.feed.build).not.toHaveBeenCalled()
+  })
+
+  it('non-final snapshot still refreshes when due', async () => {
+    const { r, feed } = setup()
+    await r.get()
+    await advance(2 * MIN)
+    await poll(r)
+    expect(feed.build).toHaveBeenCalledTimes(2)
+  })
+})
+
 describe('304 and validators (H3)', () => {
   it('the first fetch is unconditional; the next one sends the good snapshot validators', async () => {
     const { r, feed } = setup({ build: script(ok(snap(), 1, '"e1"'), { notModified: true }) })
@@ -1211,9 +1253,9 @@ describe('schedule per phase after install', () => {
 
   it('failure retries override the phase schedule (20 s with random 0)', async () => {
     let n = 0
-    const { r } = setup({ random: () => 0, build: async () => { if (n++) throw new Error('boom'); return ok(snap({ obvody: [{ n: 3, z: 10, st1: ['ZVOLEN', 'NEZVOLEN'] }] }), 1) } })
+    const { r } = setup({ random: () => 0, build: async () => { if (n++) throw new Error('boom'); return ok(snap({ generated: csu(T0 - 6 * 24 * 3600 * S), obvody: [{ n: 3, z: 10, st1: ['2.KOLO', '2.KOLO'] }] }), 1) } })
     await r.get()
-    await advance(10 * MIN + S)
+    await advance(5 * MIN + S)
     await poll(r)
     expect(parse(await r.get()).nextRefreshAt).toBe(Date.now() + 20 * S)
   })
