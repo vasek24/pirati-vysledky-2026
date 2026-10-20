@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MAX_TIMEOUT_MS, backoffDelay, clampTimeout, computeSkew, nextPollDelay, nextSkew, pickOffset, visibilityDelay } from './schedule.js';
+import { MAX_TIMEOUT_MS, backoffDelay, clampTimeout, computeSkew, nextPollDelay, nextSkew, pickOffset, pollingDone, visibilityDelay } from './schedule.js';
 
 describe('pickOffset', () => {
     it('is uniform over [0, 25 s]', () => {
@@ -156,5 +156,28 @@ describe('delays stay sane for garbage input (no tight loop, no timer overflow)'
         expect(clampTimeout(NaN)).toBe(5000);
         expect(clampTimeout(-5)).toBe(0);
         expect(clampTimeout(1234)).toBe(1234);
+    });
+});
+
+describe('pollingDone', () => {
+    const full = { phase: 'counting', official: false, precincts: { counted: 100, total: 100 } };
+
+    it('every precinct counted: stop polling, official flag or not', () => {
+        expect(pollingDone(full)).toBe(true);
+        expect(pollingDone({ ...full, phase: 'final', official: true })).toBe(true);
+    });
+    it('keeps polling while precincts are missing, even when official', () => {
+        expect(pollingDone({ ...full, precincts: { counted: 99, total: 100 } })).toBe(false);
+        expect(pollingDone({ ...full, phase: 'final', official: true, precincts: { counted: 99, total: 100 } })).toBe(false);
+    });
+    it('keeps polling before the vote and while waiting for the first precinct', () => {
+        expect(pollingDone({ ...full, phase: 'pre', precincts: { counted: 0, total: 100 } })).toBe(false);
+        expect(pollingDone({ ...full, phase: 'waiting', precincts: { counted: 0, total: 100 } })).toBe(false);
+        expect(pollingDone({ ...full, precincts: { counted: 0, total: 0 } })).toBe(false);
+    });
+    it('keeps polling when the snapshot is stale or absent', () => {
+        expect(pollingDone({ ...full, stale: true })).toBe(false);
+        expect(pollingDone(null)).toBe(false);
+        expect(pollingDone(undefined)).toBe(false);
     });
 });

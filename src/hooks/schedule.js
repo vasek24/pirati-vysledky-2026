@@ -52,3 +52,10 @@ export function computeSkew(serverNowHeader, clientNow) {
 
 // Poslední platný skew se drží, dokud nepřijde další platná hlavička
 export const nextSkew = (prev, serverNowHeader, clientNow) => computeSkew(serverNowHeader, clientNow) ?? prev;
+
+// Všechny okrsky jsou sečtené → další dotazy nemají smysl (vyhlášení mandátů
+// ČSÚ, `official`, může trvat dlouho a čekat na něj dotazováním nechceme;
+// po reloadu nebo tlačítkem se načte znovu). Zastaralý snapshot (náš server
+// neodpovídá) se nepočítá: zkoušíme dál.
+export const pollingDone = (snapshot) =>
+    !!snapshot && !snapshot.stale && snapshot.precincts?.total > 0 && snapshot.precincts.counted >= snapshot.precincts.total;
